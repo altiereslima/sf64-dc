@@ -1,30 +1,3 @@
-### Progress:
-
-<p align="left">
-    <a href="" alt="SF64_Total_NonMatchingFunctions">
-        <img src="https://img.shields.io/badge/Functions%20decompiled:%202951%2F2951-100%25-Yellow" /></a>
-</p>
-<p align="left">
-    <a href="" alt="SF64_Total_MatchingFunctions">
-        <img src="https://img.shields.io/badge/Matching%20Functions:%202948%2F2951-99.90%25-yellow" /></a>
-</p>
-
-[![Discord Invitation](https://discordapp.com/api/guilds/1190102597521133700/widget.png?style=banner2 'Starfox 64')](https://discord.gg/tuwdmuTTqc)
-
-# Starfox 64 (US) REV 1.1
-
-This is a WIP **matching decompilation** of ***Starfox 64***. The purpose of the project is to recreate a source code base for the game from scratch, using information found inside the game along with static and/or dynamic analysis.
-
-##### Note: This is NOT a PC PORT.
-
-It currently builds the following ROM:
-
-* starfox64.us.rev1.z64 `MD5: 741a94eee093c4c8684e66b89f8685e8`
-
-**This repo does not include any assets or assembly code necessary for compiling the ROM. A prior copy of the game is required to extract the required assets.**
-
-## Installation
-
 #### 1. Install build dependencies
 
 ### Windows
@@ -59,16 +32,7 @@ Install [Homebrew](https://brew.sh) and the following dependencies:
 brew update
 brew install coreutils make pkg-config tehzz/n64-dev/mips64-elf-binutils
 ```
-
-#### 2. Clone the repository
-
-Create your own fork of the repository at `https://github.com/sonicdcer/sf64`. Then clone your fork where you wish to have the project, with the command:
-
-```bash
-git clone https://github.com/<YOUR_USERNAME>/sf64.git
-```
-
-This will copy the GitHub repository contents into a new folder in the current directory called `sf64`. Change into this directory before doing anything else:
+#### 2. go into the repo
 
 ```bash
 cd sf64
@@ -89,7 +53,7 @@ python3 -m pip install -r ./tools/requirements-python.txt
 
 ```bash
 git submodule update --init --recursive
-make toolchain
+make -f Makefile.dc toolchain
 ```
 
 #### 5. Prepare a base ROM
@@ -102,24 +66,21 @@ Copy your ROM to the root of this new project directory, and rename the file of 
 To start the extraction/build process, run the following command:
 
 ```bash
-make init
+make -f Makefile.dc init
 ```
 This will create the build folders, a new folder with the assembly as well as containing the disassembly of nearly all the files containing code.
 
-this make target will also build the ROM. If all goes well, a new ROM called "starfox64.us.rev1.z64" should be built and the following text should be printed:
+Eventually you will see an error about failing to build something in `asm/revN/region`.
 
-```bash
-741a94eee093c4c8684e66b89f8685e8  build/starfox64.us.rev1.z64
-./build/starfox64.us.rev1.z64: OK
-```
+Do an `rm -rf asm`.
 
-If you instead see the following:
+Run `make -f Makefile.dc` again. 
 
-```bash
-./build/starfox64.us.rev1.z64: FAILED
-md5sum: WARNING: 1 computed checksum did NOT match
-```
+Run `./generate_sf_data.sh` to make segmented ELF files for link-time symbol resolution and for binary data file generation.
 
-This means that something is wrong with the ROM's contents. Either the base files are incorrect due to a bad ROM, or some of the code is not matching.
+Lastly, run `./link.sh` to create an output ELF file.
 
-From now on you should be able to build the rom by running `make`.
+There's also a target for generating a CDI:
+`make -f Makefile.dc cdi`
+
+Good luck.
