@@ -223,14 +223,16 @@ typedef struct {
     /* 0x00 */ u32 start;
     /* 0x04 */ u32 end;
     /* 0x08 */ u32 count;
-    /* 0x10 */ u64 predictorState[4]; // only exists if count != 0. 8-byte aligned
+    s16 predictorState[16];
+    //    /* 0x10 */ u64 predictorState[4]; // only exists if count != 0. 8-byte aligned
 } AdpcmLoop;                          // size = 0x30 or 0x10, 0x8 aligned
 
 typedef struct {
     /* 0x00 */ s32 order;
     /* 0x04 */ s32 numPredictors;
 #ifdef AVOID_UB
-    /* 0x08 */ u64 book[128]; // size 8 * order * numPredictors.
+//    /* 0x08 */ u64 book[128]; // size 8 * order * numPredictors.
+    s16 book[512];
 #else
     /* 0x08 */ u64 book[1]; // size 8 * order * numPredictors.
 #endif
@@ -385,11 +387,19 @@ typedef struct {
 typedef struct {
     /* 0x00 */ union {
         struct A {
+#if 0
             /* 0x00 */ u8 unused : 1;
             /* 0x00 */ u8 hang : 1;
             /* 0x00 */ u8 decay : 1;
             /* 0x00 */ u8 release : 1;
             /* 0x00 */
+#else
+            u8 pad4 : 4;
+            u8 release : 1;
+            u8 decay : 1;
+            u8 hang : 1;
+            u8 unused : 1;
+#endif
         } s;
         /* 0x00 */ u8 asByte;
     } action;
@@ -406,12 +416,21 @@ typedef struct {
 } AdsrState; // size = 0x24
 
 typedef struct {
+#if 0
     /* 0x00 */ u8 stereoHeadsetEffects : 1;
     /* 0x00 */ u8 usesHeadsetPanEffects : 1;
     /* 0x00 */ u8 unused : 2;
     /* 0x00 */ u8 bit2 : 2;
     /* 0x00 */ u8 strongRight : 1;
     /* 0x00 */ u8 strongLeft : 1;
+#else
+    /* 0x00 */ u8 strongLeft : 1;
+    /* 0x00 */ u8 strongRight : 1;
+    /* 0x00 */ u8 bit2 : 2;
+    /* 0x00 */ u8 unused : 2;
+    /* 0x00 */ u8 usesHeadsetPanEffects : 1;
+    /* 0x00 */ u8 stereoHeadsetEffects : 1;
+#endif
 } StereoData; // size = 0x1
 
 typedef union {
@@ -440,10 +459,17 @@ typedef struct SequenceChannel {
     /* 0x00 */ u8 unused : 1;
     union {
         struct {
+#if 0
             /* 0x01 */ u8 freqMod : 1;
             /* 0x01 */ u8 volume : 1;
             /* 0x01 */ u8 pan : 1;
-        } s;
+#else
+            u8 pad5 : 1;
+            /* 0x01 */ u8 pan : 1;
+            /* 0x01 */ u8 volume : 1;
+            /* 0x01 */ u8 freqMod : 1;
+#endif
+            } s;
         /* 0x01 */ u8 asByte;
     } changes;
     /* 0x02 */ u8 noteAllocPolicy;
@@ -774,24 +800,29 @@ typedef struct {
     /* 0x0 */ union {
         u32 opArgs;
         struct {
-//            u8 op;
-  //          u8 arg0;
-    //        u8 arg1;
-      //      u8 arg2;
-u8 arg2;
-u8 arg1;
-u8 arg0;
-u8 op;
-    };
+            u8 arg2;
+            u8 arg1;
+            u8 arg0;
+            u8 op;
+        };
     };
     /* 0x4 */ union {
         void* data;
         f32 asFloat;
         s32 asInt;
-        u16 asUShort;
-        s8 asSbyte;
-        u8 asUbyte;
         u32 asUInt;
+        struct {
+             u8 pad2[2];
+             u16 asUShort;
+         };
+         struct {
+             u8 pad1[3];
+             s8 asSbyte;
+         };
+         struct {
+             u8 pad0[3];
+             u8 asUbyte;
+         };
     };
 } AudioCmd; // size = 0x8
 
@@ -1098,7 +1129,7 @@ void AudioSeq_InitSequencePlayers(void);
 void AudioThread_ScheduleProcessCmds(void);
 u32 AudioThread_GetAsyncLoadStatus(u32*);
 u8* AudioThread_GetFontsForSequence(s32 seqId, u32* outNumFonts);
-bool AudioThread_ResetComplete(void);
+s32 AudioThread_ResetComplete(void);
 void AudioThread_ResetAudioHeap(s32);
 void AudioThread_Init(void);
 

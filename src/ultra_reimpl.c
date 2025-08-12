@@ -62,7 +62,7 @@ size_t timerpool_pos = 0;
 void ostimer_fire(void* arg) {
     SFTimer *sftimer = (SFTimer *)arg;
 
-    printf("timer fired :-D\n");
+ //   printf("timer fired :-D\n");
 
     if (sftimer->mq) {
         osSendMesg(sftimer->mq, sftimer->msg, OS_MESG_NOBLOCK);
@@ -92,7 +92,7 @@ int osSetTimer(OSTimer *timer, OSTime countdown, OSTime interval,
     nextTimer->mq = mq;
     nextTimer->value = countdown;
     nextTimer->interval = interval;
-printf("made a timer\n");   
+//printf("made a timer\n");   
     nextTimer->timer = oneshot_timer_create(ostimer_fire, (void*)nextTimer, countdown);
 oneshot_timer_reset(nextTimer->timer);
     return 0;
@@ -109,9 +109,15 @@ int osStopTimer(OSTimer *timer) {
     return 0;
 }
 
+// abuse this to hold a mutex
+//OSThread    *mtqueue;  
+
 void osCreateMesgQueue(OSMesgQueue* mq, OSMesg* msgBuf, s32 count) {
         printf("%s()\n",__func__);
 
+///    mutex_t *mq_mutex = (mutex_t *)malloc(sizeof(mutex_t));
+   // mutex_init(mq_mutex, MUTEX_TYPE_NORMAL);
+   // mq->mtqueue = (OSThread *)mq_mutex;
     mq->validCount = 0;
     mq->first = 0;
     mq->msgCount = count;
@@ -122,7 +128,10 @@ void osCreateMesgQueue(OSMesgQueue* mq, OSMesg* msgBuf, s32 count) {
 
 s32 osSendMesg(OSMesgQueue* mq, OSMesg msg, UNUSED s32 flag) {
     s32 index;
+    //mutex_lock((mutex_t *)mq->mtqueue);
+
     if (mq->validCount >= mq->msgCount) {
+      //  mutex_unlock((mutex_t *)mq->mtqueue);
         return -1;
     }
 
@@ -131,11 +140,15 @@ s32 osSendMesg(OSMesgQueue* mq, OSMesg msg, UNUSED s32 flag) {
     mq->msg[index] = msg;
     mq->validCount++;
 
+//    mutex_unlock((mutex_t *)mq->mtqueue);
     return 0;
 }
 
 s32 osRecvMesg(OSMesgQueue* mq, OSMesg* msg, UNUSED s32 flag) {
+  //  mutex_lock((mutex_t *)mq->mtqueue);
+
     if (mq->validCount == 0) {
+    //    mutex_unlock((mutex_t *)mq->mtqueue);
         return -1;
     }
 
@@ -146,6 +159,7 @@ s32 osRecvMesg(OSMesgQueue* mq, OSMesg* msg, UNUSED s32 flag) {
     mq->first = (mq->first + 1) % mq->msgCount;
     mq->validCount--;
 
+//    mutex_unlock((mutex_t *)mq->mtqueue);
     return 0;
 }
 

@@ -1,8 +1,6 @@
 #include "n64sys.h"
 #include "sf64audio_provisional.h"
 
-static const char devstr[] = "Audio:Envp: overflow  %f\n";
-
 void Audio_SequenceChannelProcessSound(SequenceChannel* channel, s32 updateVolume) {
     s32 i;
 
@@ -25,7 +23,7 @@ void Audio_SequenceChannelProcessSound(SequenceChannel* channel, s32 updateVolum
                 layer->noteFreqMod = layer->freqMod * channel->freqMod;
                 layer->noteVelocity = layer->velocitySquare * channel->appliedVolume;
                 layer->notePan = (channel->pan + (layer->pan * (0x80 - channel->panChannelWeight))) >> 7;
-                layer->ignoreDrumPan = false;
+                layer->ignoreDrumPan = 0;
             } else {
                 if (channel->changes.s.freqMod) {
                     layer->noteFreqMod = layer->freqMod * channel->freqMod;
@@ -47,7 +45,7 @@ void Audio_SequencePlayerProcessSound(SequencePlayer* seqplayer) {
 
     if (seqplayer->fadeTimer != 0) {
         seqplayer->fadeVolume += seqplayer->fadeVelocity;
-        seqplayer->recalculateVolume = true;
+        seqplayer->recalculateVolume = 1;
         if (seqplayer->fadeVolume > 1.0f) {
             seqplayer->fadeVolume = 1.0f;
         }
@@ -68,7 +66,7 @@ void Audio_SequencePlayerProcessSound(SequencePlayer* seqplayer) {
             Audio_SequenceChannelProcessSound(seqplayer->channels[i], seqplayer->recalculateVolume);
         }
     }
-    seqplayer->recalculateVolume = false;
+    seqplayer->recalculateVolume = 0;
 }
 
 f32 Audio_GetPortamentoFreqScale(Portamento* portamento) {

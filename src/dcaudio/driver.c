@@ -267,7 +267,7 @@ static void audio_dc_play(uint8_t *buf, size_t len) {
     size_t ring_data_available = cb_get_used();
     size_t written = cb_write_data(buf, len);
 
-    if ((!audio_started) && (ring_data_available > ((3 * SND_STREAM_BUFFER_MAX / 8)))) {
+    if ((!audio_started) && (ring_data_available > ((5 * SND_STREAM_BUFFER_MAX / 32)))) {
         audio_started = true;
         printf("started it\n");
         snd_stream_start(shnd, DC_AUDIO_FREQUENCY, DC_STEREO_AUDIO);

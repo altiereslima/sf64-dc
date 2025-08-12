@@ -27,7 +27,7 @@ s32 Timer_CreateTask(u64 time, TimerAction action, s32* address, s32 value) {
 }
 
 void Timer_Increment(s32* address, s32 value) {
-    printf("ran timer increment\n");
+//    printf("ran timer increment\n");
     *address += value;
 }
 

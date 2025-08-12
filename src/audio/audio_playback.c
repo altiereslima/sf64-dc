@@ -1,37 +1,8 @@
 #include "n64sys.h"
 #include "sf64audio_provisional.h"
 
-static const char devstr00[] = "Audio: setvol: volume minus %f\n";
-static const char devstr01[] = "Audio: setvol: volume overflow %f\n";
-static const char devstr02[] = "Audio: setpitch: pitch zero or minus %f\n";
-static const char devstr03[] = "Audio: voiceman: No bank error %d\n";
-static const char devstr04[] = "Audio: voiceman: progNo. overflow %d,%d\n";
-static const char devstr05[] = "ptr2 %x\n";
-static const char devstr06[] = "Audio: voiceman: progNo. undefined %d,%d\n";
-static const char devstr07[] = "Audio: voiceman: No bank error %d\n";
-static const char devstr08[] = "Audio: voiceman: Percussion Overflow %d,%d\n";
-static const char devstr09[] = "Audio: voiceman: Percussion table pointer (bank %d) is irregular %x.\n";
-static const char devstr10[] = "Audio: voiceman: Percpointer NULL %d,%d\n";
-static const char devstr11[] = "--4 %x\n";
-static const char devstr12[] = "----------------------Double-Error CH: %x %f\n";
-static const char devstr13[] = "----------------------Double-Error NT: %x\n";
-static const char devstr14[] = "CAUTION:SUB IS SEPARATED FROM GROUP\n";
-static const char devstr15[] = "CAUTION:PAUSE EMERGENCY\n";
-static const char devstr16[] = "Error:Wait Track disappear\n";
-static const char devstr17[] = "NoteOff Comes during wait release %x (note %x)\n";
-static const char devstr18[] = "Slow Release Batting\n";
 
 u8 sSamplesPerWavePeriod[] = { 64, 32, 16, 8 };
-
-static const char devstr19[] = "Audio:Wavemem: Bad voiceno (%d)\n";
-static const char devstr20[] = "Audio: C-Alloc : Dealloc voice is NULL\n";
-static const char devstr21[] = "Alloc Error:Dim voice-Alloc %d";
-static const char devstr22[] = "Error:Same List Add\n";
-static const char devstr23[] = "Already Cut\n";
-static const char devstr24[] = "Audio: C-Alloc : lowerPrio is NULL\n";
-static const char devstr25[] = "Intterupt UseStop %d (Kill %d)\n";
-static const char devstr26[] = "Intterupt RelWait %d (Kill %d)\n";
-static const char devstr27[] = "Drop Voice (Prio %x)\n";
 
 void Audio_NoteSetResamplingRate(Note* note, f32);
 void Audio_SeqLayerNoteRelease(SequenceLayer* layer);
@@ -66,25 +37,25 @@ void Audio_InitNoteSub(Note* note, NoteAttributes* noteAttr) {
         }
         noteSub->rightDelaySize = gHaasEffectDelaySizes[var_a0];
         noteSub->leftDelaySize = gHaasEffectDelaySizes[ARRAY_COUNT(gHaasEffectDelaySizes) - 1 - var_a0];
-        noteSub->bitField0.stereoStrongRight = false;
-        noteSub->bitField0.stereoStrongLeft = false;
-        noteSub->bitField0.usesHeadsetPanEffects = true;
+        noteSub->bitField0.stereoStrongRight = 0;
+        noteSub->bitField0.stereoStrongLeft = 0;
+        noteSub->bitField0.usesHeadsetPanEffects = 1;
 
         panVolumeLeft = gHeadsetPanVolume[pan];
         pamVolumeRight = gHeadsetPanVolume[ARRAY_COUNT(gHeadsetPanVolume) - 1 - pan];
     } else if (noteSub->bitField0.stereoHeadsetEffects && (gAudioSoundMode == SOUNDMODE_STEREO)) {
         noteSub->leftDelaySize = 0;
         noteSub->rightDelaySize = 0;
-        noteSub->bitField0.usesHeadsetPanEffects = false;
+        noteSub->bitField0.usesHeadsetPanEffects = 0;
 
         panVolumeLeft = gStereoPanVolume[pan];
         pamVolumeRight = gStereoPanVolume[ARRAY_COUNT(gStereoPanVolume) - 1 - pan];
-        strongRight = false;
-        strongLeft = false;
+        strongRight = 0;
+        strongLeft = 0;
         if (pan < 32) {
-            strongLeft = true;
+            strongLeft = 1;
         } else if (pan > 96) {
-            strongRight = true;
+            strongRight = 1;
         }
         noteSub->bitField0.stereoStrongRight = strongRight;
         noteSub->bitField0.stereoStrongLeft = strongLeft;
@@ -122,11 +93,11 @@ void Audio_InitNoteSub(Note* note, NoteAttributes* noteAttr) {
     noteSub->gain = noteAttr->gain;
     if (noteSub->reverb != reverb) {
         noteSub->reverb = reverb;
-        noteSub->bitField0.unused = true;
+        noteSub->bitField0.unused = 1;
     } else if (noteSub->bitField0.needsInit) {
-        noteSub->bitField0.unused = true;
+        noteSub->bitField0.unused = 1;
     } else {
-        noteSub->bitField0.unused = false;
+        noteSub->bitField0.unused = 0;
     }
 }
 
@@ -135,10 +106,10 @@ void Audio_NoteSetResamplingRate(Note* note, f32 resamplingRateInput) {
     f32 resamplingRate;
 
     if (resamplingRateInput < 2.0f) {
-        noteSub->bitField1.hasTwoParts = false;
+        noteSub->bitField1.hasTwoParts = 0;
         resamplingRate = CLAMP_MAX(resamplingRateInput, 1.99998f);
     } else {
-        noteSub->bitField1.hasTwoParts = true;
+        noteSub->bitField1.hasTwoParts = 1;
         if (resamplingRateInput > 3.99996f) {
             resamplingRate = 1.99998f;
         } else {
@@ -218,11 +189,11 @@ void Audio_NoteInit(Note* note) {
 }
 
 void Audio_NoteDisable(Note* note) {
-    if (note->noteSubEu.bitField0.needsInit == true) {
-        note->noteSubEu.bitField0.needsInit = false;
+    if (note->noteSubEu.bitField0.needsInit == 1) {
+        note->noteSubEu.bitField0.needsInit = 0;
     }
     note->playbackState.priority = 0;
-    note->noteSubEu.bitField0.enabled = false;
+    note->noteSubEu.bitField0.enabled = 0;
     note->playbackState.unk_04 = 0;
     note->playbackState.parentLayer = NO_LAYER;
     note->playbackState.prevParentLayer = NO_LAYER;
@@ -248,9 +219,9 @@ void Audio_ProcessNotes(void) {
 
         playbackState = &note->playbackState;
         if ((playbackState->parentLayer != NO_LAYER)) {
-            if ((u32) playbackState->parentLayer < 0x7FFFFFFF) {
-                continue;
-            }
+//            if ((u32) playbackState->parentLayer < 0x8c010000) {
+//                continue;
+//            }
 
             if ((note != playbackState->parentLayer->note) && (playbackState->unk_04 == 0)) {
                 playbackState->adsr.action.asByte |= 0x10;
@@ -284,7 +255,7 @@ void Audio_ProcessNotes(void) {
     out:
 
         if (playbackState->priority != 0) {
-            if (1) {}
+//            if (1) {}
             noteSub = &note->noteSubEu;
             if ((playbackState->unk_04 > 0) || noteSub->bitField0.finished) {
                 if ((playbackState->adsr.state == 0) || noteSub->bitField0.finished) {
@@ -526,7 +497,7 @@ void Audio_NotePoolClear(NotePool* pool) {
                 break;
         }
 
-        while (true) {
+        while (1) {
             nextPoolItem = poolItem->next;
             if ((nextPoolItem == poolItem) || (nextPoolItem == NULL)) {
                 break;
@@ -608,7 +579,7 @@ Note* Audio_FindNodeWithPrioLessThan(AudioListItem* item, s32 priority) {
         return NULL;
     }
     priorityItem = nextItem;
-    for (nextItem; nextItem != item; nextItem = nextItem->next) {
+    for (/* nextItem */; nextItem != item; nextItem = nextItem->next) {
         if (((Note*) nextItem->u.value)->playbackState.priority <=
             ((Note*) priorityItem->u.value)->playbackState.priority) {
             priorityItem = nextItem;
@@ -647,9 +618,9 @@ void Audio_NoteInitForLayer(Note* note, SequenceLayer* layer) {
     }
     noteSub->waveSampleAddr = (s16*) layer->tunedSample;
     if (var_a2 >= 128) {
-        noteSub->bitField1.isSyntheticWave = true;
+        noteSub->bitField1.isSyntheticWave = 1;
     } else {
-        noteSub->bitField1.isSyntheticWave = false;
+        noteSub->bitField1.isSyntheticWave = 0;
     }
     if (noteSub->bitField1.isSyntheticWave) {
         Audio_BuildSyntheticWave(note, layer, var_a2);

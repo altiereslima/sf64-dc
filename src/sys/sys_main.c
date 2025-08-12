@@ -152,7 +152,8 @@ void *Audio_ThreadEntry(void* arg0) {
 //printf("%s()\n", __func__);
 inited = 1;
 while(1) {
-    thd_pass();
+thd_sleep(60000);
+//    thd_pass();
 }
     #if 0
     task = AudioThread_CreateTask();
@@ -268,6 +269,7 @@ void *SerialInterface_ThreadEntry(void* arg0) {
 
     Controller_Init();
     while (true) {
+        #if 0
 //        printf("z");
         //MQ_WAIT_FOR_MESG(&gSerialThreadMesgQueue, &sp34);
 if(MQ_GET_MESG(&gSerialThreadMesgQueue, &sp34)) {
@@ -286,7 +288,8 @@ if(MQ_GET_MESG(&gSerialThreadMesgQueue, &sp34)) {
                 break;
         }
     }
-thd_pass();
+    #endif
+thd_sleep(60000);
 }
     return NULL;
 }
@@ -306,107 +309,6 @@ Timer_CompleteTask(sp24);
 thd_pass();
 }
 
-    return NULL;
-}
-
-void *Graphics_ThreadEntry(void* arg0) {
-    u8 i;
-    u8 visPerFrame;
-    u8 validVIsPerFrame;
-//printf("%s()\n", __func__);
-   gfx_init(wm_api, rendering_api, "Star Fox 64", false);
-
-   _AudioInit();
-    AudioLoad_Init();
-    Audio_InitSounds();
-    vblank_handler_add(&vblfunc, NULL);
-
-// #define MEMTEST
-#if defined(MEMTEST)
-    for(int mi=0;mi<16*1048576;mi+=65536) {
-        void *test_m = malloc(mi);
-        if (test_m != NULL) {
-            free(test_m);
-            test_m = NULL;
-            continue;
-        } else {
-            int bi = mi - 65536;
-            for (; bi < 16 * 1048576; bi++) {
-                test_m = malloc(bi);
-                if (test_m != NULL) {
-                    free(test_m);
-                    test_m = NULL;
-                    continue;
-                } else {
-                    printf("free ram for malloc: %d\n", bi);
-                    goto run_game_loop;
-                }
-            }
-        }
-    }
-run_game_loop:
-#endif
-    Game_Initialize();
-    osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_READ_CONTROLLER, OS_MESG_NOBLOCK);
-    Graphics_InitializeTask(gSysFrameCount);
-    {
-//        gSPSegment(gUnkDisp1++, 0, 0);
-        gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
-        Game_Update();
-        gSPEndDisplayList(gUnkDisp1++);
-        gSPEndDisplayList(gUnkDisp2++);
-        gSPDisplayList(gMasterDisp++, gGfxPool->unkDL2);
-  //      gDPFullSync(gMasterDisp++);
-        gSPEndDisplayList(gMasterDisp++);
-    }
-    Graphics_SetTask();
-    while (true) {
-//                printf("x");
-gfx_start_frame();
-        gSysFrameCount++;
-        Graphics_InitializeTask(gSysFrameCount);
-//        MQ_WAIT_FOR_MESG(&gControllerMesgQueue, NULL);
-//        osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_RUMBLE, OS_MESG_NOBLOCK);
-        Controller_UpdateInput();
-        Controller_Rumble();
-    //    osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_READ_CONTROLLER, OS_MESG_NOBLOCK);
-      //  if (gControllerPress[3].button & U_JPAD) {
-        //    Main_SetVIMode();
-        //}
-        {
-            gSPSegment(gUnkDisp1++, 0, 0);
-            gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
-            Game_Update();
-//            printf("did yo uget out\n");
-//            if (gStartNMI == 1) {
-//                Graphics_NMIWipe();
-  //          }
-            gSPEndDisplayList(gUnkDisp1++);
-            gSPEndDisplayList(gUnkDisp2++);
-            gSPDisplayList(gMasterDisp++, gGfxPool->unkDL2);
-            gDPFullSync(gMasterDisp++);
-            gSPEndDisplayList(gMasterDisp++);
-        }
-//        MQ_WAIT_FOR_MESG(&gGfxTaskMesgQueue, NULL);
-
-        Graphics_SetTask();
-
-        if (!gFillScreen) {
-////            osViSwapBuffer(&gFrameBuffers[(gSysFrameCount - 1) % 3]);
-        }
-
-    //    Fault_SetFrameBuffer(&gFrameBuffers[(gSysFrameCount - 1) % 3], SCREEN_WIDTH, 16);
-
-        visPerFrame = MIN(gVIsPerFrame, 4);
-        validVIsPerFrame = MAX(visPerFrame, gGfxVImesgQueue.validCount + 1);
-        for (i = 0; i < validVIsPerFrame; i += 1) { // Can't be ++
-      //      MQ_WAIT_FOR_MESG(&gGfxVImesgQueue, NULL);
-        }
-
-        Audio_Update();
-gfx_end_frame();     
-thd_pass();
-    }
     return NULL;
 }
 
@@ -565,16 +467,7 @@ void Main_ThreadEntry(void* arg0) {
 	main_attr3.prio = 11;
 	main_attr3.label = "SerialInterface";
     thd_create_ex(&main_attr3, &SerialInterface_ThreadEntry, arg0);
-#if 0
-    kthread_attr_t main_attr;
-    main_attr.create_detached = 1;
-	main_attr.stack_size = 32768;
-	main_attr.stack_ptr = NULL;
-	main_attr.prio = 11;
-	main_attr.label = "Graphics";
-    thd_create_ex(&main_attr, &Graphics_ThreadEntry, arg0);
-#endif
-    #if 1
+
     kthread_attr_t main_attr2;
     main_attr2.create_detached = 1;
 	main_attr2.stack_size = 32768;
@@ -582,7 +475,6 @@ void Main_ThreadEntry(void* arg0) {
 	main_attr2.prio = 11;
 	main_attr2.label = "Timer";
     thd_create_ex(&main_attr2, &Timer_ThreadEntry, arg0);
-#endif
 
     kthread_attr_t main_attr5;
     main_attr5.create_detached = 1;
@@ -592,66 +484,13 @@ void Main_ThreadEntry(void* arg0) {
 	main_attr5.label = "SPINNING";
     thd_create_ex(&main_attr5, &SPINNING_THREAD, arg0);
 
-
-#if 0
-    osCreateThread(&gAudioThread, THREAD_ID_AUDIO, Audio_ThreadEntry, arg0,
-                   gAudioThreadStack + sizeof(gAudioThreadStack), 80);
-    osStartThread(&gAudioThread);
-    osCreateThread(&gGraphicsThread, THREAD_ID_GRAPHICS, Graphics_ThreadEntry, arg0,
-                   gGraphicsThreadStack + sizeof(gGraphicsThreadStack), 40);
-    osStartThread(&gGraphicsThread);
-    osCreateThread(&gTimerThread, THREAD_ID_TIMER, Timer_ThreadEntry, arg0,
-                   gTimerThreadStack + sizeof(gTimerThreadStack), 60);
-    osStartThread(&gTimerThread);
-    osCreateThread(&gSerialThread, THREAD_ID_SERIAL, SerialInterface_ThreadEntry, arg0,
-                   gSerialThreadStack + sizeof(gSerialThreadStack), 20);
-    osStartThread(&gSerialThread);
-#endif
-
     Main_InitMesgQueues();
-/*     kthread_attr_t main_attr4;
-    main_attr4.create_detached = 1;
-	main_attr4.stack_size = 32768;
-	main_attr4.stack_ptr = NULL;
-	main_attr4.prio = 11;
-	main_attr4.label = "Audio";
-    thd_create_ex(&main_attr4, &Audio_ThreadEntry, arg0); */
 
-#if 0
-    while (true) {
-//        printf(".");
-//        MQ_WAIT_FOR_MESG(&gMainThreadMesgQueue, &osMesg);
-        if(MQ_GET_MESG(&gMainThreadMesgQueue, &osMesg)) {
-        mesg = (u32) osMesg;
 
-        switch (mesg) {
-            case EVENT_MESG_VI:
-                osSendMesg(&gAudioVImesgQueue, (OSMesg) EVENT_MESG_VI, OS_MESG_NOBLOCK);
-                osSendMesg(&gGfxVImesgQueue, (OSMesg) EVENT_MESG_VI, OS_MESG_NOBLOCK);
-                Main_GetNewTasks();
-                break;
-            case EVENT_MESG_SP:
-                Main_HandleRSP();
-                break;
-            case EVENT_MESG_DP:
-                Main_HandleRDP();
-                break;
-            case EVENT_MESG_PRENMI:
-                gStartNMI = 1;
-                break;
-        }
-        if (gStopTasks == 0) {
-            Main_StartNextTask();
-        }
-    }
-    thd_pass();
-    }
-#endif
 {
     u8 i;
     u8 visPerFrame;
     u8 validVIsPerFrame;
-//printf("%s()\n", __func__);
    gfx_init(wm_api, rendering_api, "Star Fox 64", false);
 
    _AudioInit();
@@ -659,58 +498,24 @@ void Main_ThreadEntry(void* arg0) {
     Audio_InitSounds();
     vblank_handler_add(&vblfunc, NULL);
 
-// #define MEMTEST
-#if defined(MEMTEST)
-    for(int mi=0;mi<16*1048576;mi+=65536) {
-        void *test_m = malloc(mi);
-        if (test_m != NULL) {
-            free(test_m);
-            test_m = NULL;
-            continue;
-        } else {
-            int bi = mi - 65536;
-            for (; bi < 16 * 1048576; bi++) {
-                test_m = malloc(bi);
-                if (test_m != NULL) {
-                    free(test_m);
-                    test_m = NULL;
-                    continue;
-                } else {
-                    printf("free ram for malloc: %d\n", bi);
-                    goto run_game_loop;
-                }
-            }
-        }
-    }
-run_game_loop:
-#endif
     Game_Initialize();
     osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_READ_CONTROLLER, OS_MESG_NOBLOCK);
     Graphics_InitializeTask(gSysFrameCount);
     {
-//        gSPSegment(gUnkDisp1++, 0, 0);
         gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
         Game_Update();
         gSPEndDisplayList(gUnkDisp1++);
         gSPEndDisplayList(gUnkDisp2++);
         gSPDisplayList(gMasterDisp++, gGfxPool->unkDL2);
-  //      gDPFullSync(gMasterDisp++);
         gSPEndDisplayList(gMasterDisp++);
     }
     Graphics_SetTask();
     while (true) {
-//                printf("x");
 gfx_start_frame();
         gSysFrameCount++;
         Graphics_InitializeTask(gSysFrameCount);
-//        MQ_WAIT_FOR_MESG(&gControllerMesgQueue, NULL);
-//        osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_RUMBLE, OS_MESG_NOBLOCK);
         Controller_UpdateInput();
         Controller_Rumble();
-    //    osSendMesg(&gSerialThreadMesgQueue, (OSMesg) SI_READ_CONTROLLER, OS_MESG_NOBLOCK);
-      //  if (gControllerPress[3].button & U_JPAD) {
-        //    Main_SetVIMode();
-        //}
         {
             gSPSegment(gUnkDisp1++, 0, 0);
             gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
@@ -765,6 +570,29 @@ Main_ThreadEntry(NULL);
 
 extern void AudioLoad_LoadFiles(void);
 
+typedef struct {                                  // Little Endian
+    /* 0x00 */ uint8_t strongLeft : 1;            // 0000 0001
+    /* 0x00 */ uint8_t strongRight : 1;           // 0000 0010
+    /* 0x00 */ uint8_t bit2 : 2;                  // 0000 0100
+    /* 0x00 */ uint8_t unused : 2;                // 0001 0000
+    /* 0x00 */ uint8_t usesHeadsetPanEffects : 1; // 0100 0000
+    /* 0x00 */ uint8_t stereoHeadsetEffects : 1;  // 1000 0000
+} StereoDataTest;
+
+typedef union {
+    StereoDataTest data;
+    uint8_t raw;
+} StereoUnionTest;
+
+void testBits(void) {
+    StereoUnionTest test;
+
+    test.raw = 0; // Clear all bits
+    test.data.stereoHeadsetEffects = 1;
+
+    printf("Raw byte value: 0x%08X\n", test.raw);
+}
+
 //void bootproc(void) {
 int main(int argc, char **argv) {
     //RdRam_CheckIPL3();
@@ -773,7 +601,8 @@ int main(int argc, char **argv) {
 //    ISViewer_Init();
 //#endif
 //printf("%s(%d, %08x)\n", __func__, argc, argv);
-
+//testBits();
+//exit(0);
     FILE* fntest = fopen("/pc/sf_data/ast_logo.bin", "rb");
     if (NULL == fntest) {
         fntest = fopen("/cd/sf_data/ast_logo.bin", "rb");
@@ -835,9 +664,9 @@ irq_disable();
                                               SAMPLES_HIGH);
   //      }
         AudioThread_CreateNextAudioBuffer(audio_buffer + (SAMPLES_HIGH * 2), SAMPLES_HIGH);
+irq_enable();
 
         audio_api->play((u8 *)audio_buffer, (SAMPLES_HIGH * 2 * 2 * 2));//  * AUDIO_FRAMES_PER_UPDATE));
-irq_enable();
         thd_pass();
     }
 
