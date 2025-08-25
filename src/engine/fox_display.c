@@ -621,10 +621,12 @@ void Display_Arwing_Skel(ArwingInfo* arwing) {
     if ((gGameState == GSTATE_PLAY) && (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO) &&
         (gCurrentLevel == LEVEL_CORNERIA)) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 120);
+#if 1
     gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
     gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                       TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-   //     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 120);
+#endif
+                      //     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 120);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
 
@@ -637,10 +639,13 @@ void Display_Arwing_Skel(ArwingInfo* arwing) {
     } else {
 //        RCP_SetupDL_46();
       gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 140);
-    gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+#if 1
+//jnmartin84
+      gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
     gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                       TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-//      gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
+#endif
+                      //      gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
     }

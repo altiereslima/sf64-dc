@@ -173,6 +173,7 @@ void Controller_Init(void) {
 u16 ucheld;
 extern char *fnpre;
 int shader_debug_toggle = 0;
+int cc_debug_toggle = 0;
 #include <dc/maple/keyboard.h>
 
 void Map_Main(void);
@@ -233,6 +234,10 @@ void Controller_UpdateInput(void) {
         ucheld |= U_CBUTTONS;//U_CBUTTONS;
     if (state->buttons & CONT_DPAD_RIGHT)
         ucheld |= R_CBUTTONS;//R_CBUTTONS;
+
+if(state->buttons & CONT_DPAD_DOWN) {
+    cc_debug_toggle = !cc_debug_toggle;
+}
 
     sNextController[i].stick_x = ((float)stickH/127)*80;
         sNextController[i].stick_y = ((float)stickV/127)*80;

@@ -247,6 +247,7 @@ void Ground_801B4AA8(s32* arg0, s32* arg1) {
                             actor.obj.rot.x = var_s2->unk_10 + RAND_FLOAT(var_s2->unk_10) * 0.25f;
                             actor.obj.rot.z = 2.0f * actor.obj.rot.x; // Should this have been obj.rot.y?
                             actor.obj.rot.z = var_s2->unk_14 + RAND_FLOAT(var_s2->unk_14) * 0.25f;
+                            printf("%f %f %f\n",actor.obj.pos.x,actor.obj.rot.x,actor.obj.rot.z );
                             Ground_801B49D0(&actor);
                         }
 
@@ -701,7 +702,7 @@ s32 Ground_801B6E20(f32 arg0, f32 arg1, f32* arg2, f32* arg3, f32* arg4) {
     *arg4 = 0.0f;
     *arg2 = 0.0f;
 
-    
+
     if (D_i5_801C5C14 & 1) {
         temp_fs2 = arg1 - D_i5_801C5C10 - D_i5_801C62D8.z;
         var_v1 = 0;

@@ -1810,12 +1810,88 @@ static void one_minus_env_plus_prim_setup_pre(void* vbo, size_t num_tris) {
     // upon exit, draws the original texture (usually karts, sometimes minimap or hud graphic)
 }
 
+
+static void add_a_color_pre(void* vbo, size_t num_tris, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    // when there IS a PRIM color to blend... it is time for:
+    // * advanced multi-pass sorcery *
+    dc_fast_t* tris = (dc_fast_t*) vbo;
+    // turn filtering off until final blend
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // modulate texture
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+     
+    glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glBlendFunc(GL_ONE, GL_ONE);
+    // render opaque black untextured polys first to reset bg alpha
+    
+    // store copy of original vertex colors
+    // AND
+    // set them to solid black with 255 alpha
+    // the actual color doesn't matter but the alpha does
+    for (size_t i = 0; i < 3 * num_tris; i++) {
+        backups[i] = tris[i].color.packed;
+        tris[i].color.array.r = 0;
+        tris[i].color.array.g = 0;
+        tris[i].color.array.b = 0;
+        tris[i].color.array.a = 255;
+    }
+    glDrawArrays(GL_TRIANGLES, 0, 3 * num_tris);
+    
+    glEnable(GL_TEXTURE_2D);
+    // generate a solid "inverse cutout" texture
+    // all opaque pixels become one solid color
+    // transparent stay transparent
+    glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * num_tris);
+    
+    // now that we've drawn the cutout version 
+    // set the vert colors to PRIM color  
+    for (size_t i = 0; i < 3 * num_tris; i++) {
+
+        tris[i].color.array.r = r;
+        tris[i].color.array.g = g;
+        tris[i].color.array.b = b;
+        tris[i].color.array.a = a;
+    }
+    // ensure depth test is on no matter what the RDP state said
+    glEnable(GL_DEPTH_TEST);
+    // and write to anything with equal depth
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_EQUAL);
+    // TURN OFF TEXTURING, THIS IS KEY TO SECOND PASS
+    glDisable(GL_TEXTURE_2D);
+    // blend solid PRIM color triangles with the cutout-textured triangles
+    glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+    // with blending, we now have a cutout-textured object colored with PRIM color
+    glDrawArrays(GL_TRIANGLES, 0, 3 * num_tris);
+
+    // restore the original vertex colors for final pass
+    for (size_t i = 0; i < 3 * num_tris; i++) {
+        tris[i].color.packed = backups[i];
+    }
+    // turn texture back on
+    glEnable(GL_TEXTURE_2D);
+    // ONE+ONE blend of colored cutout and original texture
+    glBlendFunc(GL_ONE, GL_ONE);
+    // restore original filtering state for final pass
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tmu_state[cur_shader->texture_ord[0]].min_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tmu_state[cur_shader->texture_ord[0]].mag_filter);
+    // upon exit, draws the original texture (usually karts, sometimes minimap or hud graphic)
+}
+
 static void one_minus_env_plus_prim_setup_post(void) {
     // restore default blend and depth funcs
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LESS);
 }
 
+static void add_a_color_post(void) {
+    // restore default blend and depth funcs
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LESS);
+}
 
 typedef enum LevelId {
     /* -1 */ LEVEL_UNK_M1 = -1,
@@ -1848,6 +1924,10 @@ extern int do_backdrop;
 static float depbump = 0.0f;
 extern int water_helen;
 extern int blend_fuck;
+
+extern uint8_t add_r,add_g,add_b,add_a;
+extern int need_to_add;
+
 static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     cur_buf = (void*) buf_vbo;
 
@@ -1855,7 +1935,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
     glEnable(GL_BLEND);
 
 if(cur_shader->shader_id == 0x00000a00/*  && gCurrentLevel == LEVEL_TITANIA */ && do_backdrop) {
-skybox_setup_pre();
+//skybox_setup_pre();
 }
     //return;
 
@@ -1868,8 +1948,8 @@ skybox_setup_pre();
 //    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     // fucked bc the targeting is hitting this shit
-    if (cur_shader->shader_id == 0x01a00a00)
-        over_skybox_setup_pre();
+//    if (cur_shader->shader_id == 0x01a00a00)
+  //      over_skybox_setup_pre();
 
 
 
@@ -1917,7 +1997,16 @@ glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
       //} 
    // }
 #endif
+
+if(need_to_add) {
+//    add_a_color_pre(cur_buf,buf_vbo_num_tris,add_r,add_g,add_b,add_a );
+}
+
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
+
+    if(need_to_add) {
+//add_a_color_post();
+    }
 //
 //if(water_helen) {
   //          glEnable(GL_BLEND);
@@ -1937,9 +2026,9 @@ if (is_zmode_decal)
         if (cur_shader->shader_id == 0x01045551)
         particle_blend_setup_post();
 
-        if(cur_shader->shader_id == 0x00000a00/*  && gCurrentLevel == LEVEL_TITANIA */ && do_backdrop)  {
-skybox_setup_post();
-}
+//        if(cur_shader->shader_id == 0x00000a00/*  && gCurrentLevel == LEVEL_TITANIA */ && do_backdrop)  {
+//skybox_setup_post();
+//}
 
 
             if (cur_shader->shader_id == 0x01a00a00)
@@ -2124,7 +2213,7 @@ memset(shaderlist,0,sizeof(shaderlist));
 shaderidx = 0;
 //    glClearColor((float)D_800DC5D0/255.0f, (float)D_800DC5D4/255.0f,
   //  (float)D_800DC5D8/255.0f,1.0f);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 1.0f/8.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
     newest_texture = 0;

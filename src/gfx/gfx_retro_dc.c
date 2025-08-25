@@ -1712,6 +1712,12 @@ static void __attribute__((noinline)) gfx_sp_vertex_light(size_t n_vertices, siz
             intensity = recip127 * shz_dot8f(vn->n[0], vn->n[1], vn->n[2], 0, rsp.current_lights_coeffs[n][0],
                                              rsp.current_lights_coeffs[n][1], rsp.current_lights_coeffs[n][2], 0);
 
+//			if (i == 0) {
+//				printf("%d: %f (%d,%d,%d)\n", n, intensity,rsp.current_lights[n].col[0],rsp.current_lights[n].col[1],rsp.current_lights[n].col[2]);
+//			}
+			if (isnan(intensity))
+				continue;
+
             if (intensity > 0.0f) {
                 r += intensity * rsp.current_lights[n].col[0];
                 g += intensity * rsp.current_lights[n].col[1];
@@ -1886,6 +1892,10 @@ static inline float approx_recip_sign(float v) {
 	return copysignf(_v, v);
 }
 
+
+int need_to_add = 0;
+uint8_t add_r,add_g,add_b,add_a;
+extern int cc_debug_toggle;
 int total_tri=0;
 int rej_tri=0;
 int nearz_tri = 0;
@@ -2124,8 +2134,13 @@ v = fmodf(v, (float)((1 << rdp.texture_tile.maskt) << 3));
         uint32_t color_g = 0;
         uint32_t color_b = 0;
         uint32_t color_a = 0;
-#if 0
 
+		uint32_t cc_rgb = rdp.combine_mode & 0xFFF;
+		uint32_t cc_alpha = (rdp.combine_mode >> 12) & 0xFFF;
+
+		//#if 1
+#if 1
+if (i == 0 && cc_debug_toggle) {
 //static inline uint32_t color_comb(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
 //	return color_comb_component(a) | (color_comb_component(b) << 3) | (color_comb_component(c) << 6) |
 //		   (color_comb_component(d) << 9);
@@ -2136,9 +2151,91 @@ v = fmodf(v, (float)((1 << rdp.texture_tile.maskt) << 3));
 		uint8_t cc_a,cc_b,cc_c,cc_d;
 		uint8_t cc_aa,cc_ba,cc_ca,cc_da;
 
-		uint32_t cc_rgb = rdp.combine_mode & 0xFFF;
-		uint32_t cc_alpha = (rdp.combine_mode >> 12) & 0xFFF;
+		#if 0
+need_to_add = 0;
+//0x00000a6b -> (G_CCMUX_PRIM - G_CCMUX_ENV) * 1 + G_CCMUX_ENV
+//	 0x000000c1 -> (1 - 0) * G_ACMUX_PRIM + 0
+switch(cc_rgb) {
+	case 0x200:
+		color_r = 255;
+		color_g = 255;
+		color_b = 255;
+		break;
+	case 0xc1:
+		color_r = rdp.prim_color.r;
+		color_g = rdp.prim_color.g;
+		color_b = rdp.prim_color.b;
+		break;
+	case 0x101:
+		// (texel - combined) * G_CCMUX_SHADE + combined. sorry , youre getting shade and thats it
+		color_r = v_arr[i]->color.r;
+		color_g = v_arr[i]->color.g;
+        color_b = v_arr[i]->color.b;
+		break;
+	case 0xa6b:
+		color_r = rdp.prim_color.r/*  - rdp.env_color.r */;
+		color_g = rdp.prim_color.g /* - rdp.env_color.g */;
+		color_b = rdp.prim_color.b /* - rdp.env_color.b */;
+		need_to_add = 1;
+		add_r = rdp.env_color.r;
+		add_g = rdp.env_color.g;
+		add_b = rdp.env_color.b;
+		break;
+	case 0x668:
+		//(0 - G_CCMUX_ENV) * 1 + G_CCMUX_PRIM
+		// lets try 255-env + prim
+		if (i == 0) {
+			gfx_flush();
+		}
+		need_to_add = 1;
+		color_r =  255 -  rdp.env_color.r + rdp.prim_color.r;
+		color_g =  255 -  rdp.env_color.g + rdp.prim_color.g;
+		color_b =  255 -  rdp.env_color.b + rdp.prim_color.b;
+		add_r = rdp.prim_color.r;
+		add_g = rdp.prim_color.g;
+		add_b = rdp.prim_color.b;
+		break;
+	default:
+if (cc_debug_toggle) {
+goto ccdebug;
+} else {
 
+buf_vbo[buf_num_vert].color.packed =
+                                PACK_ARGB8888(0,0,0,255);
+goto nextvert;
+								//		goto old_color_style;
+}
+								break;
+}
+switch(cc_alpha) {
+	case 0x800:
+		color_a = v_arr[i]->color.a;
+		add_a = color_a;
+		break;
+	case 0xc1:
+		color_a = rdp.prim_color.a;
+		break;
+	case 0x00000200:
+		color_a = 255;
+		break;
+	case 0x00000043:
+		// (G_CCMUX_PRIM - 0) * 1 + 0
+		color_a = rdp.prim_color.a;
+		break;
+	default:
+
+		color_a = 255;
+		break;
+
+	}
+
+
+buf_vbo[buf_num_vert].color.packed =
+                                PACK_ARGB8888(color_r,color_g,color_b,color_a);
+
+goto nextvert;
+#endif
+ccdebug:
 		cc_a = cc_rgb & 0x7;
 		cc_b = (cc_rgb>>3) & 0x7;
 		cc_c = (cc_rgb>>6) & 0x7;
@@ -2150,140 +2247,333 @@ v = fmodf(v, (float)((1 << rdp.texture_tile.maskt) << 3));
 		cc_da = (cc_alpha>>9) & 0x7;
 
 //		if (cc_a == G_CCMUX_1 && cc_b == G_CCMUX_ENVIRONMENT && cc_c == G_CCMUX_TEXEL0 && cc_d == G)
-
+printf("0x%08x -> (", cc_rgb);
 		uint32_t fake_r=0,fake_g=0,fake_b=0,fake_a=0;
 		switch (cc_a) {
 			case G_CCMUX_0:
-				fake_r = 0;
-				fake_g = 0;
-				fake_b = 0;
+				printf("G_CCMUX_0 - ");
+	//			fake_r = 0;
+	//			fake_g = 0;
+	//			fake_b = 0;
 				break;
 			case G_CCMUX_1:
-				fake_r = 255;
-				fake_g = 255;
-				fake_b = 255;
+				printf("G_CCMUX_1 - ");
+	//			fake_r = 255;
+	//			fake_g = 255;
+	//			fake_b = 255;
 				break;
 			case G_CCMUX_PRIMITIVE:
-				fake_r = pr;
-				fake_g = pg;
-				fake_b = pb;
+				printf("G_CCMUX_PRIM - ");
+	//			fake_r = pr;
+	//			fake_g = pg;
+	//			fake_b = pb;
 				break;
 			case G_CCMUX_ENVIRONMENT:
-				fake_r = er;
-				fake_g = eg;
-				fake_b = eb;
+				printf("G_CCMUX_ENV - ");
+	//			fake_r = er;
+	//			fake_g = eg;
+	//			fake_b = eb;
 				break;
 			case G_CCMUX_SHADE:
-				fake_r = v_arr[i]->color.r;
-				fake_g = v_arr[i]->color.g;
-                fake_b = v_arr[i]->color.b;
+				printf("G_CCMUX_SHADE - ");
+	//			fake_r = v_arr[i]->color.r;
+	//			fake_g = v_arr[i]->color.g;
+      //          fake_b = v_arr[i]->color.b;
 				break;
 			default:
-				fake_r = fake_g = fake_b = 255;
+			    printf("%d - ", cc_a);
+		//		fake_r = fake_g = fake_b = 255;
 				break;
 		}
 
 		switch (cc_b) {
 			case G_CCMUX_0:
-				fake_r -= 0;
+printf("G_CCMUX_0) * ");
+			/* 				fake_r -= 0;
 				fake_g -= 0;
 				fake_b -= 0;
-				break;
+ */				break;
 			case G_CCMUX_1:
-				fake_r -= 255;
+printf("G_CCMUX_1) * ");
+/* 				fake_r -= 255;
 				fake_g -= 255;
 				fake_b -= 255;
-				break;
+ */				break;
 			case G_CCMUX_PRIMITIVE:
-				fake_r -= pr;
+			printf("G_CCMUX_PRIM) * ");
+
+/* 				fake_r -= pr;
 				fake_g -= pg;
-				fake_b -= pb;
+				fake_b -= pb; */
 				break;
 			case G_CCMUX_ENVIRONMENT:
-				fake_r -= er;
+			printf("G_CCMUX_ENV) * ");
+
+/* 				fake_r -= er;
 				fake_g -= eg;
-				fake_b -= eb;
+				fake_b -= eb; */
 				break;
 			case G_CCMUX_SHADE:
-				fake_r -= v_arr[i]->color.r;
+			printf("G_CCMUX_SHADE) * ");
+/* 				fake_r -= v_arr[i]->color.r;
 				fake_g -= v_arr[i]->color.g;
-                fake_b -= v_arr[i]->color.b;
+                fake_b -= v_arr[i]->color.b; */
 				break;
 			default:
-				fake_r -= 0;
+						printf("%d) * ", cc_b);
+
+/* 				fake_r -= 0;
 				fake_g -= 0;
 				fake_b -= 0;
-				break;
+ */				break;
 		}
 
 		switch (cc_c) {
 			case G_CCMUX_0:
-				fake_r *= 0;
+						printf("G_CCMUX_0 + ");
+
+/* 				fake_r *= 0;
 				fake_g *= 0;
 				fake_b *= 0;
-				break;
+ */				break;
 			case G_CCMUX_1:
-				fake_r *= 255;
+						printf("G_CCMUX_1 + ");
+/* 				fake_r *= 255;
 				fake_g *= 255;
-				fake_b *= 255;
+				fake_b *= 255; */
 				break;
 			case G_CCMUX_PRIMITIVE:
-				fake_r *= pr;
+						printf("G_CCMUX_PRIM + ");
+
+			/* 				fake_r *= pr;
 				fake_g *= pg;
-				fake_b *= pb;
+				fake_b *= pb; */
 				break;
 			case G_CCMUX_ENVIRONMENT:
-				fake_r *= er;
+						printf("G_CCMUX_ENV + ");
+/* 				fake_r *= er;
 				fake_g *= eg;
-				fake_b *= eb;
+				fake_b *= eb; */
 				break;
 			case G_CCMUX_SHADE:
-				fake_r *= v_arr[i]->color.r;
+						printf("G_CCMUX_SHADE + ");
+/* 				fake_r *= v_arr[i]->color.r;
 				fake_g *= v_arr[i]->color.g;
-                fake_b *= v_arr[i]->color.b;
+                fake_b *= v_arr[i]->color.b; */
 				break;
 			default:
-				fake_r *= 255;
+						printf("%d + ", cc_c);
+/* 				fake_r *= 255;
 				fake_g *= 255;
-				fake_b *= 255;
+				fake_b *= 255; */
 				break;
 		}
 
-		fake_r >>= 8;
+/* 		fake_r >>= 8;
 		fake_g >>= 8;
-		fake_b >>= 8;
+		fake_b >>= 8; */
 
 		switch (cc_d) {
 			case G_CCMUX_0:
-				fake_r += 0;
+						printf("G_CCMUX_0\n");
+/* 				fake_r += 0;
 				fake_g += 0;
 				fake_b += 0;
-				break;
+ */				break;
 			case G_CCMUX_1:
-				fake_r += 255;
+						printf("G_CCMUX_1\n");
+/* 				fake_r += 255;
 				fake_g += 255;
 				fake_b += 255;
-				break;
+ */				break;
 			case G_CCMUX_PRIMITIVE:
-				fake_r += pr;
+						printf("G_CCMUX_PRIM\n");
+/* 				fake_r += pr;
 				fake_g += pg;
-				fake_b += pb;
+				fake_b += pb; */
 				break;
 			case G_CCMUX_ENVIRONMENT:
-				fake_r += er;
+						printf("G_CCMUX_ENV\n");
+/* 				fake_r += er;
 				fake_g += eg;
-				fake_b += eb;
+				fake_b += eb; */
 				break;
 			case G_CCMUX_SHADE:
-				fake_r += v_arr[i]->color.r;
+						printf("G_CCMUX_SHADE\n");
+/* 				fake_r += v_arr[i]->color.r;
 				fake_g += v_arr[i]->color.g;
-                fake_b += v_arr[i]->color.b;
+                fake_b += v_arr[i]->color.b; */
 				break;
 			default:
+						printf("%d\n", cc_d);
 				//
 				break;
 		}
 
+
+printf("\t 0x%08x -> (", cc_alpha);
+		switch (cc_aa) {
+			case G_ACMUX_0:
+				printf("G_ACMUX_0 - ");
+	//			fake_r = 0;
+	//			fake_g = 0;
+	//			fake_b = 0;
+				break;
+			case G_ACMUX_1:
+				printf("G_ACMUX_1 - ");
+	//			fake_r = 255;
+	//			fake_g = 255;
+	//			fake_b = 255;
+				break;
+			case G_ACMUX_PRIMITIVE:
+				printf("G_ACMUX_PRIM - ");
+	//			fake_r = pr;
+	//			fake_g = pg;
+	//			fake_b = pb;
+				break;
+			case G_ACMUX_ENVIRONMENT:
+				printf("G_ACMUX_ENV - ");
+	//			fake_r = er;
+	//			fake_g = eg;
+	//			fake_b = eb;
+				break;
+			case G_ACMUX_SHADE:
+				printf("G_ACMUX_SHADE - ");
+	//			fake_r = v_arr[i]->color.r;
+	//			fake_g = v_arr[i]->color.g;
+      //          fake_b = v_arr[i]->color.b;
+				break;
+			default:
+			    printf("%d - ", cc_aa);
+		//		fake_r = fake_g = fake_b = 255;
+				break;
+		}
+
+		switch (cc_ba) {
+			case G_ACMUX_0:
+printf("G_ACMUX_0) * ");
+			/* 				fake_r -= 0;
+				fake_g -= 0;
+				fake_b -= 0;
+ */				break;
+			case G_ACMUX_1:
+printf("G_ACMUX_1) * ");
+/* 				fake_r -= 255;
+				fake_g -= 255;
+				fake_b -= 255;
+ */				break;
+			case G_ACMUX_PRIMITIVE:
+			printf("G_ACMUX_PRIM) * ");
+
+/* 				fake_r -= pr;
+				fake_g -= pg;
+				fake_b -= pb; */
+				break;
+			case G_ACMUX_ENVIRONMENT:
+			printf("G_ACMUX_ENV) * ");
+
+/* 				fake_r -= er;
+				fake_g -= eg;
+				fake_b -= eb; */
+				break;
+			case G_ACMUX_SHADE:
+			printf("G_ACMUX_SHADE) * ");
+/* 				fake_r -= v_arr[i]->color.r;
+				fake_g -= v_arr[i]->color.g;
+                fake_b -= v_arr[i]->color.b; */
+				break;
+			default:
+						printf("%d) * ", cc_ba);
+
+/* 				fake_r -= 0;
+				fake_g -= 0;
+				fake_b -= 0;
+ */				break;
+		}
+
+		switch (cc_ca) {
+			case G_ACMUX_0:
+						printf("G_ACMUX_0 + ");
+
+/* 				fake_r *= 0;
+				fake_g *= 0;
+				fake_b *= 0;
+ */				break;
+			case G_ACMUX_1:
+						printf("G_ACMUX_1 + ");
+/* 				fake_r *= 255;
+				fake_g *= 255;
+				fake_b *= 255; */
+				break;
+			case G_ACMUX_PRIMITIVE:
+						printf("G_ACMUX_PRIM + ");
+
+			/* 				fake_r *= pr;
+				fake_g *= pg;
+				fake_b *= pb; */
+				break;
+			case G_ACMUX_ENVIRONMENT:
+						printf("G_ACMUX_ENV + ");
+/* 				fake_r *= er;
+				fake_g *= eg;
+				fake_b *= eb; */
+				break;
+			case G_ACMUX_SHADE:
+						printf("G_ACMUX_SHADE + ");
+/* 				fake_r *= v_arr[i]->color.r;
+				fake_g *= v_arr[i]->color.g;
+                fake_b *= v_arr[i]->color.b; */
+				break;
+			default:
+						printf("%d + ", cc_ca);
+/* 				fake_r *= 255;
+				fake_g *= 255;
+				fake_b *= 255; */
+				break;
+		}
+
+/* 		fake_r >>= 8;
+		fake_g >>= 8;
+		fake_b >>= 8; */
+
+		switch (cc_da) {
+			case G_ACMUX_0:
+						printf("G_ACMUX_0\n");
+/* 				fake_r += 0;
+				fake_g += 0;
+				fake_b += 0;
+ */				break;
+			case G_ACMUX_1:
+						printf("G_ACMUX_1\n");
+/* 				fake_r += 255;
+				fake_g += 255;
+				fake_b += 255;
+ */				break;
+			case G_ACMUX_PRIMITIVE:
+						printf("G_ACMUX_PRIM\n");
+/* 				fake_r += pr;
+				fake_g += pg;
+				fake_b += pb; */
+				break;
+			case G_ACMUX_ENVIRONMENT:
+						printf("G_ACMUX_ENV\n");
+/* 				fake_r += er;
+				fake_g += eg;
+				fake_b += eb; */
+				break;
+			case G_ACMUX_SHADE:
+						printf("G_ACMUX_SHADE\n");
+/* 				fake_r += v_arr[i]->color.r;
+				fake_g += v_arr[i]->color.g;
+                fake_b += v_arr[i]->color.b; */
+				break;
+			default:
+						printf("%d\n", cc_da);
+				//
+				break;
+		}
+
+#if 0
 		switch (cc_aa) {
 			case G_CCMUX_0:
 				fake_a = 0;
@@ -2396,16 +2686,36 @@ v = fmodf(v, (float)((1 << rdp.texture_tile.maskt) << 3));
 buf_vbo[buf_num_vert].color.packed =
                                 PACK_ARGB8888(fake_r,fake_g,fake_b,fake_a);
 #endif
+	}
+#endif
 		#if 1
-		if (lit) {
-			color_r = v_arr[i]->color.r + 96 > 255 ? 255 : v_arr[i]->color.r + 96;
-			color_g = v_arr[i]->color.g + 96 > 255 ? 255 : v_arr[i]->color.g + 96;
-			color_b = v_arr[i]->color.b + 96 > 255 ? 255 : v_arr[i]->color.b + 96;
+//old_color_style:	
+ 		if (lit) {
+			color_r = v_arr[i]->color.r;// + 64 > 255 ? 255 : v_arr[i]->color.r + 64;
+			color_g = v_arr[i]->color.g;// + 64 > 255 ? 255 : v_arr[i]->color.g + 64;
+			color_b = v_arr[i]->color.b;// + 64 > 255 ? 255 : v_arr[i]->color.b + 64;
 			color_a = 255;//v_arr[i]->color.a;
 			buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
-		} else 
-
-		if (num_inputs > 1) {
+		} //else 
+		if (cc_rgb == 0x668) {
+//(0 - G_CCMUX_ENV) * 1 + G_CCMUX_PRIM
+			color_r = rdp.prim_color.r - rdp.env_color.r;
+			color_g = rdp.prim_color.g - rdp.env_color.g;
+			color_b = rdp.prim_color.b - rdp.env_color.b;
+			color_a = rdp.prim_color.a;
+			buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
+		}
+#if 0
+		e;se if (cc_rgb == 0xa6b) {
+		//	(G_CCMUX_PRIM - G_CCMUX_ENV) * 1 + G_CCMUX_ENV
+			color_r = rdp.prim_color.r;// - rdp.env_color.r;
+			color_g = rdp.prim_color.g ;//- rdp.env_color.g;
+			color_b = rdp.prim_color.b ;//- rdp.env_color.b;
+			color_a = rdp.prim_color.a;
+			buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
+		}
+#endif
+		else if (num_inputs > 1) {
             int i0 = comb->shader_input_mapping[0][1] == CC_PRIM;
             int i2 = comb->shader_input_mapping[0][0] == CC_ENV;
 
@@ -2413,9 +2723,11 @@ buf_vbo[buf_num_vert].color.packed =
             int i4 = comb->shader_input_mapping[0][1] == CC_ENV;
 
             if (i0 && i2) {
+				if (!lit) {
                 color_r = 255 - rdp.env_color.r;
                 color_g = 255 - rdp.env_color.g;
                 color_b = 255 - rdp.env_color.b;
+				}
 				color_a = rdp.prim_color.a;
                 //color_a = 255; // 255 - rdp.env_color.a;
 #if 0
@@ -2454,26 +2766,31 @@ buf_vbo[buf_num_vert].color.packed =
                 color_b = (uint32_t) bn;
                 color_a = (uint32_t) an;
 #endif
+if(!lit)
                 buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
             } else if (i3 && i4) {
+				if (!lit) {
                 color_r = /* 255 - */ rdp.prim_color.r;
                 color_g = /* 255 - */ rdp.prim_color.g;
                 color_b = /* 255 - */ rdp.prim_color.b;
+				}
                 color_a = // 255 -
                     rdp.prim_color.a;
-
+if(!lit) {
                 color_r *= ((rdp.env_color.r + 255));
                 color_g *= ((rdp.env_color.g + 255));
                 color_b *= ((rdp.env_color.b + 255));
+}
                 color_a *= (rdp.env_color.a /* + 255 */);
-
+if (!lit) {
                 color_r >>= 8;// /= 255;
                 color_g >>= 8;// /= 255;
                 color_b >>= 8;// /= 255;
+}
                 color_a >>= 8;// /= 255;
 
                 uint32_t max_c = 255;
-                if (color_r > max_c)
+if (!lit) {                if (color_r > max_c)
                     max_c = color_r;
                 if (color_g > max_c)
                     max_c = color_g;
@@ -2497,9 +2814,9 @@ buf_vbo[buf_num_vert].color.packed =
                 color_g = (uint32_t) gn;
                 color_b = (uint32_t) bn;
                 color_a = (uint32_t) an;
-
                 buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
-            } else {
+}
+			} else {
                 goto thenextthing;
             }
         } else {
@@ -2514,8 +2831,9 @@ buf_vbo[buf_num_vert].color.packed =
 							//if (!k)	color_g = pg;
 							//if (!k)	color_b = pb;
 							//if (k)	color_r = pa;
-
-
+if(lit)
+							color_a = k ? rdp.prim_color.a : 255;
+else
 							buf_vbo[buf_num_vert].color.packed =
                                 PACK_ARGB8888(rdp.prim_color.r, rdp.prim_color.g, rdp.prim_color.b, k ? rdp.prim_color.a : 255);
                             break;
@@ -2524,10 +2842,16 @@ buf_vbo[buf_num_vert].color.packed =
 	//						if (!k)	color_g = v_arr[i]->color.g;
 	//						if (!k)	color_b = v_arr[i]->color.b;
 	//						if (k)	color_r = v_arr[i]->color.a;
+	if (lit)
+	color_a = k ? v_arr[i]->color.a : 255;
+	else
                         buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(v_arr[i]->color.r, v_arr[i]->color.g,
                                                                                v_arr[i]->color.b, k ? v_arr[i]->color.a : 255);
                             break;
                         case CC_ENV:
+						if (lit)
+						color_a =  k ? rdp.env_color.a : 255;
+						else 
                             buf_vbo[buf_num_vert].color.packed =
                                 PACK_ARGB8888(rdp.env_color.r, rdp.env_color.g, rdp.env_color.b, k ? rdp.env_color.a : 255);
   //						if (!k)	color_r = er;
@@ -2543,6 +2867,9 @@ buf_vbo[buf_num_vert].color.packed =
                             if (distance_frac > 1.0f)
                                 distance_frac = 1.0f;
                             const uint8_t frac = (uint8_t) (distance_frac * 255.0f);
+							if(lit)
+							color_a =  k ? frac : 255;
+							else
                             buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(frac, frac, frac, k ? frac : 255);
 //						if (!k)	color_r = frac;
 //							if (!k)	color_g = frac;
@@ -2552,6 +2879,9 @@ buf_vbo[buf_num_vert].color.packed =
 break;
                         }
                         default:
+						if (lit)
+						color_a = 255;
+						else
 //color_r = color_g = color_b = color_a = 255;
 						                            buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(0xff, 0xff, 0xff, 0xff);
                             // fix the alpha on the Nintendo logo model
@@ -2563,11 +2893,14 @@ break;
                     }
                 }
             }
-//			buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
 #endif
 //	buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(255,255,255,255);
         }
 #endif
+if(lit)
+			buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
+
+
 		nextvert:
 		buf_num_vert++;
         buf_vbo_len += sizeof(dc_fast_t);
@@ -2850,6 +3183,11 @@ static void  gfx_sp_movemem(uint8_t index, UNUSED uint8_t offset, const void* da
 		case G_MV_L0:
 		case G_MV_L1:
 		case G_MV_L2:
+		case G_MV_L3:
+		case G_MV_L4:
+		case G_MV_L5:
+		case G_MV_L6:
+		case G_MV_L7:
 			// NOTE: reads out of bounds if it is an ambient light
 			memcpy(rsp.current_lights + (index - G_MV_L0) / 2, data, sizeof(Light_t));
 			break;
