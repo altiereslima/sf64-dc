@@ -235,9 +235,9 @@ void Controller_UpdateInput(void) {
     if (state->buttons & CONT_DPAD_RIGHT)
         ucheld |= R_CBUTTONS;//R_CBUTTONS;
 
-if(state->buttons & CONT_DPAD_DOWN) {
-    cc_debug_toggle = !cc_debug_toggle;
-}
+//if(state->buttons & CONT_DPAD_DOWN) {
+  //  cc_debug_toggle = !cc_debug_toggle;
+//}
 
     sNextController[i].stick_x = ((float)stickH/127)*80;
         sNextController[i].stick_y = ((float)stickV/127)*80;

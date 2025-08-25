@@ -1948,8 +1948,8 @@ if(cur_shader->shader_id == 0x00000a00/*  && gCurrentLevel == LEVEL_TITANIA */ &
 //    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     // fucked bc the targeting is hitting this shit
-//    if (cur_shader->shader_id == 0x01a00a00)
-  //      over_skybox_setup_pre();
+    if (cur_shader->shader_id == 0x01a00a00)
+            over_skybox_setup_pre();
 
 
 
@@ -2213,7 +2213,7 @@ memset(shaderlist,0,sizeof(shaderlist));
 shaderidx = 0;
 //    glClearColor((float)D_800DC5D0/255.0f, (float)D_800DC5D4/255.0f,
   //  (float)D_800DC5D8/255.0f,1.0f);
-    glClearColor(0.0f, 0.0f, 1.0f/8.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
     newest_texture = 0;
