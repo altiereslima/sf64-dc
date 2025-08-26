@@ -138,8 +138,6 @@ OSThread sIdleThread;            // 80138E90
 u8 sIdleThreadStack[0x1000];     // 801390A0
 OSThread gMainThread;            // 8013A040
 u8 sMainThreadStack[0x1000];     // 8013A1F0
-OSThread gAudioThread;           // 8013B1F0
-u8 gAudioThreadStack[0x1000];    // 800DDAA0
 OSThread gGraphicsThread;        // 800DEAA0
 u8 gGraphicsThreadStack[0x1000]; // 800DEC50
 OSThread gTimerThread;           // 800DFC50
@@ -171,41 +169,6 @@ void Main_Initialize(void) {
     for (i = 0; i < ARRAY_COUNT(sNewGfxTasks); i += 1) {
         sNewGfxTasks[i] = NULL;
     }
-}
-
-void *Audio_ThreadEntry(void* arg0) {
-    SPTask* task;
-//printf("%s()\n", __func__);
-inited = 1;
-while(1) {
-thd_sleep(60000);
-//    thd_pass();
-}
-    #if 0
-    task = AudioThread_CreateTask();
-    if (task != NULL) {
-        task->mesgQueue = &gAudioTaskMesgQueue;
-        task->msg = (OSMesg) TASK_MESG_1;
-        osWritebackDCacheAll();
-        osSendMesg(&gTaskMesgQueue, task, OS_MESG_NOBLOCK);
-    }
-
-    while (true) {
-        task = AudioThread_CreateTask();
-        if (task != NULL) {
-            task->mesgQueue = &gAudioTaskMesgQueue;
-            task->msg = (OSMesg) TASK_MESG_1;
-            osWritebackDCacheAll();
-        }
-        MQ_GET_MESG(&gAudioTaskMesgQueue, NULL);
-
-        if (task != NULL) {
-            osSendMesg(&gTaskMesgQueue, task, OS_MESG_NOBLOCK);
-        }
-        MQ_WAIT_FOR_MESG(&gAudioVImesgQueue, NULL);
-    }
-#endif
-    return NULL;
 }
 
 volatile int called = 0;
@@ -585,7 +548,7 @@ void Idle_ThreadEntry(void* arg0) {
     Main_ThreadEntry(NULL);
     Fault_Init();
     osSetThreadPri(NULL, OS_PRIORITY_IDLE);
-    for (;;) {}
+    for (;;) {thd_sleep(60000);}
 }
 
 extern void AudioLoad_LoadFiles(void);
@@ -652,7 +615,7 @@ Main_Initialize();
    // osStartThread(&sIdleThread);
    Idle_ThreadEntry(NULL);
     while (1) {
-        thd_pass();
+        thd_sleep(60000);
     }
     return 0;
 }

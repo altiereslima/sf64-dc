@@ -1856,6 +1856,8 @@ void Effect_DrawAll(s32 arg0) {
     Effect* effect;
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_64);
+    //gDPSetCombineMode(gMasterDisp++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+
 
     for (i = 0, effect = &gEffects[0]; i < ARRAY_COUNT(gEffects); i++, effect++) {
         if (effect->obj.status >= OBJ_ACTIVE) {

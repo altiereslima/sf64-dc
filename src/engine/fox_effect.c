@@ -1445,7 +1445,7 @@ void Effect_Effect364_Draw(Effect364* this) {
     }
     //! DEBUG: Hold Z on controller 4 to set up a display list.
     if (!(gControllerHold[3].button & A_BUTTON)) {
-        gSPDisplayList(gMasterDisp++, D_BG_PLANET_2010A30);
+//        gSPDisplayList(gMasterDisp++, D_BG_PLANET_2010A30);
     }
     //! DEBUG: Hold Z on controller 4 to set up a display list.
     if (gControllerHold[3].button & Z_TRIG) {
@@ -2097,6 +2097,16 @@ void Effect_FireSmoke_Draw(EffectFireSmoke* this) {
     Graphics_SetScaleMtx(this->scale2);
 
     if (gLevelType == LEVELTYPE_PLANET) {
+        uint8_t r = D_800D184C[this->unk_4C].r;
+        uint8_t g = D_800D184C[this->unk_4C].g;
+        uint8_t b = D_800D184C[this->unk_4C].b;
+
+        if ((r > (g)) && (b > (g))) {
+            uint8_t tmp = g;
+            g = b;
+            b = tmp;            
+        }
+
         gDPSetPrimColor(gMasterDisp++, 0, 0, D_800D184C[this->unk_4C].r, D_800D184C[this->unk_4C].g,
                         D_800D184C[this->unk_4C].b, D_800D184C[this->unk_4C].a);
         scale = D_800D17F8[this->unk_4C] - 0.5f;
@@ -2112,7 +2122,6 @@ void Effect_FireSmoke_Draw(EffectFireSmoke* this) {
         Matrix_Scale(gGfxMatrix, 2.5f, 2.5f, 2.5f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
         gSPDisplayList(gMasterDisp++, D_800D18A0[this->unk_4C]);
-        gSPEffect342(gMasterDisp++);
     }
     gSPDisplayList(gMasterDisp++, D_800D18A0[this->unk_4C]);
 }

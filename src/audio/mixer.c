@@ -548,6 +548,7 @@ static inline int16_t clamp16(int32_t v) {
     return (int16_t) v;
 }
 
+#if 0
 void aClearBufferImpl(uint16_t addr, int nbytes) {
     memset(BUF_U8(addr), 0, ROUND_UP_16(nbytes));
 }
@@ -559,6 +560,19 @@ void aLoadBufferImpl(const void* source_addr, uint16_t dest_addr, uint16_t nbyte
 
 void aSaveBufferImpl(uint16_t source_addr, int16_t* dest_addr, uint16_t nbytes) {
     n64_memcpy((void *)dest_addr, (const void *)BUF_S16(source_addr), ROUND_DOWN_16(nbytes));
+}
+#endif
+void aClearBufferImpl(uint16_t addr, int nbytes) {
+    memset(BUF_U8(addr&~3), 0, ROUND_UP_16(nbytes));
+}   
+ 
+void aLoadBufferImpl(const void* source_addr, uint16_t dest_addr, uint16_t nbytes) {
+    n64_memcpy((void *)BUF_U8(dest_addr & ~3), source_addr, ROUND_DOWN_16(nbytes));
+}
+    
+    
+void aSaveBufferImpl(uint16_t source_addr, int16_t* dest_addr, uint16_t nbytes) {
+    n64_memcpy((void *)dest_addr, (const void *)BUF_S16(source_addr & ~3), ROUND_DOWN_16(nbytes));
 }
 
 void aLoadADPCMImpl(int num_entries_times_16, const int16_t* book_source_addr) {
@@ -597,6 +611,7 @@ void aSetBufferImpl(UNUSED uint8_t flags, uint16_t in, uint16_t out, uint16_t nb
     rspa.nbytes = nbytes;
 }
 
+#if 0
 void aInterleaveImpl(uint16_t left, uint16_t right) {
     int count = ROUND_UP_16(rspa.nbytes) / sizeof(int16_t) / 8;
     int16_t* l = BUF_S16(left);
@@ -661,7 +676,56 @@ void aInterleaveImpl(uint16_t left, uint16_t right) {
         --count;
     }
 }
+#else
+void aInterleaveImpl(uint16_t left, uint16_t right) {
+    int count = ROUND_UP_16(rspa.nbytes) / sizeof(int16_t) / 8;
+    int16_t* l = BUF_S16(left&~3);
+    int16_t* r = BUF_S16(right&~3);
+    int32_t* d = (int32_t*) (((uintptr_t) BUF_S16(rspa.out)) & ~3);
+    __builtin_prefetch(r);
+        
+    while (count > 0) {
+        __builtin_prefetch(l);
+        int32_t lr0 = ((uint16_t) *r++ << 16);
+        int32_t lr1 = ((uint16_t) *r++ << 16);
+        int32_t lr2 = ((uint16_t) *r++ << 16);
+        int32_t lr3 = ((uint16_t) *r++ << 16);
+        int32_t lr4 = ((uint16_t) *r++ << 16);
+        int32_t lr5 = ((uint16_t) *r++ << 16);
+        int32_t lr6 = ((uint16_t) *r++ << 16);
+        int32_t lr7 = ((uint16_t) *r++ << 16);
+    
+        __builtin_prefetch(r);
+    
+        lr0 |= ((int16_t) *l++ & 0xffff);
+        lr1 |= ((int16_t) *l++ & 0xffff);
+        lr2 |= ((int16_t) *l++ & 0xffff);
+        lr3 |= ((int16_t) *l++ & 0xffff);
+        lr4 |= ((int16_t) *l++ & 0xffff);
+        lr5 |= ((int16_t) *l++ & 0xffff);
+        lr6 |= ((int16_t) *l++ & 0xffff);
+        lr7 |= ((int16_t) *l++ & 0xffff);
+#if 1
+        asm volatile("" : : : "memory");
+#endif
+//printf("%08x %08x %08x %08x\n",lr0,lr1,lr2,lr3);
+        *d++ = lr0;
+        *d++ = lr1;
+        *d++ = lr2;
+        *d++ = lr3;
+        *d++ = lr4;
+        *d++ = lr5;
+        *d++ = lr6;
+        *d++ = lr7;
+        __builtin_prefetch(d);
+        
+        --count;
+    }
+}
 
+#endif
+
+#if 0
 void aDMEMMoveImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
     memmove(BUF_U8(out_addr), BUF_U8(in_addr), ROUND_UP_16(nbytes));
 }
@@ -669,6 +733,17 @@ void aDMEMMoveImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
 void aDMEMCopyImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
     n64_memcpy(BUF_U8(out_addr), BUF_U8(in_addr), ROUND_UP_16(nbytes));
 }
+#endif
+
+void aDMEMMoveImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
+    memmove(BUF_U8(out_addr&~3), BUF_U8(in_addr&~3), ROUND_UP_16(nbytes));
+}
+        
+void aDMEMCopyImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
+    n64_memcpy(BUF_U8(out_addr&~3), BUF_U8(in_addr&~3), ROUND_UP_16(nbytes));
+}
+        
+
 
 void aSetLoopImpl(ADPCM_STATE* adpcm_loop_state) {
     for (size_t i = 0; i < 16; i++) {
@@ -676,10 +751,12 @@ void aSetLoopImpl(ADPCM_STATE* adpcm_loop_state) {
     }
 }
 
+#if 0
 // https://fgiesen.wordpress.com/2024/10/23/zero-or-sign-extend/
 static inline int extend_nyb(int n) {
     return (n ^ 8) - 8;
 }
+#endif
 
 #include "sh4zam.h"
 
@@ -1322,46 +1399,57 @@ void aEnvMixerImpl(uint16_t in_addr, uint16_t n_samples, bool swap_reverb, bool 
     size_t n = ROUND_UP_16(n_samples);
 
     int dry_addr_start = wet_dry_addr & 0xFFFF;
+#if 0
     int wet_addr_start = wet_dry_addr >> 16;
-
+#endif
     // Note: max number of samples is 192 (192 * 2 = 384 bytes = 0x180)
     int16_t* dry[2] = { BUF_S16(dry_addr_start), BUF_S16(dry_addr_start + 0x180) };
+#if 0
     int16_t* wet[2] = { BUF_S16(wet_addr_start), BUF_S16(wet_addr_start + 0x180) };
+#endif
     uint16_t rates[2] = { rspa.rate[0], rspa.rate[1] };
     uint16_t vols[2] = { rspa.vol[0], rspa.vol[1] };
-
+#if 0
     uint16_t rate_wet = rspa.rate_wet;
     uint16_t vol_wet = rspa.vol_wet;
     int swapped[2] = { swap_reverb ? 1 : 0, swap_reverb ? 0 : 1 };
 
-#if 1
     // Account for haas effect
     int haas_addr_left = haas_temp_addr >> 16;
     int haas_addr_right = haas_temp_addr & 0xFFFF;
 #endif
     __builtin_prefetch(in);
 
-#if 1
+#if 0
     if (haas_addr_left) {
         dry[0] = BUF_S16(haas_addr_left);
     } else if (haas_addr_right) {
         dry[1] = BUF_S16(haas_addr_right);
     }
-#endif
+
     int16_t negs[2] = { neg_left ? 0 : 0xFFFF, neg_right ? 0 : 0xFFFF };
+#endif
+
     for (size_t i = 0; i < n; i+=8) {
         // printf("i %d\n",i);
         for (size_t k = 0; k < 8; k++) {
 
             int16_t sample = *in++;
             int16_t samples[2]; 
+#if 0
             samples[0] = (sample * vols[0] >> 16) ^ negs[0];
             samples[1] = (sample * vols[1] >> 16) ^ negs[1];
-
+#else
+            samples[0] = (sample * vols[0] >> 16);
+            samples[1] = (sample * vols[1] >> 16);
+#endif
             int32_t dsampl1 = *dry[0] + samples[0];
             int32_t dsampl2 = *dry[1] + samples[1];
+#if 0
             int32_t wsampl1 = *wet[0] + (samples[swapped[0]] * vol_wet >> 16);
             int32_t wsampl2 = *wet[1] + (samples[swapped[1]] * vol_wet >> 16);
+#endif
+
 #if 1
             asm volatile("" : : : "memory");
 #endif
@@ -1371,12 +1459,14 @@ void aEnvMixerImpl(uint16_t in_addr, uint16_t n_samples, bool swap_reverb, bool 
         __builtin_prefetch(in);
         vols[0] += rates[0];
         vols[1] += rates[1];
+#if 0
         vol_wet += rate_wet;
+#endif
     }
 }
 
 void aDMEMMove2Impl(uint8_t t, uint16_t in_addr, uint16_t out_addr, uint16_t count) {
-#if 1
+#if 0
     uint8_t* in = BUF_U8(in_addr);
     uint8_t* out = BUF_U8(out_addr);
     int nbytes = ROUND_UP_32(count);
@@ -1518,7 +1608,7 @@ void aDuplicateImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
         out += 128;
     } while (count-- > 0);
 }
-
+#if 0
 // this gets used
 void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
     int16_t* in = BUF_S16(in_addr);
@@ -1546,6 +1636,41 @@ void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
         n -= 8;
     } while (n > 0);
 }
+#else
+void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
+    uint32_t* in  = (uint32_t*)BUF_S16(in_addr&~3);  // two 16-bit samples per word
+    uint32_t* out = (uint32_t*)BUF_S16(out_addr&~3);
+    int n = ROUND_UP_8(n_samples);
+        
+    asm volatile("pref @%0" : : "r"(in) : "memory");
+        
+    do {
+        asm volatile("pref @%0" : : "r"(out) : "memory");
+        /* For 8 output samples:
+           read 8 words from in (16 samples), extract every other halfword,
+           write 4 packed words to out.
+         */
+        uint32_t w0 = *in++; // samples in[0],in[1]
+        uint32_t w1 = *in++; // samples in[2],in[3]
+        uint32_t w2 = *in++;
+        uint32_t w3 = *in++;
+        uint32_t w4 = *in++;
+        uint32_t w5 = *in++;
+        uint32_t w6 = *in++;
+        uint32_t w7 = *in++;
+        asm volatile("pref @%0" : : "r"(in) : "memory");
+    
+        /* Pack lower half-word from w0 and w1 -> out word0,
+           from w2 and w3 -> out word1, ...  */
+        *out++ = (w0 & 0xFFFF) | ((w1 & 0xFFFF) << 16);
+        *out++ = (w2 & 0xFFFF) | ((w3 & 0xFFFF) << 16);
+        *out++ = (w4 & 0xFFFF) | ((w5 & 0xFFFF) << 16);
+        *out++ = (w6 & 0xFFFF) | ((w7 & 0xFFFF) << 16);
+        
+        n -= 8;
+    } while (n > 0);
+}
+#endif
 
 void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
     int16_t* samples = BUF_S16(addr);
@@ -1581,6 +1706,7 @@ void aMixImpl(uint16_t count, int16_t gain, uint16_t in_addr, uint16_t out_addr)
     int i;
     int32_t sample;
 
+#if 0
     if (gain == -0x8000) {
         while (nbytes > 0) {
             for (i = 0; i < 16; i++) {
@@ -1599,6 +1725,16 @@ void aMixImpl(uint16_t count, int16_t gain, uint16_t in_addr, uint16_t out_addr)
 
         nbytes -= 16 * sizeof(int16_t);
     }
+#else
+while (nbytes > 0) {
+        for (i = 0; i < 16; i++) {
+            sample = *out + *in++;
+            *out++ = clamp16(sample);
+        }
+
+        nbytes -= 16 * sizeof(int16_t);
+    }
+#endif
 }
 
 #if 0

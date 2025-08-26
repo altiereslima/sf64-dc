@@ -721,11 +721,15 @@ void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8
     if (a != 0) {
         gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
-        gDPSetColorDither((*gfxPtr)++, G_CD_NOISE);
-        gDPSetAlphaDither((*gfxPtr)++, G_AD_NOISE);
-        gDPSetCycleType((*gfxPtr)++, G_CYC_1CYCLE);
-        gDPSetCombineMode((*gfxPtr)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-        gDPSetRenderMode((*gfxPtr)++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+//        gDPSetColorDither((*gfxPtr)++, G_CD_NOISE);
+  //      gDPSetAlphaDither((*gfxPtr)++, G_AD_NOISE);
+    //    gDPSetCycleType((*gfxPtr)++, G_CYC_1CYCLE);
+//        gDPSetCombineMode((*gfxPtr)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+    gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 0xFF);
+        gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+    gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+//        gDPSetRenderMode((*gfxPtr)++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
         gDPFillRectangle((*gfxPtr)++, ulx, uly, lrx, lry);
     }
 }

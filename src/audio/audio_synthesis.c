@@ -657,7 +657,7 @@ Acmd* AudioSynth_Update(Acmd* aList, s32* cmdCount, s16* aiBufStart, s32 aiBufLe
         } else {
             chunkLen = gAudioBufferParams.samplesPerTick;
         }
-#if 1
+#if 0
          for (j = 0; j < gNumSynthReverbs; j++) {
             if (gSynthReverbs[j].useReverb) {
                 AudioSynth_InitNextRingBuf(chunkLen, gAudioBufferParams.ticksPerUpdate - i, j);
@@ -677,7 +677,7 @@ Acmd* AudioSynth_Update(Acmd* aList, s32* cmdCount, s16* aiBufStart, s32 aiBufLe
         aiBufPtr += chunkLen;
     }
 
-#if 1
+#if 0
     for (j = 0; j < gNumSynthReverbs; j++) {
         if (gSynthReverbs[j].framesToIgnore != 0) {
             gSynthReverbs[j].framesToIgnore--;
@@ -766,6 +766,7 @@ Acmd* AudioSynth_DoOneAudioUpdate(s16* aiBuf, s32 aiBufLen, Acmd* aList, s32 upd
     s32 j;
 
     count = 0;
+#if 0
     if (gNumSynthReverbs == 0) {
         for (j = 0; j < gNumNotes; j++) {
             if (gNoteSubsEu[gNumNotes * updateIndex + j].bitField0.enabled) {
@@ -788,11 +789,17 @@ Acmd* AudioSynth_DoOneAudioUpdate(s16* aiBuf, s32 aiBufLen, Acmd* aList, s32 upd
             }
         }
     }
-
+#else
+    for (j = 0; j < gNumNotes; j++) {
+        if (gNoteSubsEu[gNumNotes * updateIndex + j].bitField0.enabled) {
+            sp84[count++] = j;
+        }
+    }
+#endif
     aClearBuffer(aList++, DMEM_LEFT_CH, DMEM_2CH_SIZE);
 
     j = 0;
-#if 1
+#if 0
      for (i = 0; i < gNumSynthReverbs; i++) {
         D_8014C1B2 = gSynthReverbs[i].useReverb;
         if (D_8014C1B2) {
@@ -938,7 +945,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                 numSamplesToLoadAdj = numSamplesToLoad;
             }
 
-            if ((/* __builtin_bswap32 */(bookSample->codec) == CODEC_ADPCM) && (currentBook != bookSample->book->book)) {
+            if ((bookSample->codec == CODEC_ADPCM) && (currentBook != bookSample->book->book)) {
                 switch (noteSub->bitField1.bookOffset) {
                     case 1:
                         currentBook = &gD_800DD200[1];
@@ -996,13 +1003,13 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                     }
                 }
 
-                switch (/* __builtin_bswap32 */(bookSample->codec)) {
+                switch (bookSample->codec) {
                     case CODEC_ADPCM:
                         frameSize = 9;
                         skipInitialSamples = SAMPLES_PER_FRAME;
                         sampleDmaStart = 0;
                         break;
-
+#if 0
                     case CODEC_S8:
                         frameSize = 16;
                         skipInitialSamples = SAMPLES_PER_FRAME;
@@ -1020,6 +1027,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                         numSamplesProcessed = numSamplesToLoadAdj;
                         dmemUncompressedAddrOffset1 = numSamplesToLoadAdj;
                         goto skip;
+#endif
                 }
 
                 aligned = ALIGN16((nFramesToDecode * frameSize) + SAMPLES_PER_FRAME);
@@ -1052,35 +1060,37 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
                 numSamplesInThisIteration = (numSamplesToDecode + numSamplesInFirstFrame) - numTrailingSamplesToIgnore;
 
                 if (numSamplesProcessed == 0) {
-                    switch (/* __builtin_bswap32 */(bookSample->codec)) {
+                    switch (bookSample->codec) {
                         case CODEC_ADPCM:
                             aSetBuffer(aList++, 0, addr + sampleDataChunkAlignPad, DMEM_UNCOMPRESSED_NOTE,
                                        numSamplesToDecode * SAMPLE_SIZE);
                             aADPCMdec(aList++, flags, OS_K0_TO_PHYSICAL(synthState->synthesisBuffers));
                             break;
-
+#if 0
                         case CODEC_S8:
                             aSetBuffer(aList++, 0, addr + sampleDataChunkAlignPad, DMEM_UNCOMPRESSED_NOTE,
                                        numSamplesToDecode * SAMPLE_SIZE);
                             aS8Dec(aList++, flags, OS_K0_TO_PHYSICAL(synthState->synthesisBuffers));
                             break;
+#endif
                     }
 
                     skipBytes = nFirstFrameSamplesToIgnore * SAMPLE_SIZE;
                 } else {
                     aligned = ALIGN16(dmemUncompressedAddrOffset1 + SAMPLES_PER_FRAME);
-                    switch (/* __builtin_bswap32 */(bookSample->codec)) {
+                    switch (bookSample->codec) {
                         case CODEC_ADPCM:
                             aSetBuffer(aList++, 0, addr + sampleDataChunkAlignPad, DMEM_UNCOMPRESSED_NOTE + aligned,
                                        numSamplesToDecode * SAMPLE_SIZE);
                             aADPCMdec(aList++, flags, OS_K0_TO_PHYSICAL(synthState->synthesisBuffers));
                             break;
-
+#if 0
                         case CODEC_S8:
                             aSetBuffer(aList++, 0, addr + sampleDataChunkAlignPad, DMEM_UNCOMPRESSED_NOTE + aligned,
                                        numSamplesToDecode * SAMPLE_SIZE);
                             aS8Dec(aList++, flags, OS_K0_TO_PHYSICAL(synthState->synthesisBuffers));
                             break;
+#endif
                     }
 
                     aDMEMMove(aList++, DMEM_UNCOMPRESSED_NOTE + aligned + (nFirstFrameSamplesToIgnore * SAMPLE_SIZE),
@@ -1186,7 +1196,7 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
         aUnkCmd19(aList++, 0, aiBufLen * SAMPLE_SIZE, DMEM_TEMP, DMEM_TEMP);
     }
 
-#if 1
+#if 0
     gain = noteSub->gain;
     if (gain != 0) {
         // A gain of 0x10 (a UQ4.4 number) is equivalent to 1.0 and represents no volume change
@@ -1197,19 +1207,20 @@ Acmd* AudioSynth_ProcessNote(s32 noteIndex, NoteSubEu* noteSub, NoteSynthesisSta
     }
 #endif
 
-#if 1
+#if 0
     if ((noteSub->leftDelaySize != 0) || (synthState->prevHaasEffectLeftDelaySize != 0)) {
         delaySide = HAAS_EFFECT_DELAY_LEFT;
     } else if ((noteSub->rightDelaySize != 0) || (synthState->prevHaasEffectRightDelaySize != 0)) {
         delaySide = HAAS_EFFECT_DELAY_RIGHT;
     } else {
-#endif
+        delaySide = HAAS_EFFECT_DELAY_NONE;
+    }
+#else
     delaySide = HAAS_EFFECT_DELAY_NONE;
-#if 1
-}
 #endif
+
     aList = AudioSynth_ProcessEnvelope(aList, noteSub, synthState, aiBufLen, DMEM_TEMP, delaySide, flags);
-#if 1
+#if 0
     if (noteSub->bitField0.usesHeadsetPanEffects) {
         if (!(flags & 1)) {
             flags = 0;
@@ -1306,9 +1317,8 @@ Acmd* AudioSynth_ProcessEnvelope(Acmd* aList, NoteSubEu* noteSub, NoteSynthesisS
         aClearBuffer(aList++, DMEM_HAAS_TEMP, DMEM_1CH_SIZE);
         aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight);
         aEnvSetup2(aList++, curVolLeft, curVolRight);
-
+#if 0
         switch (delaySide) {
-#if 1
             case HAAS_EFFECT_DELAY_LEFT:
 
                 aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
@@ -1321,14 +1331,18 @@ Acmd* AudioSynth_ProcessEnvelope(Acmd* aList, NoteSubEu* noteSub, NoteSynthesisS
                           noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
                           (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, DMEM_HAAS_TEMP, 2, 0x9965C9E1);
                 break;
-#endif
             default: // HAAS_EFFECT_DELAY_NONE
                 aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
                           noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
                           (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, 0, 2, 0x99B1C9E1);
                 break;
         }
-    } else {
+#else
+            aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7),
+                    noteSub->bitField0.stereoStrongRight, noteSub->bitField0.stereoStrongLeft,
+                    (DMEM_WET_LEFT_CH << 16) | DMEM_LEFT_CH, 0, 2, 0x99B1C9E1);
+#endif
+        } else {
         aEnvSetup1(aList++, (sourceReverbVol & 0x7F), rampReverb, rampLeft, rampRight);
         aEnvSetup2(aList++, curVolLeft, curVolRight);
         aEnvMixer(aList++, dmemSrc, aiBufLen, ((sourceReverbVol & 0x80) >> 7), noteSub->bitField0.stereoStrongRight,
@@ -1338,7 +1352,7 @@ Acmd* AudioSynth_ProcessEnvelope(Acmd* aList, NoteSubEu* noteSub, NoteSynthesisS
     return aList;
 }
 
-#if 1
+#if 0
 /**
  * The Haas Effect gives directionality to sound by applying a small (< 35ms) delay to either the left or right channel.
  * The delay is small enough that the sound is still perceived as one sound, but the channel that is not delayed will
