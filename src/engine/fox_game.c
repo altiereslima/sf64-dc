@@ -339,14 +339,14 @@ void Game_SetScene(void) {
             break;
     }
 }
-
+extern volatile int doing_glare;
 void Game_Update(void) {
     s32 i;
     u8 partialFill;
     u8 soundMode;
 //printf("in game_update\n");
     Game_SetGameState();
-
+    doing_glare = 0;
     if (gGameStandby) {
         Game_InitStandbyDL(&gUnkDisp1);
         gGameStandby = 0;
@@ -576,9 +576,13 @@ void Game_Update(void) {
 
         if (gCamCount == 1) {
             //printf("gCamCount == 1\n");
+                doing_glare = 1;
+
             Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, gPlayerGlareReds[0],
                                    gPlayerGlareGreens[0], gPlayerGlareBlues[0], gPlayerGlareAlphas[0]);
-            if ((gDrawMode == DRAW_PLAY) || (gDrawMode == DRAW_ENDING)) {
+    doing_glare = 0;
+
+    if ((gDrawMode == DRAW_PLAY) || (gDrawMode == DRAW_ENDING)) {
                 Radio_Draw();
                 if (gShowHud) {
                     HUD_Draw();
@@ -598,9 +602,12 @@ void Game_Update(void) {
                                            gFillScreenAlpha);
                     partialFill = 1;
                 } else {
+    doing_glare = 1;
+
                     Graphics_FillRectangle(&gMasterDisp, sVsCameraULx[i], sVsCameraULy[i], sVsCameraLRx[i],
                                            sVsCameraLRy[i], gPlayerGlareReds[i], gPlayerGlareGreens[i],
                                            gPlayerGlareBlues[i], gPlayerGlareAlphas[i]);
+    doing_glare = 0;
                 }
             }
         }

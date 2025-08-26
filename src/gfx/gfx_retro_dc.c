@@ -74,6 +74,9 @@ uint8_t pr,pg,pb,pa;
 #define MAX_BUFFERED 128
 #define MAX_LIGHTS 8
 #define MAX_VERTICES 64
+static uint32_t LightGetHSV(uint8_t r, uint8_t g, uint8_t b);
+
+static uint32_t LightGetRGB(uint8_t h, uint8_t s, uint8_t v);
 
 int blend_fuck=0;
 
@@ -1189,9 +1192,10 @@ static void __attribute__((noinline)) gfx_sp_vertex_light(size_t n_vertices, siz
         }
 
 		d->lit = 1;
-        d->color.r = (r * 1.2f) + 16 > 255 ? 255 : (r * 1.2f) + 16;
-        d->color.g = (g * 1.2f) + 16 > 255 ? 255 : (g * 1.2f) + 16;
-        d->color.b = (b * 1.2f) + 16 > 255 ? 255 : (b * 1.2f) + 16;
+		
+        d->color.r = (r * 1.5f) + 24 > 255 ? 255 : (r * 1.5f) + 24;
+        d->color.g = (g * 1.5f) + 24 > 255 ? 255 : (g * 1.5f) + 24;
+        d->color.b = (b * 1.5f) + 24 > 255 ? 255 : (b * 1.5f) + 24;
         d->color.a = v->cn[3];
 
         if (rsp.geometry_mode & G_TEXTURE_GEN) {
@@ -1536,7 +1540,7 @@ rdp.texture_tile.cmt = G_TX_MIRROR;
 #if 1
     if (use_fog) {
         float fog_color[4] = { rdp.fog_color.r * recip255, rdp.fog_color.g * recip255,
-                               rdp.fog_color.b * recip255, (float) (rdp.fog_color.a * recip255) * 0.85f }; //0.75f };
+                               rdp.fog_color.b * recip255, (float) (rdp.fog_color.a * recip255) * 0.70f } ;//0.75f };
         glFogfv(GL_FOG_COLOR, fog_color);
     }
 #endif
@@ -2831,17 +2835,222 @@ static void gfx_dp_set_combine_mode(uint32_t rgb, uint32_t alpha) {
 	rdp.combine_mode = rgb | (alpha << 12);
 }
 
+// lifted HSV scaling from Doom 64, thanks
+#define recip60 0.01666666753590106964111328125f
+#define MAXINT ((int)0x7fffffff) /* max pos 32-bit int */
+#define MININT ((int)0x80000000) /* max negative 32-bit integer */
+#define recip255 0.0039215688593685626983642578125f
+
+static uint32_t LightGetHSV(uint8_t r, uint8_t g, uint8_t b) {
+	uint8_t h_, s_, v_;
+	int min;
+	int max;
+	float deltamin;
+	float deltamax;
+	float j;
+	float x = 0;
+	float xr;
+	float xg;
+	float xb;
+	float sum = 0;
+
+	max = MAXINT;
+
+	if (r < max)
+		max = r;
+	if (g < max)
+		max = g;
+	if (b < max)
+		max = b;
+
+	min = MININT;
+
+	if (r > min)
+		min = r;
+	if (g > min)
+		min = g;
+	if (b > min)
+		min = b;
+
+	deltamin = (float)min * recip255;
+	deltamax = deltamin - ((float)max * recip255);
+
+	if (deltamax == 0.0f)
+		deltamax = 1e-10f;
+
+	float recip_deltamax = 1.0f / deltamax;
+
+	if (deltamin == 0.0f)
+		j = 0.0f;
+	else
+		j = deltamax / deltamin;
+
+	if (j != 0.0f) {
+		xr = (float)r * recip255;
+		xg = (float)g * recip255;
+		xb = (float)b * recip255;
+
+		if (xr != deltamin) {
+			if (xg != deltamin) {
+				if (xb == deltamin) {
+					sum = ((deltamin - xg) * recip_deltamax + 4.0f) - ((deltamin - xr) * recip_deltamax);
+				}
+			} else {
+				sum = ((deltamin - xr) * recip_deltamax + 2.0f) - ((deltamin - xb) * recip_deltamax);
+			}
+		} else {
+			sum = ((deltamin - xb) * recip_deltamax) - ((deltamin - xg) * recip_deltamax);
+		}
+
+		x = (sum * 60.0f);
+
+		if (x < 0.0f)
+			x += 360.0f;
+		else if (x > 360.0f)
+			x -= 360.0f;
+	} else {
+		j = 0.0f;
+	}
+
+	h_ = (uint8_t)(x * 0.708333313465118408203125f); // x / 360 * 255
+	s_ = (uint8_t)(j * 255.0f);
+	v_ = (uint8_t)(deltamin * 255.0f);
+
+	return (((h_ & 0xff) << 16) | ((s_ & 0xff) << 8) | (v_ & 0xff));
+}
+
+
+
+static uint32_t LightGetRGB(uint8_t h, uint8_t s, uint8_t v) {
+	uint8_t r, g, b;
+
+	float x;
+	float j;
+	float i;
+	float t;
+	int table;
+	float xr = 0;
+	float xg = 0;
+	float xb = 0;
+
+	j = (float)h * 1.41176474094390869140625f; // h / 255 * 360
+
+	if (j < 0.0f)
+		j += 360.0f;
+	else if (j > 360.0f)
+		j -= 360.0f;
+
+	x = (float)s * recip255;
+	i = (float)v * recip255;
+
+	if (x != 0.0f) {
+		table = (int)(j * recip60);
+		if (table < 6) {
+			t = j * recip60;
+
+			switch (table) {
+			case 0:
+				xr = i;
+				xg = (1.0f - ((1.0f - (t - (float)table)) * x)) * i;
+				xb = (1.0f - x) * i;
+				break;
+			case 1:
+				xr = (1.0f - (x * (t - (float)table))) * i;
+				xg = i;
+				xb = (1.0f - x) * i;
+				break;
+			case 2:
+				xr = (1.0f - x) * i;
+				xg = i;
+				xb = (1.0f - ((1.0f - (t - (float)table)) * x)) * i;
+				break;
+			case 3:
+				xr = (1.0f - x) * i;
+				xg = (1.0f - (x * (t - (float)table))) * i;
+				xb = i;
+				break;
+			case 4:
+				xr = (1.0f - ((1.0f - (t - (float)table)) * x)) * i;
+				xg = (1.0f - x) * i;
+				xb = i;
+				break;
+			case 5:
+				xr = i;
+				xg = (1.0f - x) * i;
+				xb = (1.0f - (x * (t - (float)table))) * i;
+				break;
+			}
+		}
+	} else {
+		xr = xg = xb = i;
+	}
+
+	r = (uint8_t)(xr * 255.0f);
+	g = (uint8_t)(xg * 255.0f);
+	b = (uint8_t)(xb * 255.0f);
+
+	return (((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff));
+}
+
 static void  gfx_dp_set_env_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	er = rdp.env_color.r = r;
-	eg = rdp.env_color.g = g;
-	eb = rdp.env_color.b = b;
+	float l_flt;
+	int factor;
+	int h, s, _v;
+	int hsv;
+
+ 	hsv = LightGetHSV(r, g, b);
+
+	h = (hsv >> 16) & 0xFF;
+	s = (hsv >> 8) & 0xFF;
+	_v = hsv & 0xFF;
+
+	factor = _v;
+
+	l_flt = (float)factor * 2.2f;
+
+	_v = (int)l_flt;
+
+	if (_v < 0)
+		_v = 0;
+	if (_v > 255)
+		_v = 255;
+
+	int rgb = LightGetRGB(h, s, _v);
+
+
+	er = rdp.env_color.r = (rgb >> 16) & 0xff;
+	eg = rdp.env_color.g = (rgb >> 8) & 0xff;
+	eb = rdp.env_color.b = rgb & 0xff;
 	ea = rdp.env_color.a = a;
 }
 
 static void gfx_dp_set_prim_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	pr = rdp.prim_color.r = r;
-	pg = rdp.prim_color.g = g;
-	pb = rdp.prim_color.b = b;
+float l_flt;
+	int factor;
+	int h, s, _v;
+	int hsv;
+
+ 	hsv = LightGetHSV(r, g, b);
+
+	h = (hsv >> 16) & 0xFF;
+	s = (hsv >> 8) & 0xFF;
+	_v = hsv & 0xFF;
+
+	factor = _v;
+
+	l_flt = (float)factor * 2.2f;
+
+	_v = (int)l_flt;
+
+	if (_v < 0)
+		_v = 0;
+	if (_v > 255)
+		_v = 255;
+
+	int rgb = LightGetRGB(h, s, _v);
+	pr = rdp.prim_color.r = (rgb >> 16) & 0xff;
+	pg = rdp.prim_color.g = (rgb >> 8) & 0xff;
+	pb = rdp.prim_color.b = rgb & 0xff;
 	pa = rdp.prim_color.a = a;
 }
 
@@ -2858,9 +3067,34 @@ static void  gfx_dp_set_fill_color(uint32_t packed_color) {
 	uint32_t g = (col16 >> 6) & 0x1f;
 	uint32_t b = (col16 >> 1) & 0x1f;
 	uint32_t a = col16 & 1;
-	rdp.fill_color.r = SCALE_5_8(r);
-	rdp.fill_color.g = SCALE_5_8(g);
-	rdp.fill_color.b = SCALE_5_8(b);
+
+float l_flt;
+	int factor;
+	int h, s, _v;
+	int hsv;
+
+ 	hsv = LightGetHSV(SCALE_5_8(r), SCALE_5_8(g), SCALE_5_8(b));
+
+	h = (hsv >> 16) & 0xFF;
+	s = (hsv >> 8) & 0xFF;
+	_v = hsv & 0xFF;
+
+	factor = _v;
+
+	l_flt = (float)factor * 2.2f;
+
+	_v = (int)l_flt;
+
+	if (_v < 0)
+		_v = 0;
+	if (_v > 255)
+		_v = 255;
+
+	int rgb = LightGetRGB(h, s, _v);
+
+	rdp.fill_color.r = (rgb >> 16) & 0xff;
+	rdp.fill_color.g = (rgb >> 8) & 0xff;
+	rdp.fill_color.b = rgb & 0xff;
 	rdp.fill_color.a = a * 255;
 }
 
@@ -3080,7 +3314,7 @@ extern volatile int do_backdrop;
 volatile int do_reticle = 0;
 int depth_off = 0;
 
-
+int do_fillrect_blend = 0;
 
 //#define gSPStarfield(pkt)                                       \
   //  {                                                                                   \
@@ -3108,6 +3342,8 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 				do_backdrop ^= 1;
 			} else if(cmd->words.w1 == 0x46554370) {
 				do_starfield ^= 1;
+			} else if(cmd->words.w1 == 0x46554380) {
+				do_fillrect_blend ^= 1;
 			}   
 			++cmd;
 			continue;

@@ -841,7 +841,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
 extern void  __attribute__((noinline)) gfx_opengl_2d_projection(void);
 
 extern void  __attribute__((noinline)) gfx_opengl_reset_projection(void);
-
+extern int do_fillrect_blend;
 extern int do_starfield;
 void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     dc_fast_t* tris = buf_vbo;
@@ -889,7 +889,11 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
             glEnable(GL_BLEND);
         if (cur_shader->shader_id == 0x01a00a00)
             over_skybox_setup_pre();
-
+        if (do_fillrect_blend) {
+            glEnable(GL_BLEND);
+            printf("do the glare thing\n");
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);///* GL_ONE_MINUS_ */GL_SRC_ALPHA);
+        }
     /*     if (do_xt_fill) {
             glDisable(GL_DEPTH_TEST);
             glDepthMask(GL_FALSE);
@@ -904,7 +908,8 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
             skybox_setup_post();
         if (cur_shader->shader_id == 0x01a00a00)
             over_skybox_setup_post();
-
+        if (do_fillrect_blend)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     /*     if (do_xt_fill) {
             glDepthMask(GL_TRUE);
             glDepthFunc(GL_LESS);

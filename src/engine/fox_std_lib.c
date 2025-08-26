@@ -716,21 +716,38 @@ void Lib_TextureRect_RGBA32(Gfx** gfxPtr, u32* texture, u32 width, u32 height, f
                         (s32) (1.0f / yScale * 1024.0f));
 }
 
+
+#define gSPFillrectBlend(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554380;                                           \
+    }
+volatile int doing_glare = 0;
 void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8 r, u8 g, u8 b, u8 a) {
 //return;
     if (a != 0) {
+       if(doing_glare)
+        gSPFillrectBlend((*gfxPtr)++);
         gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
 //        gDPSetColorDither((*gfxPtr)++, G_CD_NOISE);
   //      gDPSetAlphaDither((*gfxPtr)++, G_AD_NOISE);
     //    gDPSetCycleType((*gfxPtr)++, G_CYC_1CYCLE);
 //        gDPSetCombineMode((*gfxPtr)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-    gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 0xFF);
+       if(doing_glare) {
+            gDPSetEnvColor((*gfxPtr)++, 0,0,0, 255);
+        } else {
+              gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);
+        }
         gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
     gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                       TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 //        gDPSetRenderMode((*gfxPtr)++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
         gDPFillRectangle((*gfxPtr)++, ulx, uly, lrx, lry);
+        if(doing_glare)
+        gSPFillrectBlend((*gfxPtr)++);
     }
 }
 

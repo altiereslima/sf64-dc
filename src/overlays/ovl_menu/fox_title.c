@@ -2996,6 +2996,13 @@ s32 D_menu_801AE528[] = {
     80, 64, 48, 32, 12, 32, 44, 32, 42, 36, 12, 38,
 };
 
+#define gSPFillrectBlend(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554380;                                           \
+    }
 void Title_SunGlare_Draw(void) {
     if (D_menu_801B7BD8 != 0) {
         if ((D_menu_801B7BB8 > -870.0f) && (D_menu_801B7BB8 < 900.0f) && (gFillScreenAlpha > 0)) {
@@ -3011,7 +3018,6 @@ void Title_SunGlare_Draw(void) {
             gDPSetAlphaDither(gMasterDisp++, G_AD_NOISE);
             gDPSetColorDither(gMasterDisp++, G_CD_NOISE);
             gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, D_menu_801B7BD0);
-
             Lib_TextureRect_RGBA16(&gMasterDisp, aTitleSunGlareTex, 32, 32, D_menu_801B9080, D_menu_801B9084,
                                    D_menu_801B7BB0, D_menu_801B7BB4);
             D_menu_801B9080 += 1.66f;
