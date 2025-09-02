@@ -2,7 +2,11 @@
 
 sh4-elf toolchain, KOS, kos-ports/libGL all need built and installed.
 
-Use the `environ.sh` from `mk64-dc` for reference.
+For the `environ.sh` , modify the "optimization level" section like this
+
+`export KOS_CFLAGS="${KOS_CFLAGS} -Os -fipa-pta -fno-PIC -fno-PIE"`
+
+then
 
 `source /opt/toolchains/dc/kos/environ.sh` 
 
