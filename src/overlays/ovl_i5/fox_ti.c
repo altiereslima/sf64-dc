@@ -1125,8 +1125,13 @@ s32 Titania_TiDesertCrawler_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* 
 
                 if ((limbIndex == 13) && (this->iwork[5] & 2) && (this->iwork[6] == 0)) {
                     RCP_SetupDL(&gMasterDisp, SETUPDL_30);
+ //                   gDPSetCombineMode(gMasterDisp++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
-                    gSPDisplayList(gMasterDisp++, *dList);
+ gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
+                                          gSPDisplayList(gMasterDisp++, *dList);
                     RCP_SetupDL(&gMasterDisp, SETUPDL_29);
                 } else {
                     gSPDisplayList(gMasterDisp++, *dList);
@@ -2323,6 +2328,10 @@ s32 Titania_8018FC70(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
             RCP_SetupDL(&gMasterDisp, SETUPDL_30);
 
             if ((D_i5_801BBEF0[30] % 2) != 0) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
@@ -2340,6 +2349,10 @@ s32 Titania_8018FC70(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
             RCP_SetupDL(&gMasterDisp, SETUPDL_61);
 
             if ((D_i5_801BBEF0[30] % 2) != 0) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
@@ -2626,6 +2639,10 @@ s32 Titania_801903A0(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
             RCP_SetupDL(&gMasterDisp, SETUPDL_30);
 
             if ((sp20 % 2) != 0) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
@@ -2643,6 +2660,10 @@ s32 Titania_801903A0(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
             RCP_SetupDL(&gMasterDisp, SETUPDL_61);
 
             if ((sp20 % 2) != 0) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
@@ -3003,6 +3024,10 @@ s32 Titania_80190A08(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
 
                 if ((this->swork[22] & 1) ||
                     ((D_i5_801B7770[i][2] != 0) && (this->swork[D_i5_801B7770[i][2] + 4] & 1))) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                     sp58 = 1;
                 }

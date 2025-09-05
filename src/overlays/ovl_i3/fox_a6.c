@@ -1916,6 +1916,10 @@ void Area6_A6Gorgon_Draw(A6Gorgon* this) {
         } else {
             RCP_SetupDL(&gMasterDisp, SETUPDL_27);
             if (this->timer_05C & 1) {
+                // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, (s32) D_i3_801C22F0.unk_28[0], (s32) D_i3_801C22F0.unk_28[2],
@@ -2068,6 +2072,10 @@ void Area6_A6Gorgon_Draw(A6Gorgon* this) {
         Matrix_Scale(gGfxMatrix, 1.7f, 1.7f, 1.7f, MTXF_APPLY);
 
         if (this->timer_05C & 1) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
         } else {
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, (s32) D_i3_801C22F0.unk_24);

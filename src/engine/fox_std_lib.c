@@ -732,7 +732,7 @@ void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8
   //      gDPSetAlphaDither((*gfxPtr)++, G_AD_NOISE);
     //    gDPSetCycleType((*gfxPtr)++, G_CYC_1CYCLE);
 //        gDPSetCombineMode((*gfxPtr)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-       if(doing_glare) {
+       if(doing_glare == 1) {
             gDPSetEnvColor((*gfxPtr)++, 0,0,0, 255);
         } else {
               gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);

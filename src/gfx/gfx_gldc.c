@@ -175,6 +175,66 @@ extern float gProjectFar;
 extern int shader_debug_toggle;
 
 #include <kos.h>
+typedef enum LevelType {
+    /* 0 */ LEVELTYPE_PLANET,
+    /* 1 */ LEVELTYPE_SPACE,
+} LevelType;
+
+typedef enum LevelId {
+    /* -1 */ LEVEL_UNK_M1 = -1,
+    /*  0 */ LEVEL_CORNERIA,
+    /*  1 */ LEVEL_METEO,
+    /*  2 */ LEVEL_SECTOR_X,
+    /*  3 */ LEVEL_AREA_6,
+    /*  4 */ LEVEL_UNK_4,
+    /*  5 */ LEVEL_SECTOR_Y,
+    /*  6 */ LEVEL_VENOM_1,
+    /*  7 */ LEVEL_SOLAR,
+    /*  8 */ LEVEL_ZONESS,
+    /*  9 */ LEVEL_VENOM_ANDROSS,
+    /* 10 */ LEVEL_TRAINING,
+    /* 11 */ LEVEL_MACBETH,
+    /* 12 */ LEVEL_TITANIA,
+    /* 13 */ LEVEL_AQUAS,
+    /* 14 */ LEVEL_FORTUNA,
+    /* 15 */ LEVEL_UNK_15,
+    /* 16 */ LEVEL_KATINA,
+    /* 17 */ LEVEL_BOLSE,
+    /* 18 */ LEVEL_SECTOR_Z,
+    /* 19 */ LEVEL_VENOM_2,
+    /* 20 */ LEVEL_VERSUS,
+    /* 77 */ LEVEL_WARP_ZONE = 77,
+} LevelId;
+
+extern LevelId gCurrentLevel;
+
+extern uint8_t gLevelType;
+
+
+static inline float exp_map_0_1000_f(float x) {
+    const float a = 138.62943611198894f;
+    if (x <= 0.0f)    return 0.0f;
+    if (x >= 1000.0f) return 1000.0f;
+
+    const float t = x / 1000.0f;                 // t in [0,1]
+    const float num = expm1f(a * (t - 1.0f));    // argument in [-a, 0] (no overflow)
+    const float den = expm1f(-a);                // finite (~ -1)
+    return 1000.0f * (1.0f - num / den);
+}
+
+
+static inline float exp_map_custom_f(float x) {
+    const float a    = 180.0f;//.6970227952148f;
+    const float ymax = 990.0f;
+    const float den  = expm1f(-a);
+
+    if (x <= 0.0f)    return 0.0f;
+    if (x >= 1000.0f) return ymax;
+
+    const float t   = x / 1000.0f;
+    const float num = expm1f(a * (t - 1.0f));
+    return ymax * (1.0f - num / den);
+}
 
 static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
     // vertices are always there
@@ -182,7 +242,7 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
     glTexCoordPointer(2, GL_FLOAT, sizeof(dc_fast_t), &cur_buf[0].texture);
     glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, sizeof(dc_fast_t), &cur_buf[0].color);
 
-#if 0
+#if 1
     if (shader_debug_toggle) {
         int shaderfound = 0;
         for (int i = 0; i < shaderidx; i++) {
@@ -207,19 +267,102 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
     if (prg->shader_id & SHADER_OPT_FOG) {
 
         glEnable(GL_FOG);
-#if 1
-        float fogmin, fogmax;
+        /* Inputs: fog_mul, fog_ofs (N64), and your OpenGL camera zNear/zFar */
+        float n64_min = 500.0f * (1.0f - (float)fog_ofs / (float)fog_mul);
+        float n64_max = n64_min + 128000.0f / (float)fog_mul;
 
-        fogmin = 500.0f - ((128000.0f * (float) fog_ofs) / (256.0f * (float) fog_mul));
+        /* Convert N64 [0..1000] depth to your eye-space distances [zNear..zFar] */
+        float scale = (gProjectFar - gProjectNear) / 1000.0f;
+        float gl_fog_start = gProjectNear + scale * exp_map_custom_f(n64_min);
+        float gl_fog_end   = gProjectNear + scale * exp_map_custom_f(n64_max);
+//        printf("gl_fog_start %f end %f\n", gl_fog_start, gl_fog_end);
+
+        /* OpenGL fixed-function linear fog */
+        glFogi(GL_FOG_MODE, GL_LINEAR);
+        glFogf(GL_FOG_START, (GLfloat)gl_fog_start * 0.4f);
+        glFogf(GL_FOG_END,   (GLfloat)gl_fog_end * 0.4f);        
+#if 0
+#if 1
+	int fogfactor;
+	float fogmin, fogmax, fogposition;	
+    
+    if (1) { //gLevelType == LEVELTYPE_PLANET) {
+        fogmin = 500.0f * (1.0f - (float)fog_ofs / (float)fog_mul);//500.0f - ((1.0f * (float) fog_ofs) / (256.0f * (float) fog_mul));
         fogmax = fogmin + (128000.0f / (float) fog_mul);
 
-        fogmin *= 3.5f;
-        fogmax *= 4.5f;
+//        printf("fog mul %d ofs %d min %f fogmax %f\n", fog_mul, fog_ofs, fogmin, fogmax);
+#if 0
+        fogfactor = (1000 - fogmin);
+
+        if (fogfactor <= 0)
+            fogfactor = 1;
+
+        fogposition = ((float)fogfactor / 1000.0f);
+        fogmin = 5.0f / fogposition;
+//if(gLevelType == LEVELTYPE_PLANET) {
+
+//	fogmax = 20.0f / fogposition;
+//} else {
+     fogfactor = (1000 - fogmax);
+
+	if (fogfactor <= 0)
+		fogfactor = 1;
+
+	fogposition = ((float)fogfactor / 1000.0f); 
+    fogmax = 5.0f / fogposition;
+//}
+//    fogmax = 15.0f / fogposition;
+
+
+//        fogmin = 500.0f - ((128000.0f * (float) fog_ofs) / (256.0f * (float) fog_mul));
+//        fogmax = fogmin + (128000.0f / (float) fog_mul);
+
+//        printf("fogmin %f fogmax %f\n", fogmin, fogmax);
+
+//        fogmin *= 4.0f;//3.5f;
+//        fogmax *= 4.0f;//fogmin + 10;//*= 4.5f;
+    } else {
+        fogmin = 500.0f - ((128000.0f * (float) fog_ofs) / (256.0f * (float) fog_mul));
+        fogmax = fogmin + (128000.0f / (float) fog_mul);
+        fogmin *= 4.0f;//3.5f;
+        fogmax *= 4.0f;//fogmin + 10;//*= 4.5f;
+#endif
+    }
+if (fogmax <= fogmin) fogmax = fogmin + 1.0f;
 
         glFogi(GL_FOG_MODE, GL_LINEAR);
-        glFogf(GL_FOG_START, fogmin);
-        glFogf(GL_FOG_END, fogmax);
-#else
+                if (gCurrentLevel == LEVEL_TITANIA) {
+        glFogf(GL_FOG_START, 10);//fogmin);//*2.5f);
+        glFogf(GL_FOG_END, 2500);//fogmax);//*4.0f);
+
+        } else {
+            if (gCurrentLevel == LEVEL_MACBETH) {
+                glFogf(GL_FOG_START, fogmin*4.0f);
+        glFogf(GL_FOG_END, fogmax*4.5f);
+            }
+            else if(gCurrentLevel == LEVEL_KATINA || gCurrentLevel == LEVEL_BOLSE) {
+        glFogf(GL_FOG_START, 2000);
+        glFogf(GL_FOG_END, 9000);//fogmax*6.0f);
+
+            } else if (gCurrentLevel == LEVEL_SECTOR_X || gCurrentLevel == LEVEL_SECTOR_Y || gCurrentLevel == LEVEL_SECTOR_Z) {
+        glFogf(GL_FOG_START, fogmin*4.0f);
+        glFogf(GL_FOG_END, fogmax*5.0f);
+            } else if (gCurrentLevel == LEVEL_AQUAS) {
+        glFogf(GL_FOG_START, fogmin*4.5f);
+        glFogf(GL_FOG_END, fogmax*4.0f);
+
+            } /*else if (gCurrentLevel == LEVEL_ZONESS) {
+        glFogf(GL_FOG_START, 500);//fogmin);//*2.5f);
+        glFogf(GL_FOG_END, 4000);//fogmax);//*4.0f);
+            }*/
+            
+            
+            else {
+        glFogf(GL_FOG_START, fogmin*2.5f);
+        glFogf(GL_FOG_END, fogmax*4.0f);
+            }
+    }
+    #else
 //        printf("gProjectNear %f Far %f\n", gProjectNear, gProjectFar);
         /* Inputs: fog_mul, fog_ofs (N64), and your OpenGL camera zNear/zFar */
         float n64_min = 500.0f * (1.0f - (float)fog_ofs / (float)fog_mul);
@@ -235,6 +378,7 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
         glFogi(GL_FOG_MODE, GL_LINEAR);
         glFogf(GL_FOG_START, (GLfloat)gl_fog_start);
         glFogf(GL_FOG_END,   (GLfloat)gl_fog_end);
+#endif
 #endif
     } else {
         glDisable(GL_FOG);
@@ -336,7 +480,7 @@ static void gfx_opengl_shader_get_info(struct ShaderProgram* prg, uint8_t* num_i
     used_textures[0] = prg->texture_used[0];
     used_textures[1] = prg->texture_used[1];
 
-#if 0
+#if 1
     if (shader_debug_toggle) {
         int shaderfound = 0;
         for (int i = 0; i < shaderidx; i++) {
@@ -738,46 +882,13 @@ static void add_a_color_post(void) {
 }
 
 
-typedef enum LevelId {
-    /* -1 */ LEVEL_UNK_M1 = -1,
-    /*  0 */ LEVEL_CORNERIA,
-    /*  1 */ LEVEL_METEO,
-    /*  2 */ LEVEL_SECTOR_X,
-    /*  3 */ LEVEL_AREA_6,
-    /*  4 */ LEVEL_UNK_4,
-    /*  5 */ LEVEL_SECTOR_Y,
-    /*  6 */ LEVEL_VENOM_1,
-    /*  7 */ LEVEL_SOLAR,
-    /*  8 */ LEVEL_ZONESS,
-    /*  9 */ LEVEL_VENOM_ANDROSS,
-    /* 10 */ LEVEL_TRAINING,
-    /* 11 */ LEVEL_MACBETH,
-    /* 12 */ LEVEL_TITANIA,
-    /* 13 */ LEVEL_AQUAS,
-    /* 14 */ LEVEL_FORTUNA,
-    /* 15 */ LEVEL_UNK_15,
-    /* 16 */ LEVEL_KATINA,
-    /* 17 */ LEVEL_BOLSE,
-    /* 18 */ LEVEL_SECTOR_Z,
-    /* 19 */ LEVEL_VENOM_2,
-    /* 20 */ LEVEL_VERSUS,
-    /* 77 */ LEVEL_WARP_ZONE = 77,
-} LevelId;
-
-extern LevelId gCurrentLevel;
-
-extern int do_backdrop;
+extern volatile int do_backdrop;
 static float depbump = 0.0f;
 extern int water_helen;
 extern int blend_fuck;
 
 extern uint8_t add_r,add_g,add_b,add_a;
 extern int need_to_add;
-extern uint8_t gLevelType;
-typedef enum LevelType {
-    /* 0 */ LEVELTYPE_PLANET,
-    /* 1 */ LEVELTYPE_SPACE,
-} LevelType;
 extern int do_fillrect_blend;
 
 static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len, size_t buf_vbo_num_tris) {
@@ -791,11 +902,9 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
     else
         glDisable(GL_TEXTURE_2D);
 
-#if 0
-    if(cur_shader->shader_id == 0x00000a00/*  && gCurrentLevel == LEVEL_TITANIA */ && do_backdrop) {
+    if( cur_shader->shader_id == 0x00000a00 && (do_backdrop)  && gLevelType == LEVELTYPE_PLANET) {
         skybox_setup_pre();
-    }
-#endif
+    } else {
 
     if (cur_shader->shader_id == 0x01a00a00 && gLevelType == LEVELTYPE_SPACE)
         over_skybox_setup_pre();
@@ -822,8 +931,27 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
  //       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     }
 #endif
+    }
+#if 0
+    if (gCurrentLevel == LEVEL_TITANIA) {
+        dc_fast_t* tris = (dc_fast_t*) buf_vbo;
+        for (size_t i = 0; i < 3 * buf_vbo_num_tris; i++) {
+            if(tris[i].color.array.r == 127 && tris[i].color.array.g == 0
+                && tris[i].color.array.b == 0) {
+                    tris[i].color.array.r = 141;
+                    tris[i].color.array.g = 73;
+                    tris[i].color.array.b = 5;
+                }
+            }
+    }
+#endif
 
 glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
+#if 1
+    if(cur_shader->shader_id == 0x00000a00 && (do_backdrop) && gLevelType == LEVELTYPE_PLANET) {
+        skybox_setup_post();
+    } else {
+#endif
 
 #if 0
     if(need_to_add)
@@ -844,11 +972,7 @@ glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 
     if (cur_shader->shader_id == 0x01a00a00 && gLevelType == LEVELTYPE_SPACE)
        over_skybox_setup_post();
-
-#if 0
-    if(cur_shader->shader_id == 0x00000a00 /* && gCurrentLevel == LEVEL_TITANIA */ && do_backdrop)
-        skybox_setup_post();
-#endif
+}
 }
 
 
@@ -1063,6 +1187,10 @@ extern void  __attribute__((noinline)) ext_gfx_dp_fill_rectangle(int32_t ulx, in
 static void gfx_opengl_start_frame(void) {
     screen_2d_z = -1.0f;
     depbump = 0.0f;
+    do_skyblend = 0;
+    do_backdrop = 0;
+    do_fillrect_blend = 0;
+    do_starfield = 0;
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
 memset(shaderlist,0,sizeof(shaderlist));

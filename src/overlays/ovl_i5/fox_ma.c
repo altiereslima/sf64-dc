@@ -397,7 +397,7 @@ void Macbeth_InitLevel(void) {
 
 /* 32 x 32 pixels texture rotation */
 void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
-    return;
+//    return;
     s32 i;
     s32 j;
     s32 xDest;
@@ -434,7 +434,7 @@ void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
 }
 
 void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    return;
+//    return;
     u8* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     s32 i;
     s32 j;
@@ -456,7 +456,7 @@ void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 }
 
 void Macbeth_Texture_Scroll2(u16* tex, s32 arg1, s32 arg2) {
-    return;
+//    return;
     u16* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     u16 a;
     s32 i;
@@ -2299,6 +2299,10 @@ s32 Macbeth_MaLocomotive_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos
     if ((limbIndex == 5) || (limbIndex == 9)) {
         if ((this->iwork[7] % 2) != 0) {
             RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
         }
         if ((this->iwork[7] > 0) && (limbIndex == 5)) {
@@ -2371,6 +2375,10 @@ void Macbeth_Train_Draw(Actor* this) {
             if (this->iwork[13] == 0) {
                 if ((this->iwork[7] % 2) != 0) {
                     RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[7] > 0) {
@@ -2392,6 +2400,10 @@ void Macbeth_Train_Draw(Actor* this) {
 
                 if ((this->iwork[7] % 2) != 0) {
                     RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[7] > 0) {
@@ -2412,6 +2424,10 @@ void Macbeth_Train_Draw(Actor* this) {
                 Matrix_SetGfxMtx(&gMasterDisp);
                 if ((this->iwork[8] % 2) != 0) {
                     RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[8] > 0) {
@@ -2429,6 +2445,10 @@ void Macbeth_Train_Draw(Actor* this) {
 
                 if ((this->iwork[8] % 2) != 0) {
                     RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[8] > 0) {
@@ -2454,6 +2474,10 @@ void Macbeth_Train_Draw(Actor* this) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
                 if ((this->iwork[7] % 2) != 0) {
                     RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[7] > 0) {
@@ -2468,7 +2492,11 @@ void Macbeth_Train_Draw(Actor* this) {
             if (this->iwork[13] < 2) {
                 if ((this->iwork[7] % 2) != 0) {
                     RCP_SetupDL_27();
-                    gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
+             // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
+                   gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 }
                 if (this->iwork[7] > 0) {
                     this->iwork[7]--;
@@ -2560,7 +2588,11 @@ void Macbeth_Train_Draw(Actor* this) {
 
             if ((this->iwork[7] % 2) != 0) {
                 RCP_SetupDL_27();
-                gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
+             // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
+               gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             }
             if (this->iwork[7] > 0) {
                 this->iwork[7]--;
@@ -2588,6 +2620,10 @@ void Macbeth_Train_Draw(Actor* this) {
 
             if ((this->iwork[9] % 2) != 0) {
                 RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             }
             if (this->iwork[9] > 0) {
@@ -3756,6 +3792,10 @@ void Macbeth_MaBarrier_Update(MaBarrier* this) {
 void Macbeth_MaBarrier_Draw(MaBarrier* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_57);
     if ((this->timer_0C6 % 2) != 0) {
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
         RCP_SetupDL(&gMasterDisp, SETUPDL_58);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
     }
@@ -5384,6 +5424,10 @@ s32 Macbeth_MaMechbeth_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, 
         case 14:
             if ((this->iwork[7] % 2) != 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_28);
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             }
             if (D_i5_801BE320[9] <= 0) {
@@ -5400,6 +5444,10 @@ s32 Macbeth_MaMechbeth_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, 
         case 20:
             if ((this->iwork[8] % 2) != 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_28);
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             }
             if (D_i5_801BE320[10] <= 0) {
@@ -5413,6 +5461,10 @@ s32 Macbeth_MaMechbeth_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, 
 
     if ((this->iwork[9] % 2) != 0) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_28);
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
     }
     return 0;
@@ -6067,6 +6119,10 @@ void Macbeth_MaSpear_Draw(MaSpear* this) {
             RCP_SetupDL(&gMasterDisp, SETUPDL_23);
             if ((this->iwork[7] % 2) != 0) {
                 RCP_SetupDL_27();
+            // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0,255,255, 255);//255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             }
             if (this->iwork[7] > 0) {

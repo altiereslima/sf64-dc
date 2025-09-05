@@ -652,7 +652,7 @@ static char wavfn[256];
 void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
     u8 i;
     s32 pad;
-    if (0) { //seqPlayId == SEQ_PLAYER_BGM && ((seqId&0x7fff) >= 2 && (seqId&0x7fff) <= 65)) {
+    if (seqPlayId == SEQ_PLAYER_BGM && ((seqId&0x7fff) >= 2 && (seqId&0x7fff) <= 65)) {
         if (ever_init_wav == 0) {
             ever_init_wav = 1;
             wav_init();
@@ -707,7 +707,7 @@ void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
 }
 
 void Audio_StopSequence(u8 seqPlayId, u16 fadeOutTime) {
-    if (0) { //seqPlayId == SEQ_PLAYER_BGM) { //} >=2 && seqId <= 65) {
+    if (seqPlayId == SEQ_PLAYER_BGM) { //} >=2 && seqId <= 65) {
         if (cur_hnd != SND_STREAM_INVALID) {
 		    wav_destroy();
  		    cur_hnd = SND_STREAM_INVALID;

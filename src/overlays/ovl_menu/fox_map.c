@@ -4993,7 +4993,7 @@ void Map_CorneriaExplosion_Draw(void) {
     if (D_menu_801CEB34 >= 0) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_67);
 
-        gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 0);
+        gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 255); // was 0 alpha
 
         switch (D_menu_801CEB34) {
             case 0:
@@ -5065,7 +5065,7 @@ void Map_PlanetExplosions_Draw(PlanetId planetId, PlanetExplosions explosionIdx)
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_67);
 
-    gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 0);
+    gDPSetEnvColor(gMasterDisp++, 255, 0, 0, 255); // was 0 alpha
 
     for (i = 0; i < temp2; i++) {
         switch (D_menu_801CEB58[explosionIdx][i]) {

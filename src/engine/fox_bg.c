@@ -258,24 +258,7 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) {
 
 void func_bg_8003E1E0(void) {
 }
-volatile int do_backdrop = 0;
 
-#define gSPBackdrop(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554360;                                           \
-    }
-
-
-#define gSPSkyBlend(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554390;                                           \
-    }
 
 //#define F_PI        3.14159265f   /* pi             */
 
@@ -291,7 +274,7 @@ void Background_DrawBackdrop(void) {
     s32 i;
     u8 levelType;
     s32 levelId;
-
+//return;
     if (gDrawBackdrop == 0) {
         return;
     }
@@ -306,14 +289,12 @@ void Background_DrawBackdrop(void) {
     levelId = gCurrentLevel;
 
     Matrix_Push(&gGfxMatrix);
-                    gSPBackdrop(gMasterDisp++);
 
     if (gFovYMode == 2) {
         Matrix_Scale(gGfxMatrix, 1.2f, 1.2f, 1.0f, MTXF_APPLY);
     }
     switch (levelType) {
         case LEVELTYPE_PLANET:
-            gSPSkyBlend(gMasterDisp++);
             RCP_SetupDL(&gMasterDisp, SETUPDL_17);
             switch (levelId) {
                 case LEVEL_FORTUNA:
@@ -355,7 +336,6 @@ void Background_DrawBackdrop(void) {
                     }
                     Matrix_Translate(gGfxMatrix, 7280.0f, 0.0f, 0.0f, MTXF_APPLY);
                     Matrix_SetGfxMtx(&gMasterDisp);
-
                     switch (gCurrentLevel) {
                         case LEVEL_VERSUS:
                             if (gVersusStage == VS_STAGE_CORNERIA) {
@@ -573,7 +553,6 @@ void Background_DrawBackdrop(void) {
                     }
                     break;
             }
-            gSPSkyBlend(gMasterDisp++);
             break;
 
         case LEVELTYPE_SPACE:        
@@ -774,7 +753,6 @@ void Background_DrawBackdrop(void) {
             }
             break;
     }
-                        gSPBackdrop(gMasterDisp++);
 
     Matrix_Pop(&gGfxMatrix);
 }
@@ -854,6 +832,9 @@ void Background_DrawSun(void) {
             Matrix_Push(&gGfxMatrix);
             Matrix_Scale(gGfxMatrix, *sunScale, *sunScale, *sunScale, MTXF_APPLY);
             Matrix_SetGfxMtx(&gMasterDisp);
+     gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, sunColor->r, sunColor->g, sunColor->b, *sunAlpha);
             gSPDisplayList(gMasterDisp++, *sunDL);
             Matrix_Pop(&gGfxMatrix);

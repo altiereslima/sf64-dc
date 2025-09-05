@@ -2573,7 +2573,9 @@ void HUD_RadioDamage_Update(void) {
         D_8016178C = 0;
     }
 }
-
+extern f32 gRadioPortraitPosX;
+extern f32 gRadioPortraitPosY;
+extern volatile int doing_glare;
 void HUD_RadioDamage_Draw(void) {
     s32 r;
     s32 g;
@@ -2591,15 +2593,24 @@ void HUD_RadioDamage_Draw(void) {
     }
 
     if ((D_80161788 != 0) || (D_8016178C != 0)) {
-        RCP_SetupDL(&gMasterDisp, SETUPDL_12);
-        gDPSetPrimColor(gMasterDisp++, 0, 0, r, g, b, alpha);
-        Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, -53.9f, -38.5f, -139.4f, MTXF_APPLY);
-        Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
-        Matrix_SetGfxMtx(&gMasterDisp);
-        gSPDisplayList(gMasterDisp++, sRadioDamageDL);
-        Matrix_Pop(&gGfxMatrix);
-    }
+       // RCP_SetupDL(&gMasterDisp, SETUPDL_12);
+        // jnmartin84 ????
+         //           gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+           //           TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+             //         gDPSetEnvColor(gMasterDisp++, 0,0,0, 255);//255);
+        //gDPSetPrimColor(gMasterDisp++, 0, 0, r, g, b, alpha);
+//        Matrix_Push(&gGfxMatrix);
+ //       Matrix_Translate(gGfxMatrix, -53.9f, -38.5f, -139.4f, MTXF_APPLY);
+   //     Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 1.0f, MTXF_APPLY);
+     //   Matrix_SetGfxMtx(&gMasterDisp);
+     //   gSPDisplayList(gMasterDisp++, sRadioDamageDL);
+      //  Matrix_Pop(&gGfxMatrix);
+doing_glare = 2;
+Graphics_FillRectangle(&gMasterDisp, gRadioPortraitPosX, gRadioPortraitPosY, gRadioPortraitPosX+44,
+                                           gRadioPortraitPosY+44, r, g, b,
+                                           alpha);
+doing_glare = 0;
+                                        }
 }
 
 void HUD_RadioDamage(void) {

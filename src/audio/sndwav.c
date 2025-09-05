@@ -338,12 +338,12 @@ static void *wav_file_callback(snd_stream_hnd_t hnd, int req, int *done)
 		stream.status = SNDDEC_STATUS_READY;
 		return NULL;
 	}
-    printf("actual read %d\n", readed);
+//    printf("actual read %d\n", readed);
     stream.cursample += readed;
 
 	if (readed != req) {
-        fs_seek(stream.wave_file, stream.loopstart, SEEK_SET);
-        stream.cursample = stream.loopstart;
+        fs_seek(stream.wave_file, /* stream.loopstart */0, SEEK_SET);
+        stream.cursample = 0;//stream.loopstart;
 
 		if (stream.loop) {
 			ssize_t readed2 = fs_read(stream.wave_file, stream.drv_buf, req);
@@ -364,7 +364,7 @@ static void *wav_file_callback(snd_stream_hnd_t hnd, int req, int *done)
 		}
 	}
 
-    printf("stream.cursample %d\n", stream.cursample);
+//    printf("stream.cursample %d\n", stream.cursample);
 
 	*done = req;
 

@@ -395,10 +395,17 @@ void ActorDebris_Draw(ActorDebris* this) {
             Graphics_SetScaleMtx(0.7f);
 
             if (this->iwork[1] == 1) {
+                // jnmartin84 fix whatever this is that flashes red
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
             } else if (this->iwork[1] == 2) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 Graphics_SetScaleMtx(0.7f);
             }
@@ -682,6 +689,10 @@ void CoSkibot_Draw(CoSkibot* this) {
 void CoRadar_Draw(CoRadar* this) {
     if (this->timer_0BC != 0) {
         RCP_SetupDL_27();
+        // jnmartin84
+        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
     }
     gSPDisplayList(gMasterDisp++, aCoRadarDL);
@@ -1788,6 +1799,10 @@ void Object_DrawAll(s32 cullDirection) {
                 RCP_SetupDL_27();
 
                 if (actor->scale >= 0.0f) {
+                    // jnmartin84 ????
+                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
                 } else {
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 64, 64, 255, 255);

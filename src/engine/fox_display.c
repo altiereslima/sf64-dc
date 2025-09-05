@@ -1704,6 +1704,25 @@ void Display_CsLevelCompleteHandleCamera(Player* player) {
     }
 }
 #include "sh4zam.h"
+
+#define gSPBackdrop(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554360;                                           \
+    }
+
+
+#define gSPSkyBlend(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554390;                                           \
+    }
+
+
 void Display_Update(void) {
     s32 i;
     Vec3f tempVec;
@@ -1792,7 +1811,10 @@ void Display_Update(void) {
         Background_DrawStarfield();
     }
 
+            gSPBackdrop(gMasterDisp++);
+            gSPSkyBlend(gMasterDisp++);
     Background_DrawBackdrop();
+
     Background_DrawSun();
     Matrix_Push(&gGfxMatrix);
     Matrix_LookAt(gGfxMatrix, gPlayCamEye.x, gPlayCamEye.y, gPlayCamEye.z, gPlayCamAt.x, gPlayCamAt.y, gPlayCamAt.z,
@@ -1813,6 +1835,8 @@ void Display_Update(void) {
             Background_DrawGround();
         }
     }
+            gSPBackdrop(gMasterDisp++);
+            gSPSkyBlend(gMasterDisp++);
 
     Lights_SetOneLight(&gMasterDisp, gLight2x, gLight2y, gLight2z, gLight2R, gLight2G, gLight2B, gAmbientR, gAmbientG,
                        gAmbientB);

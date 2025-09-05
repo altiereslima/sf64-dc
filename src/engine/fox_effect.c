@@ -410,7 +410,7 @@ void Effect_Bubble_Draw(EffectBubble* this) {
 }
 
 void Effect_Effect367_Draw(Effect367* this) {
-    return;
+//    return;
     if (this->timer_50 == 0) {
         Graphics_SetScaleMtx(this->scale2);
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, this->alpha);
@@ -1068,16 +1068,35 @@ void Effect_Effect359_Update(Effect359* this) {
 
 Gfx* D_800D178C[] = { D_TI_6003440, D_TI_60034E0, D_TI_6003580, D_TI_6003620, D_TI_60036C0, D_TI_6003760 };
 
+#if 0
 void Effect_Effect359_Draw(Effect359* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_68);
+//gDPSetCombineLERP(gMasterDisp++, 1, 0, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, 0,
+  //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);    
+    gDPSetPrimColor(gMasterDisp++, 0, 0, 107, 50, 21, this->alpha);
+//    gDPSetEnvColor(gMasterDisp++, 141, 73, 5, 255);
+    gDPSetEnvColor(gMasterDisp++, 255/* -31 */, 255/* -10 */, 255/* -0 */, 255);
+
+Matrix_Scale(gGfxMatrix, this->scale2, this->scale2, 1.0f, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gMasterDisp);
+    gSPDisplayList(gMasterDisp++, D_800D178C[this->unk_4C]);
+    this->unk_4C = this->unk_48;
+    RCP_SetupDL(&gMasterDisp, SETUPDL_64);
+}
+#endif
+void Effect_Effect359_Draw(Effect359* this) {
+    RCP_SetupDL(&gMasterDisp, SETUPDL_68);
+//gDPSetCombineLERP(gMasterDisp++, 1, 0, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, 0,
+  //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);    
     gDPSetPrimColor(gMasterDisp++, 0, 0, 31, 10, 00, this->alpha);
-    gDPSetEnvColor(gMasterDisp++, 141, 73, 5, 0);
+    gDPSetEnvColor(gMasterDisp++, 255-141, 255-73, 255-5, 255);
     Matrix_Scale(gGfxMatrix, this->scale2, this->scale2, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, D_800D178C[this->unk_4C]);
     this->unk_4C = this->unk_48;
     RCP_SetupDL(&gMasterDisp, SETUPDL_64);
 }
+
 
 void Effect_WaterSpray_Update(EffectWaterSpray* this) {
     if (this->state == 0) {
@@ -2084,6 +2103,16 @@ Color_RGBA32 D_800D184C[] = {
     { 0, 0, 0, 50 },
 };
 
+
+#define gSPD_800D17A4(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x465543C0;                                           \
+    }
+
+
 Gfx* D_800D18A0[] = {
     D_BG_SPACE_20066C0, D_BG_SPACE_20066C0, D_BG_SPACE_2005E30, D_BG_SPACE_20055A0, D_BG_SPACE_2004D10,
     D_BG_SPACE_2004480, D_BG_SPACE_2003BF0, D_BG_SPACE_2003360, D_BG_SPACE_2002AD0, D_BG_SPACE_2002240,
@@ -2101,18 +2130,22 @@ void Effect_FireSmoke_Draw(EffectFireSmoke* this) {
         uint8_t g = D_800D184C[this->unk_4C].g;
         uint8_t b = D_800D184C[this->unk_4C].b;
 
-        if ((r > (g)) && (b > (g))) {
-            uint8_t tmp = g;
-            g = b;
-            b = tmp;            
-        }
-
+//        if ((r > (g)) && (b > (g))) {
+//            uint8_t tmp = g;
+//            g = b;
+//            b = tmp;            
+//        }
+/*   gDPSetCombineLERP(gMasterDisp++, 1, 0, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, 0,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0); */
+//                      gDPSetEnvColor(gMasterDisp++,0,255,0,255);
         gDPSetPrimColor(gMasterDisp++, 0, 0, D_800D184C[this->unk_4C].r, D_800D184C[this->unk_4C].g,
                         D_800D184C[this->unk_4C].b, D_800D184C[this->unk_4C].a);
         scale = D_800D17F8[this->unk_4C] - 0.5f;
         Matrix_Scale(gGfxMatrix, scale, scale, 1.0f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
+        gSPD_800D17A4(gMasterDisp++);
         gSPDisplayList(gMasterDisp++, D_800D17A4[this->unk_4C]);
+        gSPD_800D17A4(gMasterDisp++);
         return;
     }
 

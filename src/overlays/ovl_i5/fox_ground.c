@@ -396,7 +396,7 @@ void Ground_801B58AC(Gfx** dList, f32 arg1) {
     RCP_SetFog(dList, gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
   //      gDPSetCombineLERP((*dList)++,TEXEL0, 0, SHADE, 0, 0, 0, 0, TEXEL0, COMBINED, 0, ENVIRONMENT, PRIMITIVE, COMBINED, 0,
     //                       PRIMITIVE, 0);
-                   gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255); 
+    //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255); 
     spC4 = D_i5_801C5C14;
 
     if (D_i5_801C5C14 & 2) {
@@ -451,8 +451,8 @@ void Ground_801B58AC(Gfx** dList, f32 arg1) {
                     D_i5_801C24B8[(D_i5_801C5C08 + 29) % 28] * -220.0f;
                 D_i5_801BE748[(D_i5_801C5C04 + 27) % 27][i][1].v.ob[2] = 0;
 
-                print_vtx(temp_v0);
-                print_vtx(temp_t1);
+                //print_vtx(temp_v0);
+                //print_vtx(temp_t1);
 
                 Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, D_i5_801C24B8[D_i5_801C5C08] * -220.0f, MTXF_NEW);
                 Matrix_ToMtx(&D_i5_801C5C18[D_i5_801C5C04]);

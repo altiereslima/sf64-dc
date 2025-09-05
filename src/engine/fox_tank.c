@@ -2,6 +2,8 @@
 #include "assets/ast_landmaster.h"
 #include "assets/ast_titania.h"
 
+extern void gfx_texture_cache_invalidate(void *addr);
+
 void func_tank_80047754(Player* player);
 void func_tank_80047D38(Player* player, f32);
 void func_tank_80047E7C(Player* player, f32, f32);
@@ -514,15 +516,18 @@ void func_tank_80044868(Player* player) {
         Lib_Texture_Scroll(aLandmasterModelTex6, 32, 32, 0);
         if ((gCurrentLevel == LEVEL_TITANIA) && !gBossActive) {
             func_tank_80043280(aLandmasterModelTex4, D_TI_6009BB8, gGameFrameCount * -55.0f);
+            gfx_texture_cache_invalidate(aLandmasterModelTex4);
         }
         if ((gCurrentLevel == LEVEL_MACBETH) && (player->state == PLAYERSTATE_LEVEL_COMPLETE)) {
             func_tank_80043280(aLandmasterModelTex4, D_Tex_800DACB8, gGameFrameCount * -55.0f);
+            gfx_texture_cache_invalidate(aLandmasterModelTex4);
         }
     }
     if (player->baseSpeed > 10.0f) {
         Lib_Texture_Scroll(aLandmasterModelTex6, 32, 32, 0);
         if ((gCurrentLevel == LEVEL_TITANIA) && !gBossActive) {
             func_tank_80043280(aLandmasterModelTex4, D_TI_6009BB8, gGameFrameCount * -55.0f);
+            gfx_texture_cache_invalidate(aLandmasterModelTex4);
         }
     }
 
