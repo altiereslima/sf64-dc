@@ -224,7 +224,7 @@ static inline float exp_map_0_1000_f(float x) {
 
 
 static inline float exp_map_custom_f(float x) {
-    const float a    = 180.0f;//.6970227952148f;
+    const float a    = 180.0f;
     const float ymax = 990.0f;
     const float den  = expm1f(-a);
 
@@ -890,6 +890,7 @@ extern int blend_fuck;
 extern uint8_t add_r,add_g,add_b,add_a;
 extern int need_to_add;
 extern int do_fillrect_blend;
+extern int gGameState;
 
 static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     cur_buf = (void*) buf_vbo;
@@ -945,7 +946,13 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
             }
     }
 #endif
+//if (gGameState == 8) {
+  //          glEnable(GL_DEPTH_TEST);
+    ///    glDepthMask(GL_TRUE);
+       // glDepthFunc(GL_ALWAYS);
+        //glEnable(GL_BLEND);
 
+//}
 glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 #if 1
     if(cur_shader->shader_id == 0x00000a00 && (do_backdrop) && gLevelType == LEVELTYPE_PLANET) {
@@ -980,6 +987,7 @@ extern void  __attribute__((noinline)) gfx_opengl_2d_projection(void);
 
 extern void  __attribute__((noinline)) gfx_opengl_reset_projection(void);
 extern int do_starfield;
+
 void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     dc_fast_t* tris = buf_vbo;
 
@@ -1020,6 +1028,8 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
             skybox_setup_post();
     }
     else {
+        
+
         if (cur_shader->shader_id == 0x01200200)
             skybox_setup_pre();
         if(cur_shader->shader_id == 0x01045045)
@@ -1038,7 +1048,12 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
             glDisable(GL_BLEND);
             glDisable(GL_FOG);
         } */
-
+        if (gGameState == 8) {  // ending
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+            glDepthFunc(GL_ALWAYS);
+            glDisable(GL_BLEND);
+        }
         glDrawArrays(GL_TRIANGLES, 0, buf_vbo_len);
 
         if (cur_shader->shader_id == 0x01200200)

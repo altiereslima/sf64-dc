@@ -231,6 +231,7 @@ static struct RDP {
 		uint16_t uls, ult, lrs, lrt; // U10.2
 		uint32_t line_size_bytes;
 		uint16_t masks, maskt;
+		uint8_t shifts,shiftt;
 	} texture_tile;
 	uint8_t textures_changed[2];
 
@@ -494,7 +495,8 @@ static inline float gainf(float x, float g) {
 }
 /* Piecewise sRGB transfer: linear [0..1] -> sRGB [0..1] */
 static inline float linear_to_srgb1(float x) {
-	return shz_sqrtf_fsrra(x);
+//    if (x < 0.0031308f) return 12.92f * x;      // lower branch
+	return shz_sqrtf_fsrra(x + 0.00000001f);
 #if 0
 ///    if (x <= 0.0f) return 0.0f;                 // clamp negatives
    // if (x < 0.0031308f) return 12.92f * x;      // lower branch
@@ -606,7 +608,7 @@ static void import_texture_rgba16(int tile) {
 
 		uint16_t* start = (uint16_t*) &rdp.loaded_texture[tile]
 					.addr[(((rdp.texture_tile.uls >> G_TEXTURE_IMAGE_FRAC)) << 1) +
-						((((rdp.texture_tile.ult >> G_TEXTURE_IMAGE_FRAC)) * (src_width)) << 1)];
+						(((((rdp.texture_tile.ult) >> G_TEXTURE_IMAGE_FRAC)) * (src_width)) << 1)];
 
 		uint16_t *tex16 = rgba16_buf;
 		for (i = 0; i < height; i++) {
@@ -1068,9 +1070,16 @@ static void __attribute__((noinline)) import_texture(int tile) {
 	uint8_t siz = rdp.texture_tile.siz;
 
 	uint32_t tmem = rdp.texture_to_load.tmem;
-
-	int cl_rv = gfx_texture_cache_lookup(tile, &rendering_state.textures[tile], rdp.loaded_texture[tile].addr, tmem,
+int cl_rv;
+	if (rdp.texture_tile.masks == 5 && rdp.texture_tile.maskt == 5) {
+cl_rv = gfx_texture_cache_lookup(tile, &rendering_state.textures[tile], rdp.loaded_texture[tile].addr, tmem,
+										 fmt, siz, 0, 0, last_palette);
+	} else {
+cl_rv = gfx_texture_cache_lookup(tile, &rendering_state.textures[tile], rdp.loaded_texture[tile].addr, tmem,
 										 fmt, siz, rdp.texture_tile.uls, rdp.texture_tile.ult,last_palette);
+	}
+
+	 
 	if (cl_rv == 1) {
 		return;
 	}
@@ -1378,7 +1387,7 @@ float my_acosf (float a)
 {
     float r, s, t;
     s = (a < 0.0f) ? 2.0f : (-2.0f);
-    t = fmac (s, a, 2.0f);
+    t = fmac (s, a, 2.0f) + 0.0000001f;
     s = shz_sqrtf_fsrra (t);
     r =              4.25032340e-7f;
     r = fmac (r, t, -1.92483935e-6f);
@@ -1799,13 +1808,13 @@ static void  __attribute__((noinline)) gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx
                 import_texture(i);
                 rdp.textures_changed[i] = 0;
             }
-/* 			if (rdp.texture_tile.masks > 0) {
+/*  			if (rdp.texture_tile.masks > 0) {
 rdp.texture_tile.cms = G_TX_MIRROR;
 }
 if (rdp.texture_tile.maskt > 0) {
 rdp.texture_tile.cmt = G_TX_MIRROR;
 }
- */
+ */ 
             uint8_t linear_filter = (rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT;
             if (linear_filter != rendering_state.textures[i]->linear_filter ||
                 rdp.texture_tile.cms != rendering_state.textures[i]->cms ||
@@ -1840,15 +1849,36 @@ rdp.texture_tile.cmt = G_TX_MIRROR;
         buf_vbo[buf_num_vert].vert.z = v_arr[i]->z;
 
         if (use_texture) {
-            float u = (v_arr[i]->u - (float)(rdp.texture_tile.uls << 3)) * 0.03125f;
+            float u = (v_arr[i]->u * 0.03125f);
             // / 32.0f;
-            float v = (v_arr[i]->v - (float)(rdp.texture_tile.ult << 3)) * 0.03125f;
+            float v = (v_arr[i]->v * 0.03125f);
             // / 32.0f;
+
+			int shifts = rdp.texture_tile.shifts;
+            int shiftt = rdp.texture_tile.shiftt;
+            if (shifts != 0) {
+                if (shifts <= 10) {
+                    u /= 1 << shifts;
+                } else {
+                    u *= 1 << (16 - shifts);
+                }
+            }
+            if (shiftt != 0) {
+                if (shiftt <= 10) {
+                    v /= 1 << shiftt;
+                } else {
+                    v *= 1 << (16 - shiftt);
+                }
+            }
+
             if ((rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT) {
                 // Linear filter adds 0.5f to the coordinates
                 u += 0.5f;
                 v += 0.5f;
             }
+
+			u -= (float)(rdp.texture_tile.uls * 0.25f);
+			v -= (float)(rdp.texture_tile.ult * 0.25f);
 /* 
 if (rdp.texture_tile.masks > 0) {
 u = fmodf(u, (float)((1 << rdp.texture_tile.masks) << 3));
@@ -2972,8 +3002,8 @@ static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly,
 	rdp.viewport_or_scissor_changed = 1;
 }
 
-static void gfx_dp_set_texture_image(UNUSED uint32_t format, uint32_t size, UNUSED uint32_t width,
-									 UNUSED const void* addr) {
+static void gfx_dp_set_texture_image(UNUSED uint32_t format, uint32_t size, uint32_t width,
+									 const void* addr) {
 	rdp.texture_to_load.addr = segmented_to_virtual((void*)addr);
 	rdp.texture_to_load.siz = size;
 	last_set_texture_image_width = width;
@@ -2982,7 +3012,7 @@ static void gfx_dp_set_texture_image(UNUSED uint32_t format, uint32_t size, UNUS
 
 static void  gfx_dp_set_tile(uint8_t fmt, uint32_t siz, uint32_t line, uint32_t tmem, uint8_t tile,
 							uint32_t palette, uint32_t cmt,  uint32_t maskt,  uint32_t shiftt,
-							uint32_t cms, uint32_t masks, UNUSED uint32_t shifts) {
+							uint32_t cms, uint32_t masks, uint32_t shifts) {
 	if (tile == G_TX_RENDERTILE) {
 		//SUPPORT_CHECK(palette == 0); // palette should set upper 4 bits of color index in 4b mode
 		rdp.texture_tile.fmt = fmt;
@@ -2999,6 +3029,8 @@ static void  gfx_dp_set_tile(uint8_t fmt, uint32_t siz, uint32_t line, uint32_t 
 		rdp.texture_tile.cms = cms;
 		rdp.texture_tile.cmt = cmt;
 		rdp.texture_tile.line_size_bytes = line * 8;
+		rdp.texture_tile.shifts = shifts;
+		rdp.texture_tile.shiftt = shiftt;
 		rdp.textures_changed[0] = 1;
 		rdp.textures_changed[1] = 1;
 	}
@@ -3039,17 +3071,17 @@ static void  __attribute__((noinline)) gfx_dp_load_tlut(UNUSED uint8_t tile, uin
 		uint8_t b = (((c >> 1) & 0x1f));
 //		if(b > 31) b = 31;
 
-float r01 = (float)r / 31.0f;
-	float g01 = (float)g / 31.0f;
-	float b01 = (float)b / 31.0f;
+		float r01 = (float)r / 31.0f;
+		float g01 = (float)g / 31.0f;
+		float b01 = (float)b / 31.0f;
 
-	r01 = linear_to_srgb1(r01);
-	g01 = linear_to_srgb1(g01);
-	b01 = linear_to_srgb1(b01);
+		r01 = linear_to_srgb1(r01);
+		g01 = linear_to_srgb1(g01);
+		b01 = linear_to_srgb1(b01);
 
-	r = (uint8_t)(r01*31.0f);
-	g = (uint8_t)(g01*31.0f);
-	b = (uint8_t)(b01*31.0f);
+		r = (uint8_t)(r01*31.0f);
+		g = (uint8_t)(g01*31.0f);
+		b = (uint8_t)(b01*31.0f);
 
 		*tlp++ = (a << 15) | (r << 10) | (g << 5) | (b);
 	}
@@ -4103,6 +4135,19 @@ void gfx_init(struct GfxWindowManagerAPI* wapi, struct GfxRenderingAPI* rapi, co
 	gfx_rapi = rapi;
 	gfx_wapi->init(game_name, start_in_fullscreen);
 	gfx_rapi->init();
+
+printf("\n");
+for(float x=0.0f;x<1.0f;x+=0.01f) {
+	printf("%f, ", sqrtf(x));
+}
+printf("\n");
+for(float x=0.0f;x<1.0f;x+=0.01f) {
+printf("%f, ", shz_sqrtf_fsrra(x));
+}
+printf("\n");
+for(float x=0.0f;x<1.0f;x+=0.01f) {
+	printf("%f, ", sqrtf(x) - shz_sqrtf_fsrra(x));
+}
 
 	// Used in the 120 star TAS
 	/*static uint32_t precomp_shaders[] = { 0x01200200, 0x00000045, 0x00000200, 0x01200a00, 0x00000a00, 0x01a00045,

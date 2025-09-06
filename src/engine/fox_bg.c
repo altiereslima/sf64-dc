@@ -925,6 +925,9 @@ void Background_dummy_80040CDC(void) {
 
 extern void gfx_texture_cache_invalidate(void *addr);
 
+int round_to_nearest_5(int n) {
+    return ((n + 2) / 5) * 5;
+}
 void Background_DrawGround(void) {
     f32 zPos;
     s32 i;
@@ -1006,7 +1009,7 @@ void Background_DrawGround(void) {
     Matrix_SetGfxMtx(&gMasterDisp);
 
     switch (gCurrentLevel) {
-        case LEVEL_CORNERIA:
+        case LEVEL_CORNERIA: {
         
             if (gGroundClipMode != 0) {
                 RCP_SetupDL_29(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
@@ -1017,13 +1020,36 @@ void Background_DrawGround(void) {
             if (gLevelMode == LEVELMODE_ON_RAILS) {
                 gDPSetTextureImage(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1,
                                    SEGMENTED_TO_VIRTUAL(aCoGroundGrassTex));
-
-                yScroll = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 32.0f));//128.0f)); // 0.64f / 3.0f
-                xScroll = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 32.0f);//128.0f);
+#if 0
+                yScroll = 1+((uint32_t)fabsf(/* Math_ModF */(2.0f * (gPathTexScroll * 0.2133333f))))&0x7f;//, 128.0f)); // 0.64f / 3.0f
+                xScroll = 1+((uint32_t)/* Math_ModF */((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f))&0x7f;//, 128.0f);
+#endif
+                yScroll =(fabsf(/* Math_ModF */(2.0f * ((gPathTexScroll) * 0.2133333f))));//&0x7f;//, 128.0f)); // 0.64f / 3.0f
+                //yScroll = yScroll - floorf(yScroll);
+                xScroll = (/* Math_ModF */((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f));//&0x7f;//, 128.0f);
 
                 gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, xScroll, yScroll,
                              G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
-
+#if 0
+                u32 uls, ult, lrs, lrt;
+                uls = (((u32)(xScroll)) << 12) & 0x0FF000;
+                lrs = (uls + (127 << 12)) & 0x0FF000;
+                ult = ((u32)(yScroll)) & 0x0FF;
+                lrt = (ult + 127) & 0x0FF;
+                Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+                gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+                gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
+#endif
+            u32 uls, ult, lrs, lrt;
+            uls = (((u32)(xScroll)) << 12) & 0x0fF000;
+            lrs = (uls + (127 << 12)) & 0xffF000;
+            ult = ((u32)(yScroll)) & 0x0fF;
+            lrt = (ult + 127) & 0xffF;
+//            if (lrt < ult) lrt += 127;
+            Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+            gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+            gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
+            //    printf("uls %d ult %d lrs %d lrt %d\n", (uls>>12), ult, (lrs>>12), lrt);
                 switch (gGroundSurface) {
                     case SURFACE_GRASS:
                         gDPLoadTileTexture(gMasterDisp++, aCoGroundGrassTex, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32);
@@ -1037,11 +1063,11 @@ void Background_DrawGround(void) {
                         RCP_SetupDL_45(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
                         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 128);
 #if 1
-    gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
-    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                        gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 #endif
-                      gDPLoadTileTexture(gMasterDisp++, D_CO_6028A60, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32);
+                        gDPLoadTileTexture(gMasterDisp++, D_CO_6028A60, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32);
 
                         gBgColor = 0x190F; // 24, 32, 56
                         break;
@@ -1067,11 +1093,12 @@ void Background_DrawGround(void) {
                     Matrix_Pop(&gGfxMatrix);
                 }
             }
-
+        }
             break;
 
         case LEVEL_VENOM_1:
         case LEVEL_MACBETH:
+        {
             RCP_SetupDL_29(gFogRed, gFogGreen, gFogBlue, gFogAlpha, gFogNear, gFogFar);
             switch (gCurrentLevel) {
                 case LEVEL_VENOM_1:
@@ -1090,10 +1117,30 @@ void Background_DrawGround(void) {
                     break;
             }
             gDPSetTextureImage(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, groundTex);
-            yScroll = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 128.0f));
-            xScroll = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 128.0f);
+//            yScroll = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 128.0f));
+//            xScroll = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 128.0f);
+//printf("scroll %f\n",gPathTexScroll);
+// 16 / 37.5
+// 32 / 75
+                yScroll =(fabsf(/* Math_ModF */(2.0f * ((gPathTexScroll) * 0.2133333f))));//&0x7f;//, 128.0f)); // 0.64f / 3.0f
+                //yScroll = yScroll - floorf(yScroll);
+                xScroll = (/* Math_ModF */((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f));//&0x7f;//, 128.0f);
+//while(xScroll > 127.0f) xScroll -= 128.0f;
+//xScroll = xScroll - floorf(xScroll);
             gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, xScroll, yScroll,
                          G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+
+            u32 uls, ult, lrs, lrt;
+            uls = (((u32)(xScroll)) << 12) & 0x0fF000;
+            lrs = (uls + (127 << 12)) & 0xffF000;
+            ult = ((u32)(yScroll)) & 0x000fF;
+            lrt = (ult + 127) & 0x000ffF;
+//            if (lrt < ult) lrt += 127;
+            Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+            gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+            gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
+             //   printf("uls %d ult %d lrs %d lrt %d\n", (uls>>12), ult, (lrs>>12), lrt);
+
             Matrix_Push(&gGfxMatrix);
             Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -3000.0f, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, 1.0f, 1.0f, 0.5f, MTXF_APPLY);
@@ -1106,6 +1153,7 @@ void Background_DrawGround(void) {
             Matrix_SetGfxMtx(&gMasterDisp);
             gSPDisplayList(gMasterDisp++, groundDL);
             Matrix_Pop(&gGfxMatrix);
+        }
             break;
 
         case LEVEL_TRAINING:
@@ -1140,6 +1188,7 @@ void Background_DrawGround(void) {
             break;
 
         case LEVEL_AQUAS:
+        {
             RCP_SetupDL(&gMasterDisp, SETUPDL_20);
             groundDL = aAqGroundDL;
             gSPFogPosition(gMasterDisp++, gFogNear, gFogFar);
@@ -1153,11 +1202,24 @@ void Background_DrawGround(void) {
 //                Lib_Texture_Scroll(aAqGroundTex, 32, 32, 1);
   //              gfx_texture_cache_invalidate(aAqGroundTex);
 
-                yScroll = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 32.0f));
-                xScroll = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 32.0f);
+                yScroll = (fabsf(/* Math_ModF */(2.0f * ((gPathTexScroll) * 0.2133333f))));//&0x7f;//, 128.0f)); // 0.64f / 3.0f
+//while(yScroll > 3968.0f) yScroll -= 128.0f;
+                //yScroll = yScroll - floorf(yScroll);
+                xScroll = (/* Math_ModF */((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f));//&0x7f;//, 128
 //0,0
                 gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, xScroll, yScroll, 
                              G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+
+                   u32 uls, ult, lrs, lrt;
+            uls = (((u32)(xScroll)) << 12) & 0x0fF000;
+            lrs = (uls + (127 << 12)) & 0xffF000;
+            ult = ((u32)(yScroll)) & 0x0fF;
+            lrt = (ult + 127) & 0xffF;
+//            if (lrt < ult) lrt += 127;
+            Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+            gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+            gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
+               // printf("uls %d ult %d lrs %d lrt %d\n", (uls>>12), ult, (lrs>>12), lrt);
 
                 Matrix_Push(&gGfxMatrix);
                 Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, -3000.0f, MTXF_APPLY);
@@ -1181,11 +1243,24 @@ void Background_DrawGround(void) {
  //               Lib_Texture_Scroll(aAqWaterTex, 32, 32, 1);
    //             gfx_texture_cache_invalidate(aAqWaterTex);
 
-                yScroll = fabsf(Math_ModF(2.0f * (gPathTexScroll * 0.2133333f), 32.0f));
-                xScroll = Math_ModF((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f, 32.0f);
+                yScroll =  (fabsf(/* Math_ModF */(2.0f * ((gPathTexScroll) * 0.2133333f))));//&0x7f;//, 128.0f)); // 0.64f / 3.0f
+//while(yScroll > 3968.0f) yScroll -= 128.0f;
+                //yScroll = yScroll - floorf(yScroll);
+                xScroll = (/* Math_ModF */((10000.0f - gPlayer[gPlayerNum].xPath) * 0.32f));//&0x7f;//, 128
 //xScroll, yScroll,
                 gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, xScroll, yScroll,
                              G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+
+                     u32 uls, ult, lrs, lrt;
+            uls = (((u32)(xScroll)) << 12) & 0x0fF000;
+            lrs = (uls + (127 << 12)) & 0xffF000;
+            ult = ((u32)(yScroll)) & 0x0fF;
+            lrt = (ult + 127) & 0xffF;
+//            if (lrt < ult) lrt += 127;
+            Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+            gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+            gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
+               // printf("uls %d ult %d lrs %d lrt %d\n", (uls>>12), ult, (lrs>>12), lrt);
 
                 if (gAqDrawMode != 0) {
                     RCP_SetupDL(&gMasterDisp, SETUPDL_47);
@@ -1213,6 +1288,7 @@ void Background_DrawGround(void) {
                 Matrix_SetGfxMtx(&gMasterDisp);
                 gSPDisplayList(gMasterDisp++, aAqWaterSurfaceDL);
             }
+        }
             break;
 
         case LEVEL_FORTUNA:

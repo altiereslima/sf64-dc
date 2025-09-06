@@ -120,14 +120,14 @@ void unmute_stream(void) {
 
 void *audio_callback(UNUSED snd_stream_hnd_t hnd, int samples_requested_bytes, int *samples_returned_bytes) {
     size_t samples_requested = samples_requested_bytes / 4;
-    size_t samples_avail_bytes = cb_read_data(temp_buf + ((8192) * temp_buf_sel) , samples_requested_bytes);
+    size_t samples_avail_bytes = cb_read_data(temp_buf + ((4096) * temp_buf_sel) , samples_requested_bytes);
     
     *samples_returned_bytes = samples_requested_bytes;
     size_t samples_returned = samples_avail_bytes / 4;
     
     /*@Note: This is more correct, fill with empty audio */
     if (samples_avail_bytes < (unsigned)samples_requested_bytes) {
-        memset(temp_buf + ((8192) * temp_buf_sel) + samples_avail_bytes, 0, (samples_requested_bytes - samples_avail_bytes));
+        memset(temp_buf + ((4096) * temp_buf_sel) + samples_avail_bytes, 0, (samples_requested_bytes - samples_avail_bytes));
     }
     
     temp_buf_sel += 1;
@@ -135,7 +135,7 @@ void *audio_callback(UNUSED snd_stream_hnd_t hnd, int samples_requested_bytes, i
         temp_buf_sel = 0;
     }
     
-    return (void*)(temp_buf + ((8192) * temp_buf_sel));
+    return (void*)(temp_buf + ((4096) * temp_buf_sel));
 }
 
 static bool audio_dc_init(void) {
@@ -159,7 +159,7 @@ static bool audio_dc_init(void) {
            (unsigned int)RING_BUFFER_MAX_BYTES);
 #if 1
     // Allocate the sound stream with KOS
-    shnd = snd_stream_alloc(audio_callback, 8192);
+    shnd = snd_stream_alloc(audio_callback, 4096);
     if (shnd == SND_STREAM_INVALID) {
         printf("SND: Stream allocation failure!\n");
         snd_stream_destroy(shnd);

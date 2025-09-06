@@ -81,13 +81,14 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
     u8* dst8;
     u8* src8;
     s32 offset;
-
+ 
     vdst = SEGMENTED_TO_VIRTUAL(dst);
+    gfx_texture_cache_invalidate(vdst);
     vsrc = SEGMENTED_TO_VIRTUAL(src);
     switch (mode) {
         case 2:
             for (v = 0; v < 32 * 32; v += 32) {
-                offset = 3.0f * sinf((s32) (((v / 32) + (gGameFrameCount / 4)) % 32U) * (2 * F_PI / 32));
+                offset = 3.0f * sinf((s32) (((v / 32) + (gGameFrameCount / 4)) % 32U) * (2.0f * F_PI / 32.0f));
                 for (u = 0; u < 32; u++) {
                     vdst[v + (offset + u) % 32U] = vsrc[v + u];
                 }

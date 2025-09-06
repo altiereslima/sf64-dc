@@ -1068,22 +1068,6 @@ void Effect_Effect359_Update(Effect359* this) {
 
 Gfx* D_800D178C[] = { D_TI_6003440, D_TI_60034E0, D_TI_6003580, D_TI_6003620, D_TI_60036C0, D_TI_6003760 };
 
-#if 0
-void Effect_Effect359_Draw(Effect359* this) {
-    RCP_SetupDL(&gMasterDisp, SETUPDL_68);
-//gDPSetCombineLERP(gMasterDisp++, 1, 0, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, 0,
-  //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);    
-    gDPSetPrimColor(gMasterDisp++, 0, 0, 107, 50, 21, this->alpha);
-//    gDPSetEnvColor(gMasterDisp++, 141, 73, 5, 255);
-    gDPSetEnvColor(gMasterDisp++, 255/* -31 */, 255/* -10 */, 255/* -0 */, 255);
-
-Matrix_Scale(gGfxMatrix, this->scale2, this->scale2, 1.0f, MTXF_APPLY);
-    Matrix_SetGfxMtx(&gMasterDisp);
-    gSPDisplayList(gMasterDisp++, D_800D178C[this->unk_4C]);
-    this->unk_4C = this->unk_48;
-    RCP_SetupDL(&gMasterDisp, SETUPDL_64);
-}
-#endif
 void Effect_Effect359_Draw(Effect359* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_68);
 //gDPSetCombineLERP(gMasterDisp++, 1, 0, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, 0,

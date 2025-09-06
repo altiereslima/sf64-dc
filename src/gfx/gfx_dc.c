@@ -59,7 +59,35 @@ static void gfx_dc_handle_events(void) {
 }
 
 uint8_t skip_debounce = 0;
-const unsigned int FRAME_TIME_MS = 33; // hopefully get right on target @ 33.3
+unsigned int FRAME_TIME_MS = 33; // hopefully get right on target @ 33.3
+
+extern uint8_t gVIsPerFrame;
+typedef enum LevelId {
+    /* -1 */ LEVEL_UNK_M1 = -1,
+    /*  0 */ LEVEL_CORNERIA,
+    /*  1 */ LEVEL_METEO,
+    /*  2 */ LEVEL_SECTOR_X,
+    /*  3 */ LEVEL_AREA_6,
+    /*  4 */ LEVEL_UNK_4,
+    /*  5 */ LEVEL_SECTOR_Y,
+    /*  6 */ LEVEL_VENOM_1,
+    /*  7 */ LEVEL_SOLAR,
+    /*  8 */ LEVEL_ZONESS,
+    /*  9 */ LEVEL_VENOM_ANDROSS,
+    /* 10 */ LEVEL_TRAINING,
+    /* 11 */ LEVEL_MACBETH,
+    /* 12 */ LEVEL_TITANIA,
+    /* 13 */ LEVEL_AQUAS,
+    /* 14 */ LEVEL_FORTUNA,
+    /* 15 */ LEVEL_UNK_15,
+    /* 16 */ LEVEL_KATINA,
+    /* 17 */ LEVEL_BOLSE,
+    /* 18 */ LEVEL_SECTOR_Z,
+    /* 19 */ LEVEL_VENOM_2,
+    /* 20 */ LEVEL_VERSUS,
+    /* 77 */ LEVEL_WARP_ZONE = 77,
+} LevelId;
+extern LevelId gCurrentLevel;
 
 static uint8_t gfx_dc_start_frame(void) {
     const unsigned int cur_time = GetSystemTimeLow();
@@ -69,8 +97,12 @@ static uint8_t gfx_dc_start_frame(void) {
         skip_debounce--;
         return 1;
     }
+    uint32_t ActualFrameTime = 33;
+    if (gVIsPerFrame == 3)
+        ActualFrameTime = 50;
+
     // skip if frame took longer than 1 / 30 = 33.3 ms
-    if (elapsed > FRAME_TIME_MS) {
+    if (elapsed > ActualFrameTime) { //FRAME_TIME_MS) {
         skip_debounce = 1; // skip a max of once every 4 frames
         last_time = cur_time;
         return 0;
@@ -81,18 +113,23 @@ static uint8_t gfx_dc_start_frame(void) {
 static void gfx_dc_swap_buffers_begin(void) {
 }
 
+
+
 static void gfx_dc_swap_buffers_end(void) {
     // Number of microseconds a frame should take (30 fps)
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
     last_time = cur_time;
+    uint32_t ActualFrameTime = 33;
+    if (gVIsPerFrame == 3)
+        ActualFrameTime = 50;
 
-    if (force_30fps && elapsed < FRAME_TIME_MS) {
+    if (force_30fps && elapsed < ActualFrameTime) { //FRAME_TIME_MS) {
 #ifdef DEBUG
         printf("elapsed %d ms fps %f delay %d \n", elapsed, 1000.0f / elapsed, FRAME_TIME_MS - elapsed);
 #endif
-        DelayThread(FRAME_TIME_MS - elapsed);
-        last_time += (FRAME_TIME_MS - elapsed);
+        DelayThread(/* FRAME_TIME_MS */ActualFrameTime - elapsed);
+        last_time += (/* FRAME_TIME_MS */ActualFrameTime - elapsed);
     }
 
     /* Lets us yield to other threads*/

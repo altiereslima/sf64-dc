@@ -466,6 +466,14 @@ void Ending_Floor_Draw(u32 arg0, AssetInfo* asset) {
                         G_TX_WRAP | G_TX_NOMIRROR, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
     gDPSetupTile(gMasterDisp++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, arg0 * 14, 0, G_TX_NOMIRROR | G_TX_WRAP,
                  G_TX_NOMIRROR | G_TX_WRAP, 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    u32 uls, ult, lrs, lrt;
+    uls = (((u32)(arg0 * 14)) << 12) & 0x0fF000;
+    lrs = (uls + (127 << 12)) & 0xffF000;
+    ult = ((u32)(0)) & 0x0fF;
+    lrt = (ult + 127) & 0xffF;
+    Gfx* gfx = (Gfx*)(gMasterDisp - 1);
+    gfx->words.w0 = (G_SETTILESIZE << 24) | uls | ult;
+    gfx->words.w1 = (gfx->words.w1 & 0x07000000) | lrs | lrt;
     gSPDisplayList(gMasterDisp++, aEndFloorDL);
 }
 
@@ -882,6 +890,7 @@ void Ending_80191710(u32 arg0, AssetInfo* asset) {
 
     gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
+    
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
 
@@ -926,7 +935,21 @@ void Ending_80191710(u32 arg0, AssetInfo* asset) {
     }
 
     Matrix_SetGfxMtx(&gMasterDisp);
-
+    if (asset->unk_00 == aAwCockpitGlassDL) {
+                gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 140);
+#if 1
+        gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+#endif
+        //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
+        gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
+    } else if (asset->unk_00 == aEndBackdrop2DL) {
+        Matrix_Translate(gGfxMatrix, 0,
+                     0,
+                     -1000, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gMasterDisp);
+    }
     gSPDisplayList(gMasterDisp++, asset->unk_00);
 }
 
