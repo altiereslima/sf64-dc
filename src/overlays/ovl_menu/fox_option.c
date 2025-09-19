@@ -3503,24 +3503,48 @@ void Option_DrawMenuLabel(void) {
     Option_DrawCardLabel(sOptionCardList[sMainMenuCursor].tex);
 }
 
+#define gSPMenuCard(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x465543EE;                                           \
+    }
+
+extern u16 D_OPT_80155E8[];
 void Option_DrawMenuCard(OptionCardFrame arg0) {
+#if 1
     RCP_SetupDL(&gMasterDisp, SETUPDL_17);
 
     Lib_InitOrtho(&gMasterDisp);
 
+gSPMenuCard(gMasterDisp++);
     Matrix_Push(&gGfxMatrix);
+    Matrix_LookAt(gGfxMatrix, 0.0f, 0.0f, 300.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gMasterDisp);
 
+//printf("arg0 x %f y %f z %f xsc %f ysc %f\n", arg0.x, arg0.y, arg0.z, arg0.xScale, arg0.yScale);
     Matrix_Translate(gGfxMatrix, arg0.x, arg0.y, arg0.z, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, arg0.xScale, arg0.yScale, 1.0f, MTXF_APPLY);
     Matrix_RotateX(gGfxMatrix, M_DTOR * 90.0f, MTXF_APPLY);
 
     Matrix_SetGfxMtx(&gMasterDisp);
+//                RCP_SetupDL(&gMasterDisp, SETUPDL_78);
+  //              gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
 
     gSPDisplayList(gMasterDisp++, D_OPT_8015550);
 
     Matrix_Pop(&gGfxMatrix);
+gSPMenuCard(gMasterDisp++);
 
-    Lib_InitPerspective(&gMasterDisp);
+    #else
+
+                RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+                gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
+                Lib_TextureRect_RGBA16(&gMasterDisp,D_OPT_80155E8,32, 32, arg0.x + 95, arg0.y + 112, arg0.xScale * 10.5f,
+                                       arg0.yScale * 2.4f);
+#endif
+                                       Lib_InitPerspective(&gMasterDisp);
 }
 
 void Option_DrawMenuArwing(ArwingCursorPos arwing) {

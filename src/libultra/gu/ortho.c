@@ -12,9 +12,12 @@ void guOrthoF(float m[4][4], float left, float right, float bottom, float top, f
     m[3][1] = -(top + bottom) / (top - bottom);
     m[3][2] = -(far + near) / (far - near);
     m[3][3] = 1.0f;
-    for (row = 0; row < 4; row++) {
-        for (col = 0; col < 4; col++) {
-            m[row][col] *= scale;
+
+    if (scale != 1.0f) {
+        for (row = 0; row < 4; row++) {
+            for (col = 0; col < 4; col++) {
+                m[row][col] *= scale;
+            }
         }
     }
 }

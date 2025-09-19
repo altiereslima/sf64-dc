@@ -92,21 +92,22 @@ extern LevelId gCurrentLevel;
 static uint8_t gfx_dc_start_frame(void) {
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
-
-    if (skip_debounce) {
-        skip_debounce--;
-        return 1;
-    }
+#if 1
+//    if (skip_debounce) {
+  //      skip_debounce--;
+    //    return 1;
+    //}
     uint32_t ActualFrameTime = 33;
     if (gVIsPerFrame == 3)
         ActualFrameTime = 50;
 
     // skip if frame took longer than 1 / 30 = 33.3 ms
     if (elapsed > ActualFrameTime) { //FRAME_TIME_MS) {
-        skip_debounce = 1; // skip a max of once every 4 frames
+      //  skip_debounce = 3; // skip a max of once every 4 frames
         last_time = cur_time;
         return 0;
     }
+#endif
     return 1;
 }
 

@@ -271,9 +271,11 @@ void Katina_LaserEnergyParticlesUpdate(Effect358* this) {
 
 void Katina_LaserEnergyParticlesDraw(Effect358* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_67);
+                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 
     gDPSetPrimColor(gMasterDisp++, 0, 0, 48, 48, 255, this->alpha);
-    gDPSetEnvColor(gMasterDisp++, 0, 0, 0, this->alpha);
+    gDPSetEnvColor(gMasterDisp++, 255-0, 255-0, 255-0, this->alpha);
 
     Matrix_Scale(gGfxMatrix, 0.4f, 0.4f, 0.4f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
@@ -1663,8 +1665,11 @@ void Katina_KaSaucerer_Draw(KaSaucerer* this) {
         if (this->fwork[BOSS_LASER_LIGHT_SCALE] > 0.0f) {
             RCP_SetupDL(&gMasterDisp, SETUPDL_67);
             Matrix_Push(&gGfxMatrix);
-            gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
-            gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
+                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+
+                                        gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
+            gDPSetEnvColor(gMasterDisp++, 255-0, 255-255, 255-255, 255);
             Matrix_Translate(gGfxMatrix, 0.0f, 500.0f, 0.0f, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, this->fwork[BOSS_LASER_LIGHT_SCALE], this->fwork[BOSS_LASER_LIGHT_SCALE],
                          this->fwork[BOSS_LASER_LIGHT_SCALE], MTXF_APPLY);
@@ -1675,7 +1680,7 @@ void Katina_KaSaucerer_Draw(KaSaucerer* this) {
 
             Matrix_Push(&gGfxMatrix);
             gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 64);
-            gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 64);
+            gDPSetEnvColor(gMasterDisp++, 255-0, 255-255, 255-255, 64);
             Matrix_Translate(gGfxMatrix, 0.0f, 500.0f, 0.0f, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, this->fwork[BOSS_LASER_LIGHT_SCALE] * 3.0f,
                          this->fwork[BOSS_LASER_LIGHT_SCALE] * 3.0f, this->fwork[BOSS_LASER_LIGHT_SCALE] * 3.0f,

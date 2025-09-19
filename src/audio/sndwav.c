@@ -200,7 +200,7 @@ wav_stream_hnd_t wav_create(const char *filename, int loop, size_t loopstart, si
 	stream.wave_file = file;
 	stream.loop = loop;
 	stream.callback = wav_file_callback;
-	stream.vol = (90 * 255) / 100;
+	stream.vol = 160;
 	stream.format = info.format;
 	stream.channels = info.channels;
 	stream.sample_rate = info.sample_rate;

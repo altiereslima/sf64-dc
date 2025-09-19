@@ -1987,7 +1987,7 @@ void SectorY_SyShogun_Draw(SyShogun* this) {
         if (this->fwork[43] != 0.0f) {
             RCP_SetupDL_49();
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 0, 0, 255);
-            gDPSetEnvColor(gMasterDisp++, 0, 0, 0, 0);
+            gDPSetEnvColor(gMasterDisp++, 0, 0, 0, 255);
             Matrix_Pop(&gGfxMatrix);
             Matrix_Push(&gGfxMatrix);
             Matrix_Translate(gGfxMatrix, this->obj.pos.x, 157.0f, this->obj.pos.z, MTXF_APPLY);
@@ -2001,7 +2001,7 @@ void SectorY_SyShogun_Draw(SyShogun* this) {
             RCP_SetupDL_49();
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, (s32) this->fwork[46], (s32) this->fwork[46], 0,
                             (s32) this->fwork[46]);
-            gDPSetEnvColor(gMasterDisp++, 0, 0, 0, 0);
+            gDPSetEnvColor(gMasterDisp++, 0, 0, 0, 255);
             Matrix_Pop(&gGfxMatrix);
             Matrix_Push(&gGfxMatrix);
             Matrix_Translate(gGfxMatrix, this->obj.pos.x + 10.0f, this->obj.pos.y + 70.0f, this->obj.pos.z + 60.0f,

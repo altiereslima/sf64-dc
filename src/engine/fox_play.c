@@ -6681,6 +6681,7 @@ void Camera_SetupLights(Player* player) {
     gLight2y = dest.y;
     gLight2z = dest.z;
 }
+
 void gfx_texture_cache_invalidate(void *addr);
 void Play_UpdateLevel(void) {
     s32 cycleMask;
@@ -6777,7 +6778,6 @@ void Play_UpdateLevel(void) {
 
         case LEVEL_AQUAS:
             HUD_Texture_Wave(D_AQ_603158C, aAqWaterTex);
-            gfx_texture_cache_invalidate(aAqWaterTex);
             break;
 
         case LEVEL_SOLAR:

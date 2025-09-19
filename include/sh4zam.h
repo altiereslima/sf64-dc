@@ -119,6 +119,7 @@ SHZ_FORCE_INLINE float shz_inv_sqrtf(float x) {
 }
 
 SHZ_FORCE_INLINE float shz_sqrtf_fsrra(float x) {
+    x += 0.000000001f;
     return shz_inv_sqrtf(x) * x;
 }
 

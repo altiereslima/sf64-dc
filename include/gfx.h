@@ -86,7 +86,7 @@ typedef struct {
 typedef s32 (*OverrideLimbDraw)(s32 limbIndex, Gfx** dList,  Vec3f* pos, Vec3f* rot, void* this);
 typedef void (*PostLimbDraw)(s32, Vec3f*, void*);
 
-typedef struct {
+typedef struct /* __attribute__((aligned(4))) */ {
     /* 0x0 */ u16 xLen;
     /* 0x2 */ u16 x;
     /* 0x4 */ u16 yLen;
@@ -95,14 +95,14 @@ typedef struct {
     /* 0xA */ u16 z;
 } JointKey; // size = 0xC
 
-typedef struct {
+typedef struct /* __attribute__((aligned(4))) */ {
     /* 0x00 */ s16 frameCount;
     /* 0x02 */ s16 limbCount;
     /* 0x04 */ u16* frameData;
     /* 0x08 */ JointKey* jointKey;
 } Animation; // size = 0xC
 
-typedef struct Limb {
+typedef struct /* __attribute__((aligned(4))) */ Limb {
     /* 0x000 */ Gfx* dList;
     /* 0x004 */ Vec3f trans;
     /* 0x010 */ Vec3s rot;

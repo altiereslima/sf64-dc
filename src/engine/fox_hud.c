@@ -1403,6 +1403,13 @@ void HUD_LoseLifeExplosion_Draw(s32 animFrames) {
     }
 }
 
+#define gSPFixDepthCut(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554369;                                           \
+    }
 void HUD_PauseScreen_Update(void) {
     s32 i;
     s32 j;
@@ -1498,7 +1505,9 @@ void HUD_PauseScreen_Update(void) {
                 sPauseScreenTimer[0] = 0;
 
             case 3:
+            gSPFixDepthCut(gMasterDisp++);
                 Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
+            gSPFixDepthCut(gMasterDisp++);
 
                 gFillScreenAlphaTarget = 0;
 
@@ -1547,7 +1556,9 @@ void HUD_PauseScreen_Update(void) {
                 break;
 
             case 4:
+            gSPFixDepthCut(gMasterDisp++);
                 Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
+            gSPFixDepthCut(gMasterDisp++);
                 if (sPauseScreenTimer[0] < 140) {
                     break;
                 }
@@ -1565,7 +1576,9 @@ void HUD_PauseScreen_Update(void) {
                 }
 
             case 5:
-                Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
+             gSPFixDepthCut(gMasterDisp++);
+               Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
+            gSPFixDepthCut(gMasterDisp++);
 
                 for (i = 0; i < 6; i++) {
                     if (gPrevPlanetTeamShields[i] == -1) {
@@ -2688,10 +2701,11 @@ void HUD_Texture_Scroll(u8* texturePtr, s32 xPos, s32 yPos, u8 type) {
             break;
     }
 }
-#include <string.h>
+//#include <string.h>
+__attribute__((optimize("O3")))
 void HUD_Texture_Wave(u16* srcTexture, u16* dstTexture) {
+    u16 __attribute__((aligned(32))) texwave_buffer[1024];
     u16 *src, *dst;
-    u16 buffer[1024];
     f32 rowPhase;
     f32 angle;
     s32 j;
@@ -2703,8 +2717,9 @@ void HUD_Texture_Wave(u16* srcTexture, u16* dstTexture) {
 
     src = SEGMENTED_TO_VIRTUAL(srcTexture);
     dst = SEGMENTED_TO_VIRTUAL(dstTexture);
-
-    Lib_Texture_Scroll(srcTexture, width, height, 1);
+//memcpy(dst,src,32*32*2);
+#if 1
+    Lib_Texture_Scroll(src, width, height, 1);
 
     halfHeight = height / 2;
 
@@ -2724,15 +2739,16 @@ void HUD_Texture_Wave(u16* srcTexture, u16* dstTexture) {
         }
 
         for (j = 0; j < width; j++) {
-            buffer[(i * width) + j] = src[(offset * width) + j];
+            texwave_buffer[(i * width) + j] = src[(offset * width) + j];
         }
 
         for (j = 0; j < width; j++) {
-            buffer[(((halfHeight - i) + (halfHeight - 1)) * width) + j] =
+            texwave_buffer[(((halfHeight - i) + (halfHeight - 1)) * width) + j] =
                 src[(((halfHeight - offset) + (halfHeight - 1)) * width) + j];
         }
     }
-    Lib_Texture_Mottle(dst, buffer, 2);
+    Lib_Texture_Mottle(dst, texwave_buffer, 2);
+#endif
 }
 
 void HUD_DisplaySmallNumber(f32 xPos, f32 yPos, f32 scale, s32 number) {
@@ -5050,7 +5066,7 @@ void Aquas_CsLevelStart(Player* player) {
             } else {
                 player->unk_208--;
             }
-
+#if 1
             if (D_ctx_80177A10[6] < 3) {
                 i = D_ctx_80177A10[6];
                 stepSize = D_ctx_80177A48[5];
@@ -5106,6 +5122,7 @@ void Aquas_CsLevelStart(Player* player) {
                 Math_SmoothStepToF(&D_ctx_80177A48[7], 16.0f, 0.04f, 0.05f, 0.0f);
                 gFillScreenAlphaStep = D_ctx_80177A48[7];
             }
+#endif
             break;
 
         case 2:

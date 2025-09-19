@@ -3114,6 +3114,7 @@ void Title_SunGlare2_Draw(void) {
             Matrix_SetGfxMtx(&gMasterDisp);
 
             temp = D_menu_801AE528[i] * var_fs1;
+                       gDPSetEnvColor(gMasterDisp++, /* 255- */0,/* 255- */0,/* 255- */0, 0xFF);
 
             if (i != 10) {
                 gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, D_menu_801AE51C[i], (s32) temp);

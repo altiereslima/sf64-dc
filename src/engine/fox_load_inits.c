@@ -953,10 +953,22 @@ NewScene ns_option[1] = {
   {sOvlmenu_Option,
   0,
   {
-    "","","","",
-    "","ast_text","ast_map","ast_vs_menu",
-    "ast_option","ast_font_3d","","",
-    "","","","",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "ast_text",
+    "ast_map",
+    "ast_vs_menu",
+    "ast_option",
+    "ast_font_3d",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
   }
   }
 };
@@ -1462,10 +1474,22 @@ NewScene ns_macbeth[2] = {
 NewScene ns_training[1] = {
 {
 sOvli1_Training,0,
-{"","ast_common","ast_bg_planet","ast_arwing",
-  "ast_enmy_planet","ast_text","ast_training","",
-  "","","","",
-  "","","","ast_star_wolf",
+{"",
+  "ast_common",
+  "ast_bg_planet",
+  "ast_arwing",
+  "ast_enmy_planet",
+  "ast_text",
+  "ast_training",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "ast_star_wolf",
 
 }
 
@@ -1491,7 +1515,7 @@ NewScene ns_versus[2] = {
   "",
   "",
   "",
-  "ast_allies",
+  "",
   "",
   "",
 

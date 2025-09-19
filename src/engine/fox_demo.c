@@ -584,7 +584,11 @@ void Cutscene_EnterWarpZone(Player* player) {
 }
 
 void Cutscene_LevelStart(Player* player) {
+//    if (gCurrentLevel == LEVEL_AQUAS) {
+//        if (gCsFrameCount < 2) gCsFrameCount++;
+//    } else {
     gCsFrameCount++;
+//    }
     if (gLevelMode == LEVELMODE_ON_RAILS) {
         switch (gCurrentLevel) {
             case LEVEL_CORNERIA:

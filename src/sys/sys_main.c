@@ -85,36 +85,86 @@ u32 gSegments[16] = {
 0x8c010000,
 };
 
+// borrowed from skmp / DCA3
+// thanks
+extern const char etext[];
+__attribute__((noinline)) void stacktrace() {
+	uint32 sp=0, pr=0;
+	__asm__ __volatile__(
+		"mov	r15,%0\n"
+		"sts	pr,%1\n"
+		: "+r" (sp), "+r" (pr)
+		:
+		: );
+	printf("[ %08X ", (uintptr_t)pr);
+	int found = 0;
+	if(!(sp & 3) && sp > 0x8c000000 && sp < 0x8d000000) {
+		char** sp_ptr = (char**)sp;
+		for (int so = 0; so < 16384; so++) {
+			if ((uintptr_t)(&sp_ptr[so]) >= 0x8d000000) {
+				//printf("(@@%08X) ", (uintptr_t)&sp_ptr[so]);
+				break;
+			}
+			if (sp_ptr[so] > (char*)0x8c000000 && sp_ptr[so] < etext) {
+				uintptr_t addr = (uintptr_t)(sp_ptr[so]);
+				// candidate return pointer
+				if (addr & 1) {
+					// dbglog(DBG_CRITICAL, "Stack trace: %p (@%p): misaligned\n", (void*)sp_ptr[so], &sp_ptr[so]);
+					continue;
+				}
+
+				uint16_t* instrp = (uint16_t*)addr;
+
+				uint16_t instr = instrp[-2];
+				// BSR or BSRF or JSR @Rn ?
+				if (((instr & 0xf000) == 0xB000) || ((instr & 0xf0ff) == 0x0003) || ((instr & 0xf0ff) == 0x400B)) {
+					printf("%08X ", (uintptr_t)instrp);
+					if (found++ > 24) {
+						//printf("(@%08X) ", (uintptr_t)&sp_ptr[so]);
+						break;
+					}
+				} else {
+					// dbglog(DBG_CRITICAL, "%p:%04X ", instrp, instr);
+				}
+			} else {
+				// dbglog(DBG_CRITICAL, "Stack trace: %p (@%p): out of range\n", (void*)sp_ptr[so], &sp_ptr[so]);
+			}
+		}
+		printf("]\n");
+	} else {
+		printf("%08x ]\n", (uintptr_t)sp);
+	}
+}
+
 void* segmented_to_virtual(const void* addr) {
     unsigned int uip_addr = (unsigned int) addr;
 
     if ((uip_addr >= 0x8c010000) && (uip_addr <= 0x8cffffff)) {
         return uip_addr;
     }
-//    if(uip_addr > 0x07FFFFFF)
-  //      printf("uip_addr == %08x\n", uip_addr);
 
-    unsigned int segment = (unsigned int) (uip_addr >> 24) & 0x0f;
+    unsigned int segment = (unsigned int) (uip_addr >> 24);// & 0x0f;
 
     // investigate why this hits on Sherbet Land 4 player attract mode demo
-#if DEBUG
+#if 0
+//DEBUG
     if (segment > 0xf) {
         printf("%08x converts to bad segment %02x %08x\n", (uintptr_t) addr, segment, (uintptr_t) uip_addr);
         printf("\n");
         stacktrace();
         printf("\n");
-        while (1) {}
+//        while (1) {}
         exit(-1);
     }
 #endif
 
     unsigned int offset = (unsigned int) uip_addr & 0x00FFFFFF;
-    if ((gSegments[segment] + offset) > 0x8cffffff) {
-
-        printf("serious problem seg2vir %08x -> %08x\n", uip_addr, gSegments[segment] + offset);
+    u32 translated_addr = gSegments[segment] + offset;
+    if (translated_addr > 0x8cffffff) {
+        printf("serious problem seg2vir %08x -> %08x\n", uip_addr, translated_addr);
 //        exit(-1);
     }
-    return (void*) ((gSegments[segment] + offset));
+    return (void*)translated_addr;
 }
 
 

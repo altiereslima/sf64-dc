@@ -82,13 +82,15 @@ void Lib_Texture_Mottle(u16* dst, u16* src, u8 mode) {
     u8* src8;
     s32 offset;
  
+    gfx_texture_cache_invalidate(dst);
+
     vdst = SEGMENTED_TO_VIRTUAL(dst);
-    gfx_texture_cache_invalidate(vdst);
     vsrc = SEGMENTED_TO_VIRTUAL(src);
+
     switch (mode) {
         case 2:
             for (v = 0; v < 32 * 32; v += 32) {
-                offset = 3.0f * sinf((s32) (((v / 32) + (gGameFrameCount / 4)) % 32U) * (2.0f * F_PI / 32.0f));
+                offset = 3.0f * sinf((f32)((s32) (((v / 32) + (gGameFrameCount / 4)) % 32U)) * (2.0f * F_PI / 32.0f));
                 for (u = 0; u < 32; u++) {
                     vdst[v + (offset + u) % 32U] = vsrc[v + u];
                 }
@@ -266,12 +268,11 @@ void Animation_DrawSkeleton(s32 mode, Limb** skeletonSegment, Vec3f* jointTable,
     }
 }
 
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 extern Animation D_TI_A0002BC;
 s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameTable) {
     Animation* animation = SEGMENTED_TO_VIRTUAL(animationSegment);
-
     u16 limbCount = animation->limbCount;
     JointKey* key = SEGMENTED_TO_VIRTUAL(animation->jointKey);
     u16* frameData = SEGMENTED_TO_VIRTUAL(animation->frameData);
@@ -725,26 +726,30 @@ volatile int doing_glare = 0;
 void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8 r, u8 g, u8 b, u8 a) {
 //return;
     if (a != 0) {
-       if(doing_glare)
-        gSPFillrectBlend((*gfxPtr)++);
+//       if(doing_glare)
+  //      gSPFillrectBlend((*gfxPtr)++);
         gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
 //        gDPSetColorDither((*gfxPtr)++, G_CD_NOISE);
   //      gDPSetAlphaDither((*gfxPtr)++, G_AD_NOISE);
     //    gDPSetCycleType((*gfxPtr)++, G_CYC_1CYCLE);
 //        gDPSetCombineMode((*gfxPtr)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-       if(doing_glare == 1) {
-            gDPSetEnvColor((*gfxPtr)++, 0,0,0, 255);
-        } else {
-              gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);
-        }
-        gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
-    gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+    //   if(doing_glare == 1) {
+      //      gDPSetEnvColor((*gfxPtr)++, 0,0,0, 255);
+        //} else {
+                  //}
+   
+                  gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+   if (!doing_glare) {
+                  gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);
+
+        gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                       TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-//        gDPSetRenderMode((*gfxPtr)++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+   }
+                      //        gDPSetRenderMode((*gfxPtr)++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
         gDPFillRectangle((*gfxPtr)++, ulx, uly, lrx, lry);
-        if(doing_glare)
-        gSPFillrectBlend((*gfxPtr)++);
+//        if(doing_glare)
+  //      gSPFillrectBlend((*gfxPtr)++);
     }
 }
 

@@ -397,7 +397,6 @@ void Macbeth_InitLevel(void) {
 
 /* 32 x 32 pixels texture rotation */
 void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
-//    return;
     s32 i;
     s32 j;
     s32 xDest;
@@ -434,7 +433,6 @@ void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
 }
 
 void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-//    return;
     u8* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     s32 i;
     s32 j;
@@ -456,7 +454,6 @@ void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 }
 
 void Macbeth_Texture_Scroll2(u16* tex, s32 arg1, s32 arg2) {
-//    return;
     u16* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     u16 a;
     s32 i;
@@ -557,7 +554,9 @@ void Macbeth_Train_Init(Actor* this) {
     this->fwork[29] = 0.0f;
     D_i5_801BA1E4++;
 }
+
 extern void gfx_texture_cache_invalidate(void *addr);
+
 void Macbeth_RotateTrainWheels(void) {
     Macbeth_Texture_Scroll(D_MA_6023228, 16, 16, 0, 8);
     Macbeth_Texture_RotateZ(D_MA_6023388, D_Tex_800DB4B8, gGameFrameCount * -20.0f);

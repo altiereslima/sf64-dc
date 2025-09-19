@@ -398,7 +398,6 @@ build/src/assets/ast_zoness/%.o :  OPTFLAGS := -fno-common -fno-toplevel-reorder
 # per-file flags
 
 build/src/libc_math64.o:  OPTFLAGS := -Os
-#build/src/overlays/ovl_i5/fox_ground.o: OPTFLAGS := -O1 -fno-fast-math
 build/src/audio/mixer.o: OPTFLAGS := -O3
 build/src/gfx/gfx_retro_dc.o: OPTFLAGS := -O3
 build/src/sys/sys_matrix.o: OPTFLAGS := -O3

@@ -11,9 +11,9 @@ u8 __attribute__((aligned(32))) SEG1_BUF[SEG1_BUF_SIZE];
 #define SEG2_BUF_SIZE 72384+2048
 u8 __attribute__((aligned(32))) SEG2_BUF[SEG2_BUF_SIZE];
 
-// max(arwing,blue_marine,landmaster)
-// max(105836,29496,34144)
-#define SEG3_BUF_SIZE 105836+2048
+// max(arwing,blue_marine,landmaster,versus)
+// max(105836,29496,34144,192844)
+#define SEG3_BUF_SIZE 192844+2048
 u8 __attribute__((aligned(32))) SEG3_BUF[SEG3_BUF_SIZE];
 
 // max(ast_enmy_space,ast_enmy_planet)

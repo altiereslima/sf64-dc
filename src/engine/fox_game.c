@@ -4,6 +4,7 @@
 #include "assets/ast_logo.h"
 #include "mods.h"
 #include <stdio.h>
+extern void gfx_texture_cache_invalidate(void *addr);
 
 f32 gNextVsViewScale;
 f32 gVsViewScale;
@@ -149,7 +150,20 @@ s32 Game_ChangeScene(void) {
     return 0;
 }
 
+#define gSPFixDepthCut(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554369;                                           \
+    }
+
+void capture_framebuffer(void);
+
+extern uint8_t scaled2[];
+
 void Game_InitMasterDL(Gfx** dList) {
+
 
     //printf("%s\n", __func__);
     gSPDisplayList((*dList)++, gRcpInitDL);
@@ -158,24 +172,30 @@ void Game_InitMasterDL(Gfx** dList) {
     gDPSetDepthImage((*dList)++, &gZBuffer);
     gDPSetColorImage((*dList)++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, &gZBuffer);
     gDPSetFillColor((*dList)++, FILL_COLOR(GPACK_ZDZ(G_MAXFBZ, 0)));
-    gDPFillRectangle((*dList)++, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN - 1,
-                     SCREEN_HEIGHT - SCREEN_MARGIN - 1);
+//    gDPFillRectangle((*dList)++, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN - 1,
+  //                   SCREEN_HEIGHT - SCREEN_MARGIN - 1);
     gDPSetColorImage((*dList)++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gFrameBuffer);
 
-//    if (gBlurAlpha < 255) {
+    if (gBlurAlpha < 255) {
+//        if (gGameFrameCount & 1) {
+        capture_framebuffer();
+        gfx_texture_cache_invalidate(scaled2);
+//        }
         gDPPipeSync((*dList)++);
         gDPSetCycleType((*dList)++, G_CYC_1CYCLE);
         gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
         gDPSetRenderMode((*dList)++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
         gDPSetPrimColor((*dList)++, 0x00, 0x00, RGBA16_RED(gBgColor) * 8, RGBA16_GRN(gBgColor) * 8,
                         RGBA16_BLU(gBgColor) * 8, gBlurAlpha);
-  //  } else {
-    //    gDPSetFillColor((*dList)++, FILL_COLOR(gBgColor | 1));
-    //}
-
+    } else {
+        gDPSetFillColor((*dList)++, FILL_COLOR(gBgColor | 1));
+gSPFixDepthCut((*dList)++);
    gDPFillRectangle((*dList)++, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN - 1,
-                     SCREEN_HEIGHT - SCREEN_MARGIN);
-    gDPPipeSync((*dList)++);
+                     (SCREEN_HEIGHT - SCREEN_MARGIN) - 1 );
+gSPFixDepthCut((*dList)++);
+    }
+
+gDPPipeSync((*dList)++);
     gDPSetColorDither((*dList)++, G_CD_MAGICSQ);
 }
 
@@ -183,10 +203,12 @@ void Game_InitStandbyDL(Gfx** dList) {
         //printf("%s\n", __func__);
 
     gSPDisplayList((*dList)++, gRcpInitDL);
-    gDPSetScissor((*dList)++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT * 3);
+    gDPSetScissor((*dList)++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);// * 3);
     gDPSetFillColor((*dList)++, FILL_COLOR(0x0001));
     gDPSetColorImage((*dList)++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gFrameBuffers[0].data);
-    gDPFillRectangle((*dList)++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT * 3 - 1);
+gSPFixDepthCut((*dList)++);
+    gDPFillRectangle((*dList)++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);//* 3 - 1);
+gSPFixDepthCut((*dList)++);
     gDPPipeSync((*dList)++);
     gDPSetColorDither((*dList)++, G_CD_MAGICSQ);
 }
@@ -340,6 +362,17 @@ void Game_SetScene(void) {
     }
 }
 extern volatile int doing_glare;
+//extern uint16_t vram_s[];
+
+#define gSPTheBlur(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46554360;                                           \
+    }
+
+
 void Game_Update(void) {
     s32 i;
     u8 partialFill;
@@ -529,6 +562,20 @@ void Game_Update(void) {
         }
 
         Game_Draw(0);
+        if(gBlurAlpha < 255) {
+//        gDPPipeSync((gMasterDisp)++);
+  //      gDPSetCycleType((gMasterDisp)++, G_CYC_1CYCLE);
+    //    gDPSetCombineMode((gMasterDisp)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+      //  gDPSetRenderMode((gMasterDisp)++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+/*         gDPSetPrimColor((gMasterDisp)++, 0x00, 0x00, RGBA16_RED(gBgColor) * 8, RGBA16_GRN(gBgColor) * 8,
+                        RGBA16_BLU(gBgColor) * 8, gBlurAlpha);
+ */
+                    RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+            gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, gBlurAlpha);
+                    gSPTheBlur(gMasterDisp++);
+                Lib_TextureRect_RGBA16(&gMasterDisp, (u16 *)scaled2, 64, 64, 0, 0, 5.0f, 1.875f);
+                    gSPTheBlur(gMasterDisp++);
+            }
 
         if (gCamCount == 2) {
             //printf("gCamCount == 2\n");
@@ -554,20 +601,25 @@ void Game_Update(void) {
             gDPSetCombineMode(gMasterDisp++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
             gDPSetRenderMode(gMasterDisp++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 0, 0, 0);
+            gSPFixDepthCut(gMasterDisp++);
+
             gDPFillRectangle(gMasterDisp++, SCREEN_WIDTH / 2 - 2 - 1, SCREEN_MARGIN, SCREEN_WIDTH / 2 + 2,
                              SCREEN_HEIGHT - SCREEN_MARGIN);
             gDPFillRectangle(gMasterDisp++, SCREEN_MARGIN, SCREEN_HEIGHT / 2 - 2 - 1, SCREEN_WIDTH - SCREEN_MARGIN,
                              SCREEN_HEIGHT / 2 + 2);
+            gSPFixDepthCut(gMasterDisp++);
 
             if (gLevelType == LEVELTYPE_PLANET) {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 0, 0, 0, 255);
             } else {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 100, 100, 255, 255);
             }
+            gSPFixDepthCut(gMasterDisp++);
             gDPFillRectangle(gMasterDisp++, SCREEN_WIDTH / 2 - 1 - 1, SCREEN_MARGIN, SCREEN_WIDTH / 2 + 1,
                              SCREEN_HEIGHT - SCREEN_MARGIN);
         gDPFillRectangle(gMasterDisp++, SCREEN_MARGIN, SCREEN_HEIGHT / 2 - 1 - 1, SCREEN_WIDTH - SCREEN_MARGIN,
                              SCREEN_HEIGHT / 2 + 1);
+            gSPFixDepthCut(gMasterDisp++);
 
             HUD_8008CB8C();
         }
@@ -628,6 +680,20 @@ void Game_Update(void) {
         }
         Audio_dummy_80016A50();
 
+
+//        if (gBlurAlpha < 255) {
+//                Game_InitMasterDL(&gUnkDisp1);
+        //capture_framebuffer();
+#if 0
+        gDPPipeSync(gMasterDisp++);
+        gDPSetCycleType(gMasterDisp++, G_CYC_1CYCLE);
+        gDPSetCombineMode(gMasterDisp++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+        gDPSetRenderMode(gMasterDisp++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, RGBA16_RED(gBgColor) * 8, RGBA16_GRN(gBgColor) * 8,
+                        RGBA16_BLU(gBgColor) * 8, gBlurAlpha);
+        gfx_texture_cache_invalidate(scaled2);
+#endif
+  //  }
 
 #if 0
         #if MODS_RAM_MOD == 1

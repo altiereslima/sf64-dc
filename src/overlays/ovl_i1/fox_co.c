@@ -2960,7 +2960,7 @@ void Corneria_LevelStart(Player* player) {
             Lib_Texture_Scroll(aAwCockpitGlassClouldReflextionTex, 64, 32, 1);
         }
     }
-gfx_texture_cache_invalidate(aAwCockpitGlassClouldReflextionTex);
+    gfx_texture_cache_invalidate(aAwCockpitGlassClouldReflextionTex);
     D_ctx_80177A48[4] = Math_RadToDeg(sp2C);
     D_ctx_80177A48[5] = Math_RadToDeg(sp30);
 
