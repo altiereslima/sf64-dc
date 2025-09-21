@@ -6791,11 +6791,11 @@ void Play_UpdateLevel(void) {
             Play_UpdateDynaFloor();
 
             for (gPathTexScroll; gPathTexScroll >= 10.0f; gPathTexScroll -= 10.0f) {
-                sol_ult += 4;
+                sol_ult = (sol_ult + 4) & 0x7F;
                 //Lib_Texture_Scroll(aSoLavaTex, 32, 32, 1);
             }
             if (gPlayer[0].state == PLAYERSTATE_NEXT) {
-                sol_ult += 4;
+                sol_ult = (sol_ult + 4) & 0x7F;
                 //Lib_Texture_Scroll(aSoLavaTex, 32, 32, 1);
             }
 

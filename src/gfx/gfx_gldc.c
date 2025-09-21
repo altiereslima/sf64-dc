@@ -445,7 +445,7 @@ static uint32_t gfx_opengl_new_texture(void) {
     GLuint ret;
     glGenTextures(1, &ret);
     newest_texture = ret;
-    printf("new tex %d\n", ret);
+//    printf("new tex %d\n", ret);
     return (uint32_t) ret;
 }
 
@@ -1176,7 +1176,7 @@ extern void reset_texcache(void);
 extern float screen_2d_z;
 
 void nuke_everything(void) {
-    printf("NUKE IT ALL\n");
+//    printf("NUKE IT ALL\n");
     gfx_clear_all_textures();
     reset_texcache();
 }

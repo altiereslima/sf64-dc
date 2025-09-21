@@ -89,6 +89,120 @@ void  Matrix_Pop(Matrix** mtxStack) {
     (*mtxStack)--;
 }
 
+static inline void shz_xmtrx_store_4x4_unaligned(float matrix[16]) {
+    asm volatile(R"(
+        frchg
+        add     #64, %[mtx]
+        fmov.s  fr15, @-%[mtx]
+        add     #-32, %[mtx]
+        pref    @%[mtx]
+        add     #32, %[mtx]
+        fmov.s  fr14, @-%[mtx]
+        fmov.s  fr13, @-%[mtx]
+        fmov.s  fr12, @-%[mtx]
+        fmov.s  fr11, @-%[mtx]
+        fmov.s  fr10, @-%[mtx]
+        fmov.s  fr9, @-%[mtx]
+        fmov.s  fr8, @-%[mtx]
+        fmov.s  fr7, @-%[mtx]
+        fmov.s  fr6, @-%[mtx]
+        fmov.s  fr5, @-%[mtx]
+        fmov.s  fr4, @-%[mtx]
+        fmov.s  fr3, @-%[mtx]
+        fmov.s  fr2, @-%[mtx]
+        fmov.s  fr1, @-%[mtx]
+        fmov.s  fr0, @-%[mtx]
+        frchg
+    )"
+    : "=m" (*matrix)
+    : [mtx] "r" (matrix));
+}
+static inline void shz_xmtrx_load_4x4_unaligned(const float matrix[16]) {
+    asm volatile(R"(
+        frchg
+        fmov.s  @%[mtx]+, fr0
+        add     #32, %[mtx]
+        pref    @%[mtx]
+        add     #-32, %[mtx]
+        fmov.s  @%[mtx]+, fr1
+        fmov.s  @%[mtx]+, fr2
+        fmov.s  @%[mtx]+, fr3
+        fmov.s  @%[mtx]+, fr4
+        fmov.s  @%[mtx]+, fr5
+        fmov.s  @%[mtx]+, fr6
+        fmov.s  @%[mtx]+, fr7
+        fmov.s  @%[mtx]+, fr8
+        fmov.s  @%[mtx]+, fr9
+        fmov.s  @%[mtx]+, fr10
+        fmov.s  @%[mtx]+, fr11
+        fmov.s  @%[mtx]+, fr12
+        fmov.s  @%[mtx]+, fr13
+        fmov.s  @%[mtx]+, fr14
+        fmov.s  @%[mtx]+, fr15
+        frchg
+    )"
+    : [mtx] "+r" (matrix)
+    :  "m" (*matrix));
+}
+static inline void shz_xmtrx_apply_4x4_unaligned(const float matrix[16]) {
+    asm volatile(R"(
+        mov     r15, r0
+        pref    @%[mtx]
+        or      #0x0f, r0
+        xor     #0x0f, r0
+        mov     r15, r7
+
+        fschg
+        mov     r0, r15
+        fmov.d  dr14, @-r15
+        fmov.d  dr12, @-r15
+        fschg
+
+        fmov.s  @%[mtx]+, fr0
+        add     #32, %[mtx]
+        pref    @%[mtx]
+        add     #-32, %[mtx]
+        fmov.s  @%[mtx]+, fr1
+        fmov.s  @%[mtx]+, fr2
+        fmov.s  @%[mtx]+, fr3
+
+        ftrv    xmtrx, fv0
+
+        fmov.s  @%[mtx]+, fr4
+        fmov.s  @%[mtx]+, fr5
+        fmov.s  @%[mtx]+, fr6
+        fmov.s  @%[mtx]+, fr7
+
+        ftrv    xmtrx, fv4
+
+        fmov.s  @%[mtx]+, fr8
+        fmov.s  @%[mtx]+, fr9
+        fmov.s  @%[mtx]+, fr10
+        fmov.s  @%[mtx]+, fr11
+
+        ftrv    xmtrx, fv8
+
+        fmov.s  @%[mtx]+, fr12
+        fmov.s  @%[mtx]+, fr13
+        fmov.s  @%[mtx]+, fr14
+        fmov.s  @%[mtx]+, fr15
+
+        ftrv    xmtrx, fv12
+
+        frchg
+
+        fschg
+        fmov.d  @r15+, dr12
+        fmov.d  @r15, dr14
+        mov     r7, r15
+        fschg
+    )"
+    : [mtx] "+r" (matrix)
+    :  "m" (*matrix)
+    : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6",
+      "fr7", "fr8", "fr9", "fr10", "fr11", "fr12");
+}
+
 // Copies tf into mtx (MTXF_NEW) or applies it to mtx (MTXF_APPLY)
 void  Matrix_Mult(Matrix* mtx, Matrix* tf, u8 mode) {
     f32 rx;
@@ -101,6 +215,10 @@ void  Matrix_Mult(Matrix* mtx, Matrix* tf, u8 mode) {
     s32 i3;
 
     if (mode == MTXF_APPLY) {
+        shz_xmtrx_load_4x4_unaligned(mtx);
+        shz_xmtrx_apply_4x4_unaligned(tf);
+        shz_xmtrx_store_4x4_unaligned(mtx);
+#if 0
         rx = mtx->m[0][0];
         ry = mtx->m[1][0];
         rz = mtx->m[2][0];
@@ -143,6 +261,7 @@ void  Matrix_Mult(Matrix* mtx, Matrix* tf, u8 mode) {
 //            mtx->m[i3][3] = 
 (rx * tf->m[i3][0]) + (ry * tf->m[i3][1]) + (rz * tf->m[i3][2]) + (rw * tf->m[i3][3]);
         }
+#endif
     } else {
         Matrix_Copy(mtx, tf);
     }
@@ -390,61 +509,6 @@ void Matrix_ToMtx(Mtx* m) {
     guMtxF2L(gGfxMatrix->m, m->m);
 }
 
-static inline void shz_xmtrx_store_4x4_unaligned(float matrix[16]) {
-    asm volatile(R"(
-        frchg
-        add     #64, %[mtx]
-        fmov.s  fr15, @-%[mtx]
-        add     #-32, %[mtx]
-        pref    @%[mtx]
-        add     #32, %[mtx]
-        fmov.s  fr14, @-%[mtx]
-        fmov.s  fr13, @-%[mtx]
-        fmov.s  fr12, @-%[mtx]
-        fmov.s  fr11, @-%[mtx]
-        fmov.s  fr10, @-%[mtx]
-        fmov.s  fr9, @-%[mtx]
-        fmov.s  fr8, @-%[mtx]
-        fmov.s  fr7, @-%[mtx]
-        fmov.s  fr6, @-%[mtx]
-        fmov.s  fr5, @-%[mtx]
-        fmov.s  fr4, @-%[mtx]
-        fmov.s  fr3, @-%[mtx]
-        fmov.s  fr2, @-%[mtx]
-        fmov.s  fr1, @-%[mtx]
-        fmov.s  fr0, @-%[mtx]
-        frchg
-    )"
-    : "=m" (*matrix)
-    : [mtx] "r" (matrix));
-}
-static inline void shz_xmtrx_load_4x4_unaligned(const float matrix[16]) {
-    asm volatile(R"(
-        frchg
-        fmov.s  @%[mtx]+, fr0
-        add     #32, %[mtx]
-        pref    @%[mtx]
-        add     #-32, %[mtx]
-        fmov.s  @%[mtx]+, fr1
-        fmov.s  @%[mtx]+, fr2
-        fmov.s  @%[mtx]+, fr3
-        fmov.s  @%[mtx]+, fr4
-        fmov.s  @%[mtx]+, fr5
-        fmov.s  @%[mtx]+, fr6
-        fmov.s  @%[mtx]+, fr7
-        fmov.s  @%[mtx]+, fr8
-        fmov.s  @%[mtx]+, fr9
-        fmov.s  @%[mtx]+, fr10
-        fmov.s  @%[mtx]+, fr11
-        fmov.s  @%[mtx]+, fr12
-        fmov.s  @%[mtx]+, fr13
-        fmov.s  @%[mtx]+, fr14
-        fmov.s  @%[mtx]+, fr15
-        frchg
-    )"
-    : [mtx] "+r" (matrix)
-    :  "m" (*matrix));
-}
 #include <kos.h>
 
 // Applies the transform matrix mtx to the vector src, putting the result in dest
