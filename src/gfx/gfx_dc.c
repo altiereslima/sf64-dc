@@ -92,7 +92,7 @@ extern LevelId gCurrentLevel;
 static uint8_t gfx_dc_start_frame(void) {
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
-#if 1
+#if 0
     if (skip_debounce) {
         skip_debounce--;
         return 1;

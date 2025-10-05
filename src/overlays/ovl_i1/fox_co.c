@@ -1368,7 +1368,7 @@ void Corneria_CoGaruda1_Update(CoGaruda1* this) {
         case 0:
             this->fwork[1] += 20.0f;
 //            Lib_Texture_Scroll(aCoGarudaTracksTex, 16, 16, 1);
-            garuda_ult = (garuda_ult - 4) & 0x3F;
+            garuda_ult = (garuda_ult + 4) & 0x3F;
             garuda_lrt = (garuda_ult + 63) & 0xFFF;
             // gfx+59
             Gfx *cmd = (Gfx *)segmented_to_virtual((void *)((Gfx*)(ast_corneria_seg6_gfx_31ED0 + 59)));
@@ -1533,10 +1533,9 @@ void Corneria_CoGaruda3_Update(CoGaruda3* this) {
 
     Corneria_Garuda_HandleDamage(this);
 
-    sincosdeg(this->obj.rot.y, &sin, &cos);
-//    sin = SIN_DEG(this->obj.rot.y);
+    sin = SIN_DEG(this->obj.rot.y);
     this->vel.x = this->fwork[0] * sin;
-//    cos = COS_DEG(this->obj.rot.y);
+    cos = COS_DEG(this->obj.rot.y);
     this->vel.z = this->fwork[0] * cos;
 
     switch (this->state) {
@@ -3497,6 +3496,9 @@ void Corneria_CsLevelComplete1_TeamSetup(ActorCutscene* this, s32 index) {
     Object_SetInfo(&this->info, this->obj.id);
 
     this->iwork[11] = 1;
+
+    // @recomp set team faces
+    this->iwork[14] = index + 2;
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
 

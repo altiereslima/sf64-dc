@@ -583,7 +583,7 @@ void Matrix_MultVec3fNoTranslate_NoLoad(Vec3f* src, Vec3f* dest) {
 // Applies the linear part of the transformation matrix mtx to the vector src, ignoring any translation that mtx might
 // have. Puts the result in dest.
 void Matrix_MultVec3fNoTranslate(Matrix* mtx, Vec3f* src, Vec3f* dest) {
-shz_xmtrx_load_4x4_unaligned(mtx);
+    shz_xmtrx_load_4x4_unaligned(mtx);
     float w = 0;
     dest->x = src->x;
     dest->y = src->y;

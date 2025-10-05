@@ -774,8 +774,7 @@ void Object_SetShadowDL(ObjectId objId, s32 index) {
         case OBJ_BOSS_CO_CARRIER_LEFT:
         case OBJ_BOSS_CO_CARRIER_UPPER:
         case OBJ_BOSS_CO_CARRIER_BOTTOM:
-            COS_DEG(gBosses[index].obj.rot.z);
-
+//            COS_DEG(gBosses[index].obj.rot.z);
             if (gGroundSurface == SURFACE_WATER) {
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 90);
             } else {
@@ -1717,14 +1716,14 @@ void Object_DrawAll(s32 cullDirection) {
         if (gDrawBackdrop == 5) {
             gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         }
-        Matrix_LoadOnly(&D_BO_8019EE80);
+
         for (i = 0, scenery360 = gScenery360; i < 200; i++, scenery360++) {
             if ((scenery360->obj.status == OBJ_ACTIVE) && (scenery360->obj.id != OBJ_SCENERY_LEVEL_OBJECTS)) {
                 if (gCurrentLevel == LEVEL_BOLSE) {
                     spAC.x = scenery360->sfxSource[0];
                     spAC.y = scenery360->sfxSource[1];
                     spAC.z = scenery360->sfxSource[2];
-                    Matrix_MultVec3fNoTranslate_NoLoad(/* (&D_BO_8019EE80, */ &spAC, &scenery360->obj.pos);
+                    Matrix_MultVec3fNoTranslate(&D_BO_8019EE80, &spAC, &scenery360->obj.pos);
                     scenery360->obj.rot.y = scenery360->unk_54 + gBosses->obj.rot.y;
                 }
                 Matrix_Push(&gGfxMatrix);

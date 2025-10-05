@@ -25,13 +25,13 @@
 #define DC_STEREO_AUDIO ( DC_AUDIO_CHANNELS == 2)
 // Sample rate for the AICA (32kHz)
 #define DC_AUDIO_FREQUENCY (26800) 
-#define RING_BUFFER_MAX_BYTES (16384*2)
+#define RING_BUFFER_MAX_BYTES (16384)
 
 // --- Global State for Dreamcast Audio Backend ---
 // Handle for the sound stream
 static volatile snd_stream_hnd_t shnd = SND_STREAM_INVALID; 
 // The main audio buffer
-static uint8_t cb_buf_internal[2][RING_BUFFER_MAX_BYTES/2] __attribute__((aligned(32))); 
+static uint8_t __attribute__((aligned(32))) cb_buf_internal[2][RING_BUFFER_MAX_BYTES]; 
 static void *const cb_buf[2] = {cb_buf_internal[0],cb_buf_internal[1]};
 static bool audio_started = false;
 
@@ -63,6 +63,33 @@ static bool cb_init(int N, size_t capacity) {
 }
 void n64_memcpy(void* dst, const void* src, size_t size);
 
+void *cb_next_left(void) {
+    uint32_t head = r[0]->head;
+    uint32_t tail = r[0]->tail;
+    uint32_t free = r[0]->cap - (head - tail);
+    uint32_t idx = head & (r[0]->cap - 1);
+    uint32_t first = MIN((448*2), r[0]->cap - idx);
+    r[0]->head = head + (448*2);
+    //if (first)
+        return (void*)r[0]->buf + idx;
+    //if ((448*2)-first)
+    //    return (void*)r[0]->buf;
+}
+
+void *cb_next_right(void) {
+    uint32_t head = r[1]->head;
+    uint32_t tail = r[1]->tail;
+    uint32_t free = r[1]->cap - (head - tail);
+    uint32_t idx = head & (r[1]->cap - 1);
+    uint32_t first = MIN((448*2), r[1]->cap - idx);
+    r[1]->head = head + (448*2);
+    //if (first)
+        return (void*)r[1]->buf + idx;
+    //if ((448*2)-first)
+    //    return (void*)r[1]->buf;
+}
+
+
 static size_t cb_write_data(int N, const void *src, size_t n) {
     uint32_t head = r[N]->head;
     uint32_t tail = r[N]->tail;
@@ -71,12 +98,13 @@ static size_t cb_write_data(int N, const void *src, size_t n) {
         return 0;
     uint32_t idx = head & (r[N]->cap - 1);
     uint32_t first = MIN(n, r[N]->cap - idx);
-//    if (first)
+    if (first)
         n64_memcpy(r[N]->buf + idx, src, first);
-//    if (n-first) {
-//        printf("hit stupid wrapround write\n");
+    if (n-first) {
+//        printf("hit stupid wrapround write %d %d %d\n", idx, first, (n-first));
+//        printf("\thead %08x tail %08x free %08x idx %d\n", head, tail, free, idx);
         n64_memcpy(r[N]->buf, (uint8_t*)src + first, n - first);
-//    }
+    }
     r[N]->head = head + n;
     return n;
 }
@@ -89,16 +117,7 @@ static size_t cb_read_data(int N, void *dst, size_t n) {
     uint32_t idx = tail & (r[N]->cap - 1);
     __builtin_prefetch(r[N]->buf + idx);
     uint32_t first = MIN(n, r[N]->cap - idx);
-//    if (first) {
-//        spu_memload_dma((uintptr_t)dst & 0x000FFFFF, r[N]->buf + idx, first);// {
-        n64_memcpy(dst, r[N]->buf + idx, first);
-//    }
-//    if (n - first) {
-//                printf("hit stupid wrapround read\n");
-
-//        spu_memload_dma(((uintptr_t)dst & 0x000FFFFF) + first, r[N]->buf, n - first);// {
-//        n64_memcpy((uint8_t*)dst + first, r[N]->buf, n - first);
-//    }
+    n64_memcpy(dst, r[N]->buf + idx, first);
     r[N]->tail = tail + n;
     return n;
 }
@@ -119,9 +138,9 @@ static size_t cb_get_used(int N) {
 
 // --- KOS Stream Audio Callback (Consumer): Called by KOS when the AICA needs more data ---
 #define NUM_BUFFER_BLOCKS (2)
-#define TEMP_BUF_SIZE ((8192/* *2 */ /*  / 2 */) * NUM_BUFFER_BLOCKS)
-static uint8_t __attribute__((aligned(32))) temp_buf[2][TEMP_BUF_SIZE];
-static unsigned int temp_buf_sel[2] = {0};
+//#define TEMP_BUF_SIZE ((8192/* *2 */ /*  / 2 */) * NUM_BUFFER_BLOCKS)
+//static uint8_t __attribute__((aligned(32))) temp_buf[2][TEMP_BUF_SIZE];
+//static unsigned int temp_buf_sel[2] = {0};
 
 void mute_stream(void) {
     snd_stream_volume(shnd, 0); // Set maximum volume
@@ -172,17 +191,17 @@ static bool audio_dc_init(void) {
 
     // --- Initial Pre-fill of Ring Buffer with Silence ---
     sq_clr(cb_buf_internal, sizeof(cb_buf_internal));
-    sq_clr(temp_buf, sizeof(temp_buf));
-    if (!cb_init(0,8960)) { //RING_BUFFER_MAX_BYTES/2)) {
+//    sq_clr(temp_buf, sizeof(temp_buf));
+    if (!cb_init(0,RING_BUFFER_MAX_BYTES)) {
         printf("CB INIT FAILURE!\n");
         return false;
     }
-    if (!cb_init(1,8960)) { //RING_BUFFER_MAX_BYTES/2)) {
+    if (!cb_init(1,RING_BUFFER_MAX_BYTES)) {
         printf("CB INIT FAILURE!\n");
         return false;
     }
 
-    printf("Dreamcast Audio: Initialized. Ring buffer size: %u bytes.\n",
+    printf("Dreamcast Audio: Initialized. Ring buffer size: %u bytes per channel.\n",
            (unsigned int)RING_BUFFER_MAX_BYTES);
 #if 1
     // Allocate the sound stream with KOS
@@ -199,6 +218,22 @@ static bool audio_dc_init(void) {
 
     printf("Sound init complete!\n");
 #endif
+
+#if 0
+    mmucontext_t * cxt;
+    /* Initialize MMU support */
+    mmu_init();
+
+    /* Setup a context */
+    cxt = mmu_context_create(0);
+    mmu_use_table(cxt);
+    mmu_switch_context(cxt);
+
+    /* Map the PVR video memory to 0 */
+    mmu_page_map(cxt, 0, 0x05000000 >> PAGESIZE_BITS, (8 * 1024 * 1024) >> PAGESIZE_BITS,
+                 MMU_ALL_RDWR, MMU_NO_CACHE, 0, 1);
+#endif
+
     return true;
 }
 

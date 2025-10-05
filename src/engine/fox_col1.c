@@ -1,11 +1,27 @@
 #include "global.h"
-
+#if 0
 f32 __dx1;
 f32 __dx2;
 f32 __dy1;
 f32 __dy2;
 f32 __dz1;
 f32 __dz2;
+f32 __pos_x;
+f32 __pos_z;
+#endif
+
+static struct __attribute__((aligned(32))) {
+    f32 __dx1;
+    f32 __dx2;
+    f32 __dy1;
+    f32 __dy2;
+    f32 __dz1;
+    f32 __dz2;
+    f32 __pos_x;
+    f32 __pos_z;
+} xz_vars;
+
+
 f32 __vtx0_x;
 f32 __vtx0_y;
 f32 __vtx0_z;
@@ -18,48 +34,71 @@ f32 __vtx2_z;
 f32 __vtx3_x;
 f32 __vtx3_y;
 f32 __vtx3_z;
-f32 __pos_x;
-f32 __pos_z;
 
 #define TRINORM_X(A, B, C) ((B##_y - A##_y) * (C##_z - B##_z) - (B##_z - A##_z) * (C##_y - B##_y))
 #define TRINORM_Y(A, B, C) ((B##_z - A##_z) * (C##_x - B##_x) - (B##_x - A##_x) * (C##_z - B##_z))
 #define TRINORM_Z(A, B, C) ((B##_x - A##_x) * (C##_y - B##_y) - (B##_y - A##_y) * (C##_x - B##_x))
+
+ f32 SHZ_NO_INLINE __attribute__((noinline)) triple_product_mul(Vec3s a, Vec3s b, Vec3s c) {
+    f32 dist = 
+       0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
+       return dist;
+}
+#include "sh4zam.h"
+ f32 SHZ_NO_INLINE  __attribute__((noinline)) triple_product_fipr(Vec3s a, Vec3s b, Vec3s c) {
+    f32 px = (f32)(a.x * c.y);
+    f32 py = (f32)(a.y * b.x);
+    f32 pz = (f32)(a.z * b.y);
+
+    f32 rx = (f32)(a.x * b.y);
+    f32 ry = (f32)(b.x * c.y);
+    f32 rz = (f32)(c.x * a.y);
+
+    f32 dotPQ = shz_dot8f(px,py,pz,0,(f32)b.z,(f32)c.z,(f32)c.x,0);
+    f32 dotRS = shz_dot8f(rx,ry,rz,0,(f32)c.z,(f32)a.z,(f32)b.z,0);
+
+    return (dotPQ - dotRS);
+
+    //    f32 dist = 
+  //     0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
+    //   return dist;
+}
 
 // Calculate the directed plane that contains the ordered triangle tri, given as an array of Vec3s
 void func_col1_80097380(PlaneF* plane, Vec3s** tri) {
     Vec3s a;
     Vec3s b;
     Vec3s c;
-    s32 new_var;
-    Vec3s* tri2 = *tri;
+//    s32 new_var;
+//    Vec3s* tri2 = *tri;
 
     a.x = (*tri)->x;
-    a.y = tri2->y; // fake
+    a.y = (*tri)->y; //tri2->y; // fake
     a.z = (*tri)->z;
     tri++;
     b.x = (*tri)->x;
     b.y = (*tri)->y;
     b.z = (*tri)->z;
     tri++;
+    xz_vars.__dx1 = (f32)(b.x - a.x);
+    xz_vars.__dy1 = (f32)(b.y - a.y);
+    xz_vars.__dz1 = (f32)(b.z - a.z);
+
     c.x = (*tri)->x;
     c.y = (*tri)->y;
     c.z = (*tri)->z;
     tri++;
+//    do {
+    xz_vars.__dy2 = (f32)(c.y - b.y);
+    xz_vars.__dx2 = (f32)(c.x - b.x);
+    xz_vars.__dz2 = (f32)(c.z - b.z);
+//    } while (0); // wut
 
-    __dx1 = b.x - a.x;
-    __dx2 = c.x - b.x;
-    __dy1 = b.y - a.y;
-    do {
-        __dy2 = c.y - b.y;
-        __dz1 = b.z - a.z;
-        __dz2 = c.z - b.z;
-    } while (0); // wut
-
-    plane->normal.x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    plane->normal.y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    plane->normal.z = (__dx1 * __dy2) - (__dy1 * __dx2);
-    plane->dist =
-        -a.x * b.y * c.z - b.x * c.y * a.z - c.x * a.y * b.z + a.x * c.y * b.z + b.x * a.y * c.z + c.x * b.y * a.z;
+    plane->normal.x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    plane->normal.y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    plane->normal.z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
+    plane->dist = triple_product_mul(a,b,c);
+      // 0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
 }
 
 // Calculate the directed plane that contains the ordered triangle tri, given as an array of Vec3s. Duplicate of
@@ -68,11 +107,11 @@ void func_col1_80097558(PlaneF* plane, Vec3s** tri) {
     Vec3s a;
     Vec3s b;
     Vec3s c;
-    s32 new_var;
-    Vec3s* tri2 = *tri;
+//    s32 new_var;
+//    Vec3s* tri2 = *tri;
 
     a.x = (*tri)->x;
-    a.y = tri2->y; // fake
+    a.y = (*tri)->y;//tri2->y; // fake
     a.z = (*tri)->z;
     tri++;
     b.x = (*tri)->x;
@@ -84,20 +123,20 @@ void func_col1_80097558(PlaneF* plane, Vec3s** tri) {
     c.z = (*tri)->z;
     tri++;
 
-    __dx1 = b.x - a.x;
-    __dx2 = c.x - b.x;
-    __dy1 = b.y - a.y;
+    xz_vars.__dx1 = b.x - a.x;
+    xz_vars.__dx2 = c.x - b.x;
+    xz_vars.__dy1 = b.y - a.y;
     do {
-        __dy2 = c.y - b.y;
-        __dz1 = b.z - a.z;
-        __dz2 = c.z - b.z;
+        xz_vars.__dy2 = c.y - b.y;
+        xz_vars.__dz1 = b.z - a.z;
+        xz_vars.__dz2 = c.z - b.z;
     } while (0); // wut
 
-    plane->normal.x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    plane->normal.y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    plane->normal.z = (__dx1 * __dy2) - (__dy1 * __dx2);
-    plane->dist =
-        -a.x * b.y * c.z - b.x * c.y * a.z - c.x * a.y * b.z + a.x * c.y * b.z + b.x * a.y * c.z + c.x * b.y * a.z;
+    plane->normal.x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    plane->normal.y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    plane->normal.z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
+    plane->dist =triple_product_fipr(a,b,c);
+        //-a.x * b.y * c.z - b.x * c.y * a.z - c.x * a.y * b.z + a.x * c.y * b.z + b.x * a.y * c.z + c.x * b.y * a.z;
 }
 
 // Calculate the normal vector of an ordered triangle, given as a Vec3f array
@@ -116,31 +155,36 @@ void func_col1_80097730(Vec3f* norm, Vec3f* tri) {
     __vtx2_y = tri->y;
     __vtx2_z = tri->z;
 
-    __dx1 = __vtx1_x - __vtx0_x;
-    __dx2 = __vtx2_x - __vtx1_x;
-    __dy1 = __vtx1_y - __vtx0_y;
-    __dy2 = __vtx2_y - __vtx1_y;
-    __dz1 = __vtx1_z - __vtx0_z;
-    __dz2 = __vtx2_z - __vtx1_z;
-    norm->x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    norm->y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    norm->z = (__dx1 * __dy2) - (__dy1 * __dx2);
+    xz_vars.__dx1 = __vtx1_x - __vtx0_x;
+    xz_vars.__dx2 = __vtx2_x - __vtx1_x;
+    xz_vars.__dy1 = __vtx1_y - __vtx0_y;
+    xz_vars.__dy2 = __vtx2_y - __vtx1_y;
+    xz_vars.__dz1 = __vtx1_z - __vtx0_z;
+    xz_vars.__dz2 = __vtx2_z - __vtx1_z;
+    norm->x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    norm->y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    norm->z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
 }
 
 // Calculate the normal vector of an ordered triangle, given as integer coordinates
 void func_col1_800978C4(Vec3f* norm, s32 ax, s32 ay, s32 az, s32 bx, s32 by, s32 bz, s32 cx, s32 cy, s32 cz) {
-    __dx1 = bx - ax;
-    __dx2 = cx - bx;
-    __dy1 = by - ay;
-    __dy2 = cy - by;
-    __dz1 = bz - az;
-    __dz2 = cz - bz;
+    xz_vars.__dx1 = bx - ax;
+    xz_vars.__dx2 = cx - bx;
+    xz_vars.__dy1 = by - ay;
+    xz_vars.__dy2 = cy - by;
+    xz_vars.__dz1 = bz - az;
+    xz_vars.__dz2 = cz - bz;
 
-    norm->x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    norm->y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    norm->z = (__dx1 * __dy2) - (__dy1 * __dx2);
+    norm->x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    norm->y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    norm->z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
 }
 
+static inline float approx_recip_sign(float v) {
+	float _v = 1.0f / sqrtf(v * v);
+	return copysignf(_v, v);
+}
+//#define approx_recip_sign(v) (1.0f / sqrtf((v)*(v)))
 // Calculate the normal vector of an ordered triangle, given as vertices
 void func_col1_800979E8(Vtx_tn* tri) {
     s32 i;
@@ -160,21 +204,23 @@ void func_col1_800979E8(Vtx_tn* tri) {
     __vtx2_y = tri[2].ob[1];
     __vtx2_z = tri[2].ob[2];
 
-    __dx1 = __vtx1_x - __vtx0_x;
-    __dx2 = __vtx2_x - __vtx1_x;
-    __dy1 = __vtx1_y - __vtx0_y;
-    __dy2 = __vtx2_y - __vtx1_y;
-    __dz1 = __vtx1_z - __vtx0_z;
-    __dz2 = __vtx2_z - __vtx1_z;
+    xz_vars.__dx1 = __vtx1_x - __vtx0_x;
+    xz_vars.__dx2 = __vtx2_x - __vtx1_x;
+    xz_vars.__dy1 = __vtx1_y - __vtx0_y;
+    xz_vars.__dy2 = __vtx2_y - __vtx1_y;
+    xz_vars.__dz1 = __vtx1_z - __vtx0_z;
+    xz_vars.__dz2 = __vtx2_z - __vtx1_z;
 
-    temp.x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    temp.y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    temp.z = (__dx1 * __dy2) - (__dy1 * __dx2);
-    temp_fv0 = VEC3F_MAG(&temp);
+    temp.x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    temp.y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    temp.z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
+//    var_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){v3.x,v3.y,v3.z});
+//    temp_fv0 = VEC3F_MAG(&temp);
+    temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){temp.x,temp.y,temp.z});
     if (temp_fv0 != 0.0f) {
-        temp.x = temp.x * 127.0f / temp_fv0;
-        temp.y = temp.y * 127.0f / temp_fv0;
-        temp.z = temp.z * 127.0f / temp_fv0;
+        temp.x = temp.x * temp_fv0; // 127.0f / temp_fv0;
+        temp.y = temp.y * temp_fv0; // 127.0f / temp_fv0;
+        temp.z = temp.z * temp_fv0; // 127.0f / temp_fv0;
         for (i = 0; i < 3; i++) {
             tri->n[0] = temp.x;
             tri->n[1] = temp.y;
@@ -200,22 +246,23 @@ void func_col1_80097C88(Vec3f* norms, Vtx_tn* quad) {
     __vtx2_y = quad->ob[1];
     __vtx2_z = quad->ob[2];
 
-    __dx1 = __vtx1_x - __vtx0_x;
-    __dx2 = __vtx2_x - __vtx1_x;
-    __dy1 = __vtx1_y - __vtx0_y;
-    __dy2 = __vtx2_y - __vtx1_y;
-    __dz1 = __vtx1_z - __vtx0_z;
-    __dz2 = __vtx2_z - __vtx1_z;
+    xz_vars.__dx1 = __vtx1_x - __vtx0_x;
+    xz_vars.__dx2 = __vtx2_x - __vtx1_x;
+    xz_vars.__dy1 = __vtx1_y - __vtx0_y;
+    xz_vars.__dy2 = __vtx2_y - __vtx1_y;
+    xz_vars.__dz1 = __vtx1_z - __vtx0_z;
+    xz_vars.__dz2 = __vtx2_z - __vtx1_z;
 
-    norms->x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    norms->y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    norms->z = (__dx1 * __dy2) - (__dy1 * __dx2);
+    norms->x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    norms->y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    norms->z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
 
-    temp_fv0 = VEC3F_MAG(norms);
+//    temp_fv0 = VEC3F_MAG(norms);
+    temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){norms->x,norms->y,norms->z});
     if (temp_fv0 != 0.0f) {
-        norms->x = (norms->x / temp_fv0) * 127.0f;
-        norms->y = (norms->y / temp_fv0) * 127.0f;
-        norms->z = (norms->z / temp_fv0) * 127.0f;
+        norms->x = (norms->x * temp_fv0);// / temp_fv0) * 127.0f;
+        norms->y = (norms->y * temp_fv0);// / temp_fv0) * 127.0f;
+        norms->z = (norms->z * temp_fv0);// / temp_fv0) * 127.0f;
     }
 
     norms++;
@@ -229,22 +276,23 @@ void func_col1_80097C88(Vec3f* norms, Vtx_tn* quad) {
     __vtx2_y = quad->ob[1];
     __vtx2_z = quad->ob[2];
 
-    __dx1 = __vtx1_x - __vtx0_x;
-    __dx2 = __vtx2_x - __vtx1_x;
-    __dy1 = __vtx1_y - __vtx0_y;
-    __dy2 = __vtx2_y - __vtx1_y;
-    __dz1 = __vtx1_z - __vtx0_z;
-    __dz2 = __vtx2_z - __vtx1_z;
+    xz_vars.__dx1 = __vtx1_x - __vtx0_x;
+    xz_vars.__dx2 = __vtx2_x - __vtx1_x;
+    xz_vars.__dy1 = __vtx1_y - __vtx0_y;
+    xz_vars.__dy2 = __vtx2_y - __vtx1_y;
+    xz_vars.__dz1 = __vtx1_z - __vtx0_z;
+    xz_vars.__dz2 = __vtx2_z - __vtx1_z;
 
-    norms->x = (__dy1 * __dz2) - (__dz1 * __dy2);
-    norms->y = (__dz1 * __dx2) - (__dx1 * __dz2);
-    norms->z = (__dx1 * __dy2) - (__dy1 * __dx2);
+    norms->x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
+    norms->y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
+    norms->z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
 
-    temp_fv0 = VEC3F_MAG(norms);
+//    temp_fv0 = VEC3F_MAG(norms);
+    temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){norms->x,norms->y,norms->z});
     if (temp_fv0 != 0.0f) {
-        norms->x = (norms->x / temp_fv0) * 127.0f;
-        norms->y = (norms->y / temp_fv0) * 127.0f;
-        norms->z = (norms->z / temp_fv0) * 127.0f;
+        norms->x = (norms->x * temp_fv0);// / temp_fv0) * 127.0f;
+        norms->y = (norms->y * temp_fv0);// / temp_fv0) * 127.0f;
+        norms->z = (norms->z * temp_fv0);// / temp_fv0) * 127.0f;
     }
 }
 
@@ -269,14 +317,14 @@ s32 func_col1_8009808C(Vec3f* pos, Vtx_tn* quad, Vec3f* normOut) {
     __vtx3_y = quad[3].ob[1];
     __vtx3_z = quad[3].ob[2];
 
-    __pos_x = pos->x;
-    __pos_z = pos->z;
+    xz_vars.__pos_x = pos->x;
+    xz_vars.__pos_z = pos->z;
 
-    test1 = TRINORM_Y(__vtx0, __vtx1, __pos);
+    test1 = TRINORM_Y(__vtx0, __vtx1, xz_vars.__pos);
     if (test1 >= 0.0f) {
-        test1 = TRINORM_Y(__vtx1, __vtx2, __pos);
+        test1 = TRINORM_Y(__vtx1, __vtx2, xz_vars.__pos);
         if (test1 >= 0.0f) {
-            test1 = TRINORM_Y(__vtx2, __vtx0, __pos);
+            test1 = TRINORM_Y(__vtx2, __vtx0, xz_vars.__pos);
             if (test1 >= 0.0f) {
                 normOut->x = TRINORM_X(__vtx0, __vtx1, __vtx2);
                 normOut->y = TRINORM_Y(__vtx0, __vtx1, __vtx2);
@@ -289,11 +337,11 @@ s32 func_col1_8009808C(Vec3f* pos, Vtx_tn* quad, Vec3f* normOut) {
     }
 
     if (var_v1 == 0) {
-        test1 = TRINORM_Y(__vtx0, __vtx2, __pos);
+        test1 = TRINORM_Y(__vtx0, __vtx2, xz_vars.__pos);
         if ((test1 >= 0.0f)) {
-            test1 = TRINORM_Y(__vtx2, __vtx3, __pos);
+            test1 = TRINORM_Y(__vtx2, __vtx3, xz_vars.__pos);
             if (test1 >= 0.0f) {
-                test1 = TRINORM_Y(__vtx3, __vtx0, __pos);
+                test1 = TRINORM_Y(__vtx3, __vtx0, xz_vars.__pos);
                 if (test1 >= 0.0f) {
                     normOut->x = TRINORM_X(__vtx0, __vtx2, __vtx3);
                     normOut->y = TRINORM_Y(__vtx0, __vtx2, __vtx3);
@@ -307,13 +355,14 @@ s32 func_col1_8009808C(Vec3f* pos, Vtx_tn* quad, Vec3f* normOut) {
     }
 
     if (var_v1 != 0) {
-        temp_fv0 = VEC3F_MAG(normOut);
+//        temp_fv0 = VEC3F_MAG(normOut);
+        temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){normOut->x,normOut->y,normOut->z});
         if (temp_fv0 == 0) {
             return 0;
         }
-        normOut->x = (normOut->x / temp_fv0) * 127.0f;
-        normOut->y = (normOut->y / temp_fv0) * 127.0f;
-        normOut->z = (normOut->z / temp_fv0) * 127.0f;
+        normOut->x = (normOut->x * temp_fv0);// / temp_fv0) * 127.0f;
+        normOut->y = (normOut->y * temp_fv0);// / temp_fv0) * 127.0f;
+        normOut->z = (normOut->z * temp_fv0);// / temp_fv0) * 127.0f;
     }
     return var_v1;
 }
@@ -323,8 +372,8 @@ bool func_col1_800985CC(Vec3f* vec, Vtx_tn* tri) {
     f32 sp24;
     f32 sp20;
 
-    __pos_x = __vtx0_x = tri->ob[0];
-    __pos_z = __vtx0_z = tri->ob[2];
+    xz_vars.__pos_x = __vtx0_x = tri->ob[0];
+    xz_vars.__pos_z = __vtx0_z = tri->ob[2];
     tri++;
     __vtx1_x = tri->ob[0];
     __vtx1_z = tri->ob[2];
@@ -341,7 +390,7 @@ bool func_col1_800985CC(Vec3f* vec, Vtx_tn* tri) {
     if (SIGN_OF(sp24) != SIGN_OF(sp20)) {
         return false;
     }
-    sp24 = TRINORM_Y(__vtx0, __pos, __vtx2);
+    sp24 = TRINORM_Y(__vtx0, xz_vars.__pos, __vtx2);
 
     if (SIGN_OF(sp24) != SIGN_OF(sp20)) {
         return false;
@@ -355,24 +404,71 @@ void func_col1_80098860(PlaneF* plane, Vec3f* point, Vec3f* normal) {
     plane->normal.y = normal->y;
     plane->normal.z = normal->z;
     plane->dist = -normal->x * point->x - normal->y * point->y - normal->z * point->z;
+//    shz_dot8f(-normal.x, -normal.y, -normal.z, 0, point->x, point->y, point->z, 0);
 }
 
 // y dist to closest point on plane
 s32 func_col1_800988B4(Vec3f* vec, PlaneF* plane) {
-    return (-plane->normal.x * vec->x - plane->normal.z * vec->z - plane->dist) / plane->normal.y;
+    f32 recY = approx_recip_sign(plane->normal.y);
+    return (-plane->normal.x * vec->x - plane->normal.z * vec->z - plane->dist) * recY; // / plane->normal.y;
 }
 
 // z dist to closest point on plane
 s32 func_col1_800988F8(Vec3f* vec, PlaneF* plane) {
-    return (-plane->normal.x * vec->x - plane->normal.y * vec->y - plane->dist) / plane->normal.z;
+    f32 recZ = approx_recip_sign(plane->normal.z);
+    return (-plane->normal.x * vec->x - plane->normal.y * vec->y - plane->dist) * recZ; // / plane->normal.z;
 }
 
 // x dist to closest point on plane
 s32 func_col1_8009893C(Vec3f* vec, PlaneF* plane) {
-    return (-plane->normal.y * vec->y - plane->normal.z * vec->z - plane->dist) / plane->normal.x;
+    f32 recX = approx_recip_sign(plane->normal.x);
+    return (-plane->normal.y * vec->y - plane->normal.z * vec->z - plane->dist) * recX; // / plane->normal.x;
 }
 
 #define INTSIGN_OF(x) ((((x) >= 1.0f) || ((x) <= -1.0f)) ? (f32) SIGN_OF(x) : 0.0f)
+static inline Vec3f v3f_sub(Vec3f a, Vec3f b) {
+    return (Vec3f){a.x - b.x, a.y - b.y, a.z - b.z};
+}
+static inline Vec3f v3f_cross(Vec3f a, Vec3f b) {
+    return (Vec3f){a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+}
+static inline float v3f_dot(Vec3f a, Vec3f b) {
+    return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
+static inline Vec3f to_f(Vec3s *v) {
+    return (Vec3f){ (float)v->x, (float)v->y, (float)v->z };
+}
+bool not_func_col1_80098980( Vec3f *p, Vec3s **tri,  Vec3f *n)
+{
+    Vec3f v0 = to_f(*tri++), v1 = to_f(*tri++), v2 = to_f(*tri++);
+
+    // choose dominant axis of the normal
+    float ax = fabsf(n->x), ay = fabsf(n->y), az = fabsf(n->z);
+    int axis = (ax > ay && ax > az) ? 0 : (ay > az ? 1 : 2);
+
+    // project to the plane orthogonal to 'axis'
+    float pA, pB, v0A, v0B, v1A, v1B, v2A, v2B;
+    if (axis == 0) {        // drop X -> use (y,z)
+        pA = p->y; pB = p->z;
+        v0A = v0.y; v0B = v0.z; v1A = v1.y; v1B = v1.z; v2A = v2.y; v2B = v2.z;
+    } else if (axis == 1) { // drop Y -> use (z,x)
+        pA = p->z; pB = p->x;
+        v0A = v0.z; v0B = v0.x; v1A = v1.z; v1B = v1.x; v2A = v2.z; v2B = v2.x;
+    } else {                // drop Z -> use (x,y)
+        pA = p->x; pB = p->y;
+        v0A = v0.x; v0B = v0.y; v1A = v1.x; v1B = v1.y; v2A = v2.x; v2B = v2.y;
+    }
+
+    // 2D edge “left of” tests; sign must match dominant normal component
+    float s = (axis == 0 ? n->x : (axis == 1 ? n->y : n->z));
+    float e0 = (pA - v0A)*(v1B - v0B) - (pB - v0B)*(v1A - v0A);
+    float e1 = (pA - v1A)*(v2B - v1B) - (pB - v1B)*(v2A - v1A);
+    float e2 = (pA - v2A)*(v0B - v2B) - (pB - v2B)*(v0A - v2A);
+
+    if (s >= 0.0f) return (e0 >= 0.0f && e1 >= 0.0f && e2 >= 0.0f);
+    else           return (e0 <= 0.0f && e1 <= 0.0f && e2 <= 0.0f);
+}
 
 // checks if the projection of pos onto the plane of tri lies within tri and it is on the same side as the normal.
 bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
@@ -488,6 +584,7 @@ bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
 #ifndef F_PI
 #define F_PI        3.1415926f   /* pi             */
 #endif
+float my_acosf (float a);
 
 bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHeader* colHeader, Vec3f* hitPosOut,
                    f32* hitAnglesOut) {
@@ -595,9 +692,11 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
 
                 // check if the angle between the normal and velocity is > 90. That is, the object was moving toward the
                 // front of the polygon
-                if (/* Math_FAcosF */acosf(tempf / (VEC3F_MAG(&polyPlane.normal) * speed)) > DEG_TO_RAD(90.0f)) {
+                f32 recipThing = approx_recip_sign((VEC3F_MAG(&polyPlane.normal) * speed));
+                if (/* Math_FAcosF */my_acosf(tempf * recipThing) > DEG_TO_RAD(90.0f)) {
                     // Calculate the time since the plane was crossed. Reusing the temp is required to match
-                    tempf = (DOT_XYZ(&polyPlane.normal, &objRel) + polyPlane.dist) / tempf;
+                    f32 reciptemp = approx_recip_sign(tempf);
+                    tempf = (DOT_XYZ(&polyPlane.normal, &objRel) + polyPlane.dist) * reciptemp; // / tempf;
 
                     // find the point where the object crossed the plane of the polygon
                     hitPosRel.x = objRel.x - (objVel->x * tempf);
@@ -610,13 +709,16 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
                         hitPosOut->y = colliderPos->y + hitPosRel.y;
                         hitPosOut->z = colliderPos->z + hitPosRel.z;
                         if (polyPlane.normal.x != 0.0) {
-                            polyPlane.normal.x = -polyPlane.dist / polyPlane.normal.x;
+                            f32 recipN = approx_recip_sign(polyPlane.normal.x);
+                            polyPlane.normal.x = -polyPlane.dist * recipN; // / polyPlane.normal.x;
                         }
                         if (polyPlane.normal.y != 0.0f) {
-                            polyPlane.normal.y = -polyPlane.dist / polyPlane.normal.y;
+                            f32 recipN = approx_recip_sign(polyPlane.normal.y);
+                            polyPlane.normal.y = -polyPlane.dist * recipN; //  / polyPlane.normal.y;
                         }
                         if (polyPlane.normal.z != 0.0f) {
-                            polyPlane.normal.z = -polyPlane.dist / polyPlane.normal.z;
+                            f32 recipN = approx_recip_sign(polyPlane.normal.z);
+                            polyPlane.normal.z = -polyPlane.dist * recipN; // / polyPlane.normal.z;
                         }
                         hitAnglesOut[0] = Math_Atan2F_XY(polyPlane.normal.y, polyPlane.normal.z);
                         if (polyPlane.normal.z != 0.0f) {

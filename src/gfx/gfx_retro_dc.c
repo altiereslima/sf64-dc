@@ -1672,7 +1672,7 @@ int last_was_special = 0;
 
 //int last_cull = 0;
 
-static void  __attribute__((noinline)) gfx_sp_tri1(uint8_t need_cull, uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t vtx3_idx) {
+static void  __attribute__((noinline)) gfx_sp_tri1(/* uint8_t need_cull, */ uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t vtx3_idx) {
 	MEM_BARRIER_PREF(clip_rej);
     struct LoadedVertex* v1 = &rsp.loaded_vertices[vtx3_idx];
 	__builtin_prefetch(v1);
@@ -1681,42 +1681,40 @@ static void  __attribute__((noinline)) gfx_sp_tri1(uint8_t need_cull, uint8_t vt
 	uint8_t l_clip_rej[3] = {clip_rej[vtx3_idx], clip_rej[vtx2_idx], clip_rej[vtx1_idx]};
 
     struct LoadedVertex* v_arr[3] = { v1, v2, v3 };
-	if (need_cull) {
-		__builtin_prefetch(v2);
-		uint8_t c0 = l_clip_rej[0];
-		uint8_t c1 = l_clip_rej[1];
-		uint8_t c2 = l_clip_rej[2];
-		__builtin_prefetch(v3);
-		if ((c0 & c1 & c2) & 0x3f) {
-			// The whole triangle lies outside the visible area
-			return;
+//	if (need_cull) {
+	uint8_t c0 = l_clip_rej[0];
+	uint8_t c1 = l_clip_rej[1];
+	uint8_t c2 = l_clip_rej[2];
+	__builtin_prefetch(v2);
+	if ((c0 & c1 & c2) & 0x3f) {
+		// The whole triangle lies outside the visible area
+		return;
+	}
+	if ((rsp.geometry_mode & G_CULL_BOTH) != 0) {
+		float dx1 = v1->_x - v2->_x;
+		float dy1 = v1->_y - v2->_y;
+		float dx2 = v3->_x - v2->_x;
+		float dy2 = v3->_y - v2->_y;
+		float cross = dx1 * dy2 - dy1 * dx2;
+	//    if ((v1->wlt0) ^ (v2->wlt0) ^ (v3->wlt0)) {
+		if ((c0 ^ c1 ^ c2) & 0x40) {
+			// If one vertex lies behind the eye, negating cross will give the correct result.
+			// If all vertices lie behind the eye, the triangle will be rejected anyway.
+			cross = -cross;
 		}
-		if ((rsp.geometry_mode & G_CULL_BOTH) != 0) {
-			float dx1 = v1->_x - v2->_x;
-			float dy1 = v1->_y - v2->_y;
-			float dx2 = v3->_x - v2->_x;
-			float dy2 = v3->_y - v2->_y;
-			float cross = dx1 * dy2 - dy1 * dx2;
-	//        if ((v1->wlt0) ^ (v2->wlt0) ^ (v3->wlt0)) {
-			if ((c0 ^ c1 ^ c2) & 0x40) {
-				// If one vertex lies behind the eye, negating cross will give the correct result.
-				// If all vertices lie behind the eye, the triangle will be rejected anyway.
-				cross = -cross;
-			}
-			switch (rsp.geometry_mode & G_CULL_BOTH) {
-				case G_CULL_FRONT:
-					if (cross >= 0) {
-						return;
-					}
-					break;
-				case G_CULL_BACK:
-					if (cross <= 0) {
-						return;
-					}
-					break;
-				default:
-					break;
-			}
+		switch (rsp.geometry_mode & G_CULL_BOTH) {
+			case G_CULL_FRONT:
+				if (cross >= 0) {
+					return;
+				}
+				break;
+			case G_CULL_BACK:
+				if (cross <= 0) {
+					return;
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -1749,8 +1747,6 @@ static void  __attribute__((noinline)) gfx_sp_tri1(uint8_t need_cull, uint8_t vt
         gfx_rapi->set_zmode_decal(zmode_decal);
         rendering_state.decal_mode = zmode_decal;
     }
-
-	__builtin_prefetch(v2);
 
 	if (rdp.viewport_or_scissor_changed) {
         if (memcmp(&rdp.viewport, &rendering_state.viewport, sizeof(rdp.viewport)) != 0) {
@@ -3079,10 +3075,10 @@ static void  __attribute__((noinline)) gfx_sp_tri2(uint16_t vtx12_idx, uint16_t 
 	if (skip_1 && skip_2) {
 		return;
 	} else if (skip_1) {
-		gfx_sp_tri1(1, vtx4_idx, vtx5_idx, vtx6_idx);
+		gfx_sp_tri1(/* 1, */ vtx4_idx, vtx5_idx, vtx6_idx);
 		return;
 	} else if (skip_2) {
-		gfx_sp_tri1(1, vtx1_idx, vtx2_idx, vtx3_idx);
+		gfx_sp_tri1(/* 1, */ vtx1_idx, vtx2_idx, vtx3_idx);
 		return;
 	}
 	__builtin_prefetch(v2);
@@ -3142,10 +3138,10 @@ static void  __attribute__((noinline)) gfx_sp_tri2(uint16_t vtx12_idx, uint16_t 
 	if (skip_1 && skip_2) {
 		return;
 	} else if (skip_1) {
-		gfx_sp_tri1(0, vtx4_idx, vtx5_idx, vtx6_idx);
+		gfx_sp_tri1(/* 0, */ vtx4_idx, vtx5_idx, vtx6_idx);
 		return;
 	} else if (skip_2) {
-		gfx_sp_tri1(0, vtx1_idx, vtx2_idx, vtx3_idx);
+		gfx_sp_tri1(/* 0, */ vtx1_idx, vtx2_idx, vtx3_idx);
 		return;
 	}
 	__builtin_prefetch(v4);
@@ -3646,18 +3642,18 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 				break;
 
 			case (uint8_t) G_QUAD:
-				gfx_sp_tri1(1, C1(17, 7), C1(9, 7), C1(25, 7));
-				gfx_sp_tri1(1, C1(9, 7),  C1(1, 7), C1(25, 7));
+				gfx_sp_tri1(/* 1, */ C1(17, 7), C1(9, 7), C1(25, 7));
+				gfx_sp_tri1(/* 1, */ C1(9, 7),  C1(1, 7), C1(25, 7));
 				break;
 
 			case (uint8_t) G_TRI1:
-				gfx_sp_tri1(1, C1(17, 7), C1(9, 7), C1(1, 7));
+				gfx_sp_tri1(/* 1, */ C1(17, 7), C1(9, 7), C1(1, 7));
 				break;
 
 			case (uint8_t) G_TRI2:
-				//gfx_sp_tri1(C0(17, 7), C0(9, 7), C0(1, 7));
-				//gfx_sp_tri1(C1(17, 7), C1(9, 7), C1(1, 7));
-				gfx_sp_tri2(C0(17, 7)<<8| C0(9, 7), C0(1, 7)<<8| C1(17, 7), C1(9, 7)<<8| C1(1, 7));
+				gfx_sp_tri1(/* 1, */ C0(17, 7), C0(9, 7), C0(1, 7));
+				gfx_sp_tri1(/* 1, */ C1(17, 7), C1(9, 7), C1(1, 7));
+				//gfx_sp_tri2(C0(17, 7)<<8| C0(9, 7), C0(1, 7)<<8| C1(17, 7), C1(9, 7)<<8| C1(1, 7));
 				break;
 
 			case (uint8_t) G_SETOTHERMODE_L:
@@ -3753,6 +3749,7 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 				gfx_dp_set_color_image(C0(21, 3), C0(19, 2), C0(0, 11), seg_addr(cmd->words.w1));
 				break;
 		}
+
 		++cmd;
 	}
 }

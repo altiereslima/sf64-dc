@@ -779,6 +779,19 @@ void SectorZ_CsTeamInit(ActorCutscene* this, s32 index) {
 
     Object_SetInfo(&this->info, this->obj.id);
 
+    // @recomp: Setup team faces
+    switch (index) {
+        case 0: // Slippy
+            this->iwork[14] = index + 3;
+            break;
+        case 1: // Falco
+            this->iwork[14] = index + 1;
+            break;
+        case 2: // Peppy
+            this->iwork[14] = index + 2;
+            break;
+    }
+
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
     AUDIO_PLAY_SFX(NA_SE_ARWING_BOOST, this->sfxSource, 0);
 
@@ -1102,6 +1115,8 @@ void SectorZ_CsLevelCompleteTeamInit(ActorCutscene* this, s32 index) {
     if (index < 3) {
         this->iwork[11] = 1;
         AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
+        // @recomp set team faces
+        this->iwork[14] = index + 2;
     } else {
         this->animFrame = ACTOR_CS_GREAT_FOX;
         this->fwork[0] = 20.0f;

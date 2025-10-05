@@ -138,6 +138,7 @@ void* AudioLoad_DmaSampleData(u32 devAddr, u32 size, u32 arg2, u8* dmaIndexRef, 
         dma = &gSampleDmas[sp38];
     }
     dmaDevAddr = devAddr & ~0xF;
+    __builtin_prefetch(dmaDevAddr);
     dma->ttl = 2;
     dma->devAddr = dmaDevAddr;
 #if NODMA

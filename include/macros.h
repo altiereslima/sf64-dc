@@ -37,16 +37,11 @@ extern void* segmented_to_virtual(const void* addr);
 #define SQ(x) ((x) * (x))
 #define CUBE(x) ((x) * (x) * (x))
 #include "sh4zam.h"
-#define DOT_XYZ(v1Ptr, v2Ptr) (((v1Ptr)->x * (v2Ptr)->x) + ((v1Ptr)->y * (v2Ptr)->y) + ((v1Ptr)->z * (v2Ptr)->z))
-
-
-//shz_dot8f((f32)((v1Ptr)->x), (f32)((v1Ptr)->y), (f32)((v1Ptr)->z), 0, (f32)((v2Ptr)->x), (f32)((v2Ptr)->y), (f32)((v2Ptr)->z), 0)
+#define DOT_XYZ(v1Ptr, v2Ptr) shz_dot8f((f32)((v1Ptr)->x), (f32)((v1Ptr)->y), (f32)((v1Ptr)->z), 0, (f32)((v2Ptr)->x), (f32)((v2Ptr)->y), (f32)((v2Ptr)->z), 0)
 
 //(((v1Ptr)->x * (v2Ptr)->x) + ((v1Ptr)->y * (v2Ptr)->y) + ((v1Ptr)->z * (v2Ptr)->z))
 
-#define VEC3F_MAG(vecPtr) sqrtf(DOT_XYZ(vecPtr, vecPtr))
-
-//shz_sqrtf_fsrra(DOT_XYZ(vecPtr, vecPtr))
+#define VEC3F_MAG(vecPtr) shz_sqrtf_fsrra(DOT_XYZ(vecPtr, vecPtr))
 
 //sqrtf(DOT_XYZ(vecPtr, vecPtr))
 

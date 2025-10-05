@@ -461,6 +461,8 @@ int main(int argc, char **argv) {
 #include "../mods/isviewer.c"
 #endif
 //533
+extern void *cb_next_left(void);
+extern void *cb_next_right(void);
 void *SPINNING_THREAD(UNUSED void *arg) {
     uint64_t last_vbltick = vblticker;
     
@@ -472,7 +474,8 @@ void *SPINNING_THREAD(UNUSED void *arg) {
         last_vbltick = vblticker;
         __builtin_prefetch(audio_buffer[1]);
 
-        AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], 448);
+        AudioThread_CreateNextAudioBuffer(//cb_next_left(), cb_next_right(), 448);//
+            audio_buffer[0], audio_buffer[1], 448);
         audio_api->play((u8 *)audio_buffer[0], (u8*)audio_buffer[1], 1792);
     }
 

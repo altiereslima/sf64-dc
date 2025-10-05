@@ -99,6 +99,9 @@ void Cutscene_WarpZoneComplete_TeamSetup(ActorCutscene* this, s32 index) {
         this->animFrame = ACTOR_CS_GREAT_FOX;
     } else {
         this->iwork[ACTOR_ENGINE_GLOW] = 1;
+        // @recomp: Setup team faces
+        this->iwork[14] = index + 2;
+        
         AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
     }
 }
@@ -694,6 +697,9 @@ void Cutscene_TeamSetup(ActorCutscene* this, s32 index) {
     this->obj.rot.z = sCsTeamSetupZRot[index];
     this->iwork[ACTOR_ENGINE_GLOW] = 1;
     Object_SetInfo(&this->info, this->obj.id);
+
+    // @recomp set team faces
+    this->iwork[14] = index + 2;
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
 

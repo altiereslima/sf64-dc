@@ -677,23 +677,75 @@ void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
         if (!sStartSeqDisabled) {
             int looping = 1;
             int playId = seqId&0x7fff;
-            if (playId == 15) {
-                playId = 10;
-            } else if (playId == 11) {
+
+            // 2
+            // 3
+            // 4
+            // 5
+            // 6
+            // 7
+            // 8
+            // 9
+            // 10
+            if (playId == 11) {
                 playId = 9;
+            }
+            // 12
+            // 13
+            // 14
+            else if (playId == 15) {
+                playId = 10;
             } else if (playId == 16) {
                 playId = 4;
-            } else if (playId == 20 || playId == 24 || playId == 25 || playId == 27 || playId == 32) {
+            }
+            // 17
+            // 18
+            // 19
+            else if (playId == 20 || playId == 24 || playId == 25 || playId == 27 || playId == 32) {
                 playId = 19;
             } else if (playId == 21 || playId == 22) {
                 playId = 18;
-            } else if (playId == 31) {
+            }
+            // 23
+            // ..
+            // ..
+            // ..
+            // ..
+            // 28
+            else if (playId == 29 || playId == 31) { // katina boss, sector z missiles
                 playId = 28;
-            } else if (playId == 34 || playId == 35 || playId == 37 || playId == 38 || playId == 39 || playId == 40 || playId == 41 || playId == 43 || playId == 44 || playId == 45 || playId == 50) {
-                looping = 0;
-            } else if (playId == 49) {
+            }
+            else if (playId == 30) { // aquas boss
+                playId = 23;
+            }
+            // 33
+            // 34
+            // 35
+            else if (playId == 37) { // NA_BGM_RANKING
+                playId = 36;
+            }
+            // 37
+            // 38
+            // 39
+            // 40
+            // 41 -- unused?
+            // 42
+            // 43
+            // 44
+            // 45
+            // 46
+            // 47
+            // 48
+            // 49
+            // 50
+            // 51
+
+            if (playId == 34 || playId == 35 || playId == 37 || playId == 38 || 
+                playId == 39 || playId == 40 || playId == 41 || 
+                playId == 44 || playId == 45 || playId == 49 || playId == 50) {
                 looping = 0;
             }
+
             if (sx_distort) {
                 sprintf(wavfn, "%s/music/21_2.adpcm", fnpre);
                 sx_distort = 0;

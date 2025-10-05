@@ -115,7 +115,7 @@ bool func_col2_800A3A74(Vec3f* point, Vec3f** tri, Vec3f* normOut) {
 
     ptx = point->x;
     ptz = point->z;
-
+//#define approx_recip(x) (1.0f / sqrtf((x)*(x)))
     temp1 = ((vtx2.z - vtx1.z) * (ptx - vtx2.x)) - ((vtx2.x - vtx1.x) * (ptz - vtx2.z));
     if (temp1 >= 0.0f) {
         if (((vtx3.x - vtx2.x) * (ptz - vtx3.z)) <= ((vtx3.z - vtx2.z) * (ptx - vtx3.x))) {
@@ -125,11 +125,13 @@ bool func_col2_800A3A74(Vec3f* point, Vec3f** tri, Vec3f* normOut) {
                 normOut->y = ((vtx2.z - vtx1.z) * (vtx3.x - vtx2.x)) - ((vtx2.x - vtx1.x) * (vtx3.z - vtx2.z));
                 normOut->z = ((vtx2.x - vtx1.x) * (vtx3.y - vtx2.y)) - ((vtx2.y - vtx1.y) * (vtx3.x - vtx2.x));
                 if ((normOut->x != 0.0f) || (normOut->y != 0.0f) || (normOut->z != 0.0f)) {
-                    temp_fv0 = VEC3F_MAG(normOut);
+//                    temp_fv0 = VEC3F_MAG(normOut);
+                    temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){normOut->x,normOut->y,normOut->z});
+                  
                     if (temp_fv0 != 0) {
-                        normOut->x = (normOut->x / temp_fv0) * 127.0f;
-                        normOut->y = (normOut->y / temp_fv0) * 127.0f;
-                        normOut->z = (normOut->z / temp_fv0) * 127.0f;
+                        normOut->x = (normOut->x * temp_fv0);// / temp_fv0) * 127.0f;
+                        normOut->y = (normOut->y * temp_fv0);// / temp_fv0) * 127.0f;
+                        normOut->z = (normOut->z * temp_fv0);// / temp_fv0) * 127.0f;
                     }
                 }
             }

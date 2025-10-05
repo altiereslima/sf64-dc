@@ -1740,7 +1740,7 @@ void Player_CollisionCheck(Player* player) {
                     spC8.x = scenery360->obj.pos.x - player->pos.x;
                     spC8.z = scenery360->obj.pos.z - player->trueZpos;
 
-                    if (sqrtf(SQ(spC8.x) + SQ(spC8.z)) < sp8C) {
+                    if (shz_sqrtf_fsrra(SQ(spC8.x) + SQ(spC8.z)) < sp8C) {
                         if ((scenery360->obj.id == OBJ_SCENERY_AQ_CORAL_REEF_1) ||
                             (scenery360->obj.id == OBJ_SCENERY_VS_KA_FLBASE) ||
                             (scenery360->obj.id == OBJ_SCENERY_VS_PYRAMID_2) ||
@@ -1869,7 +1869,7 @@ void Player_CollisionCheck(Player* player) {
                         (scenery->obj.id == OBJ_SCENERY_CO_BUMP_2) || (scenery->obj.id == OBJ_SCENERY_CO_BUMP_3)) {
                         spC8.x = scenery->obj.pos.x - player->pos.x;
                         spC8.z = scenery->obj.pos.z - player->trueZpos;
-                        if (sqrtf(SQ(spC8.x) + SQ(spC8.z)) < 1100.0f) {
+                        if (shz_sqrtf_fsrra(SQ(spC8.x) + SQ(spC8.z)) < 1100.0f) {
                             temp_v0 = Player_CheckPolyCollision(
                                 player, scenery->obj.id, scenery->obj.pos.x, scenery->obj.pos.y, scenery->obj.pos.z,
                                 scenery->obj.rot.x, scenery->obj.rot.y, scenery->obj.rot.z);
@@ -6477,7 +6477,7 @@ void Camera_SetStarfieldPos(f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 
     f32 sp20;
 
     yaw = -Math_Atan2F(xEye - xAt, zEye - zAt);
-    tempf = sqrtf(SQ(zEye - zAt) + SQ(xEye - xAt));
+    tempf = shz_sqrtf_fsrra(SQ(zEye - zAt) + SQ(xEye - xAt));
     pitch = -Math_Atan2F(yEye - yAt, tempf);
     if (yaw >= F_PI_2) {
         yaw -= F_PI;
@@ -6689,6 +6689,7 @@ void Camera_SetupLights(Player* player) {
 void gfx_texture_cache_invalidate(void *addr);
 uint32_t cob1_uls=0, cob1_lrs=255;
 uint32_t sol_ult=0, sol_lrt=127;
+uint32_t met_ult=0,met_lrt = 31;
 void Play_UpdateLevel(void) {
     s32 cycleMask;
     s32 sp40;
@@ -6749,9 +6750,15 @@ void Play_UpdateLevel(void) {
             break;
 
         case LEVEL_METEO:
-            Lib_Texture_Scroll(aMeteoWarpTex, 8, 8, 1);
-            gfx_texture_cache_invalidate(aMeteoWarpTex);
-            /* fallthrough */
+//            Lib_Texture_Scroll(aMeteoWarpTex, 8, 8, 1);
+//            gfx_texture_cache_invalidate(aMeteoWarpTex);
+            met_ult = (met_ult + 4) & 0x1F;
+            met_lrt = (met_ult + 31) & 0xFFF;
+            Gfx* cmd = (Gfx *)segmented_to_virtual((void *)((Gfx*)(aMeteoWarpDL + 2)));
+            cmd->words.w0 = (G_SETTILESIZE << 24)        | met_ult;
+            cmd->words.w1 = (cmd->words.w1 & 0x0701F000) | met_lrt;
+
+/* fallthrough */
         case LEVEL_SECTOR_X:
             if (gLevelPhase == 1) {
                 gBlurAlpha = 128;
@@ -6776,6 +6783,7 @@ void Play_UpdateLevel(void) {
         case LEVEL_CORNERIA:
             HUD_Texture_Wave(D_CO_603EB38, D_CO_6028A60);
             if (gGameFrameCount & 1) {
+		        //Lib_Texture_Scroll(D_CO_600CBD8, 64, 32, 3);
                 // "GOODLUCK!"
                 // what would it take to do this with UV scrolling?
                 cob1_uls = (cob1_uls - 4) & 0xFF;
@@ -6783,7 +6791,6 @@ void Play_UpdateLevel(void) {
                 Gfx* cmd = (Gfx *)segmented_to_virtual((void *)((Gfx*)(aCoBuilding1DL + 36)));
 			    cmd->words.w0 = (G_SETTILESIZE << 24)        | (cob1_uls << 12);
                 cmd->words.w1 = (cmd->words.w1 & 0x0700007F) | (cob1_lrs << 12);
-		        //Lib_Texture_Scroll(D_CO_600CBD8, 64, 32, 3);
             }
             break;
 
@@ -6795,12 +6802,12 @@ void Play_UpdateLevel(void) {
             Play_UpdateDynaFloor();
 
             for (gPathTexScroll; gPathTexScroll >= 10.0f; gPathTexScroll -= 10.0f) {
-                sol_ult = (sol_ult + 4) & 0x7F;
                 //Lib_Texture_Scroll(aSoLavaTex, 32, 32, 1);
+                sol_ult = (sol_ult + 4) & 0x7F;
             }
             if (gPlayer[0].state == PLAYERSTATE_NEXT) {
-                sol_ult = (sol_ult + 4) & 0x7F;
                 //Lib_Texture_Scroll(aSoLavaTex, 32, 32, 1);
+                sol_ult = (sol_ult + 4) & 0x7F;
             }
 
             sol_lrt = (sol_ult + 127) & 0xFFF;

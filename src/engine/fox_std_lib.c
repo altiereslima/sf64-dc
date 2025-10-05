@@ -291,12 +291,20 @@ s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameT
 
     frameTable++, key++;
     for (i = 1; i <= limbCount; i++, key++, frameTable++) {
+#if 0
         temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
         frameTable->x = temp * FRAMEDATA_SCALE;
         temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
         frameTable->y = temp * FRAMEDATA_SCALE;
         temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
         frameTable->z = temp * FRAMEDATA_SCALE;
+#endif
+        temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
+        frameTable->x = temp * 360.0f / 65536.0f;
+        temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
+        frameTable->y = temp * 360.0f / 65536.0f;
+        temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
+        frameTable->z = temp * 360.0f / 65536.0f;
     }
     return limbCount + 1;
 }

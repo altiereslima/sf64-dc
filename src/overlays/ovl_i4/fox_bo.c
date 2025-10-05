@@ -6,7 +6,7 @@
 
 #include "global.h"
 #include "assets/ast_bolse.h"
-#if 0
+#if 1
 #include "prevent_bss_reordering.h"
 
 extern s32 dummy200;
@@ -498,7 +498,7 @@ s32 Bolse_8018CCE8(BoLaserCannon* this) {
             var_fa0 = temp_fv0;
             actorIndex = i;
             //! FAKE:
-            if (gPlayer) {}
+            //if (gPlayer) {}
         }
 
         if (i != -1) {
@@ -1056,6 +1056,10 @@ void Bolse_8018EAEC(ActorCutscene* this, s32 index) {
     this->orient.y = D_i4_8019F018[index];
     Object_SetInfo(&this->info, this->obj.id);
     this->iwork[11] = 1;
+
+    // @recomp: Setup team faces
+    this->iwork[14] = index + 2;
+
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
 
@@ -1370,6 +1374,10 @@ void Bolse_8018F83C(Actor* this, s32 index) {
     this->vel.z = -gPlayer[0].baseSpeed;
     Object_SetInfo(&this->info, this->obj.id);
     this->iwork[11] = 1;
+
+    // @recomp: Setup team faces
+    this->iwork[14] = index + 2;
+
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
 

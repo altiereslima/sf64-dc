@@ -560,11 +560,11 @@ void aLoadBufferImpl(const void* source_addr, uint16_t dest_addr, uint16_t nbyte
     
 void aSaveBufferImpl(uint16_t source_addr, int16_t* dest_addr, uint16_t nbytes) {
     size_t rnb = ROUND_DOWN_16(nbytes);
-    if (((((uintptr_t)dest_addr) & 31)|rnb) == 0) {
-        memcpy32((void *)((uintptr_t)dest_addr), (const void *)BUF_S16(source_addr & ~3), rnb);
-    } else {
+//    if (((((uintptr_t)dest_addr) & 31)|rnb) == 0) {
+//        memcpy32((void *)((uintptr_t)dest_addr), (const void *)BUF_S16(source_addr & ~3), rnb);
+//    } else {
         n64_memcpy((void *)((uintptr_t)dest_addr&~3), (const void *)BUF_S16(source_addr & ~3), rnb);
-    }
+//    }
 }
 
 void aLoadADPCMImpl(int num_entries_times_16, const int16_t* book_source_addr) {

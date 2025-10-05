@@ -1608,7 +1608,7 @@ void PlayerShot_UpdateShot2(PlayerShot* shot, Player* player) {
                 shot->scale = 5000.0f;
             }
             for (sp5C.z = 0.0f; sp5C.z <= shot->scale; sp5C.z += 200.0f) {
-                Matrix_MultVec3f_NoLoad(/* gCalcMatrix,  */&sp5C, &sp38);
+                Matrix_MultVec3f_NoLoad(/* gCalcMatrix, */ &sp5C, &sp38);
                 gShotHitPosZ = shot->obj.pos.z;
                 gShotHitPosY = shot->obj.pos.y;
                 gShotHitPosX = shot->obj.pos.x;
