@@ -70,7 +70,9 @@ LD_SCRIPT := linker_scripts/$(VERSION)/$(REV)/$(TARGET).ld
 # are safe to be used can avoid using GLOBAL_ASM which doesn't work with gcc.
 ifeq ($(COMPILER),kos-cc)
   $(warning WARNING: GCC support is experimental. Use at your own risk.)
-  CFLAGS += -DCOMPILER_GCC -DNON_MATCHING=1 -Wno-int-conversion -fno-lto -fno-data-sections -DAVOID_UB=1 -MMD -MP -Wno-incompatible-pointer-types -Wno-missing-braces -Wno-unused-variable -Wno-switch -fno-toplevel-reorder -fno-common -DGBI_FLOATS
+  CFLAGS += -DCOMPILER_GCC -DNON_MATCHING=1 -Wno-int-conversion -fno-data-sections -DAVOID_UB=1 -MMD -MP -Wno-incompatible-pointer-types -Wno-missing-braces -Wno-unused-variable -Wno-switch -fno-toplevel-reorder -fno-common -DGBI_FLOATS
+
+# -fno-lto 
 # 
   NON_MATCHING := 1
 endif
@@ -557,3 +559,4 @@ build/src/libultra/libc/ll.o: src/libultra/libc/ll.c
 print-% : ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
 
 .PHONY: all uncompressed compressed clean init extract expected format checkformat decompress compress assets context disasm toolchain
+

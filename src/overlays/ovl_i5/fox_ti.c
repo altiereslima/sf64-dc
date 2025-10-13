@@ -1832,7 +1832,7 @@ void Titania_TiDelphorHead_Update(TiDelphorHead* this) {
 
         case 1:
             this->fwork[7] = Math_Atan2F(sp9C.x, sp9C.z) * M_RTOD;
-            this->fwork[6] = -Math_Atan2F(sp9C.y, sqrtf(SQ(sp9C.x) + SQ(sp9C.z))) * M_RTOD;
+            this->fwork[6] = -Math_Atan2F(sp9C.y, shz_sqrtf_fsrra(SQ(sp9C.x) + SQ(sp9C.z))) * M_RTOD;
 
             Math_SmoothStepToAngle(&this->obj.rot.y, this->fwork[7], 0.1f, 1.3333334f, 0.01f);
             Math_SmoothStepToAngle(&this->obj.rot.x, this->fwork[6], 0.1f, 1.3333334f, 0.01f);
@@ -2895,7 +2895,7 @@ s32 Titania_80190A08(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
                         sp5C.z--; */
 
                         sp5C.y = Math_Atan2F(sp70.x, sp70.z) * M_RTOD;
-                        sp5C.x = -Math_Atan2F(sp70.y, sqrtf(SQ(sp70.x) + SQ(sp70.z))) * M_RTOD;
+                        sp5C.x = -Math_Atan2F(sp70.y, shz_sqrtf_fsrra(SQ(sp70.x) + SQ(sp70.z))) * M_RTOD;
 
                     } else {
                         sp70.x = gPlayer[0].pos.x - (this->obj.pos.x + sp7C.x);
@@ -2903,7 +2903,7 @@ s32 Titania_80190A08(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
                         sp70.z = gPlayer[0].trueZpos - (this->obj.pos.z + sp7C.z);
 
                         sp5C.y = Math_Atan2F(sp70.x, sp70.z) * M_RTOD;
-                        sp5C.x = -Math_Atan2F(sp70.y, sqrtf(SQ(sp70.x) + SQ(sp70.z))) * M_RTOD;
+                        sp5C.x = -Math_Atan2F(sp70.y, shz_sqrtf_fsrra(SQ(sp70.x) + SQ(sp70.z))) * M_RTOD;
                     }
 
                     Matrix_Pop(&gCalcMatrix);
@@ -3057,7 +3057,7 @@ s32 Titania_80190A08(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* t
                 if (D_i5_801B7770[i][1] > 0) {
                     RCP_SetupDL(&gMasterDisp, SETUPDL_30);
                 } else {
-                    gDPPipeSync(gMasterDisp++);
+                    //gDPPipeSync(gMasterDisp++);
                 }
 
                 if (sp58 == 1) {
@@ -3608,7 +3608,7 @@ void Titania_80192118(TiGoras* this) {
             temp_fa1 = D_i5_801BBEF4[57] - temp_ft2;
             temp_fv1 = D_i5_801BBEF4[58] - temp_ft4;
 
-            if ((s32) sqrtf(SQ(temp_fa1) + SQ(temp_fv1)) > 50.0f) {
+            if ((s32) shz_sqrtf_fsrra(SQ(temp_fa1) + SQ(temp_fv1)) > 50.0f) {
                 effect = Effect_Load(OBJ_EFFECT_394);
                 if (effect != NULL) {
                     effect->obj.status = OBJ_ACTIVE;
@@ -3639,7 +3639,7 @@ void Titania_80192118(TiGoras* this) {
             temp_fa1 = D_i5_801BBEF4[59] - temp_ft2;
             temp_fv1 = D_i5_801BBEF4[60] - temp_ft4;
 
-            if ((s32) sqrtf(SQ(temp_fa1) + SQ(temp_fv1)) > 50.0f) {
+            if ((s32) shz_sqrtf_fsrra(SQ(temp_fa1) + SQ(temp_fv1)) > 50.0f) {
                 effect = Effect_Load(OBJ_EFFECT_394);
                 if (effect != NULL) {
                     effect->obj.status = OBJ_ACTIVE;
@@ -5534,7 +5534,7 @@ void Titania_TiGoras_Draw(TiGoras* boss) {
                 Matrix_Scale(gGfxMatrix, sp120, sp120, temp_fs2, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
 
-                gDPPipeSync(gMasterDisp++);
+                //gDPPipeSync(gMasterDisp++);
 //                   gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
   //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 //  gDPSetCombineLERP(gMasterDisp++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE, ENVIRONMENT,

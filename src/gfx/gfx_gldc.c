@@ -220,7 +220,7 @@ extern int shader_debug_toggle;
 #include <kos.h>
 
 
-
+#if 0
 
 static inline float exp_map_0_1000_f(float x) {
     const float a = 138.62943611198894f;
@@ -246,6 +246,7 @@ static inline float exp_map_custom_f(float x) {
     const float num = expm1f(a * (t - 1.0f));
     return ymax * (1.0f - num * shz_fast_invf(den));
 }
+#endif
 
 float n64_min;
 float n64_max;
@@ -878,6 +879,8 @@ extern int gGameState;
 extern volatile int do_zfight;
 extern volatile int do_zflip;
 extern int do_menucard;
+extern int do_andross;
+extern int do_radar_mark;
 static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     cur_buf = (void*) buf_vbo;
 
@@ -920,7 +923,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
         }
     }
 
-    if (do_fillrect_blend) {
+    if (do_andross || do_fillrect_blend) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE); ///* GL_ONE_MINUS_ */GL_SRC_ALPHA);
     }
@@ -936,12 +939,16 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
                 tris[i].vert.z += 0.03f;
         }
     }
-        if (gGameState == 8) {  // ending
-  //          glDisable(GL_DEPTH_TEST);
-    //        glDepthMask(GL_FALSE);
+    if (do_radar_mark) {
+        glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+    }
+        /* if (gGameState == 8) {  // ending
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
             glDepthFunc(GL_ALWAYS);
-        //    glDisable(GL_BLEND);
-        }
+//            glDisable(GL_BLEND);
+        } */
 
 if (use_gorgon_alpha) {
         dc_fast_t* tris = (dc_fast_t*) buf_vbo;
@@ -951,18 +958,22 @@ if (use_gorgon_alpha) {
     }
 
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
-        if (gGameState == 8) {  // ending
-  //          glDisable(GL_DEPTH_TEST);
-    //        glDepthMask(GL_FALSE);
+    if (do_radar_mark) {
+        glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
+    }
+     /*    if (gGameState == 8) {  // ending
+            glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
             glDepthFunc(GL_LESS);
-        //    glDisable(GL_BLEND);
-        }
+  //          glEnable(GL_BLEND);
+        } */
 
     if (do_zfight) {
 
         glDepthFunc(GL_LESS);
     }
-    if (do_fillrect_blend) {
+    if (do_andross || do_fillrect_blend) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
@@ -984,7 +995,18 @@ if (use_gorgon_alpha) {
 }
 
 extern void  __attribute__((noinline)) gfx_opengl_2d_projection(void);
+/* extern void  __attribute__((noinline)) gfx_opengl_reset_projection(void);
 
+    gfx_opengl_2d_projection();
+    glDisable(GL_FOG);
+    glEnable(GL_BLEND);
+
+    glVertexPointer(3, GL_FLOAT, sizeof(dc_fast_t), &tris[0].vert);
+    glTexCoordPointer(2, GL_FLOAT, sizeof(dc_fast_t), &tris[0].texture);
+    glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, sizeof(dc_fast_t), &tris[0].color);
+ glDisable(GL_TEXTURE_2D);
+glDrawArrays(GL_QUADS, 0, 1000);
+gfx_opengl_reset_projection(); */
 extern void  __attribute__((noinline)) gfx_opengl_reset_projection(void);
 extern int do_starfield;
 extern int do_the_blur;
@@ -1048,7 +1070,7 @@ else {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);///* GL_ONE_MINUS_ */GL_SRC_ALPHA);
         }
         if (do_the_blur) {
-//            glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 //            glBlendFunc(GL_SRC_ALPHA, GL_);///* GL_ONE_MINUS_ */GL_SRC_ALPHA);
         }
     /*     if (do_xt_fill) {
@@ -1059,18 +1081,23 @@ else {
             glDisable(GL_FOG);
         } */
         if (gGameState == 8) {  // ending
-  //          glDisable(GL_DEPTH_TEST);
-    //        glDepthMask(GL_FALSE);
+            glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
             glDepthFunc(GL_ALWAYS);
-        //    glDisable(GL_BLEND);
+            glDisable(GL_BLEND);
         }
         glDrawArrays(GL_QUADS, 0, 4);
- if (gGameState == 8) {  // ending
-  //          glDisable(GL_DEPTH_TEST);
-    //        glDepthMask(GL_FALSE);
-            glDepthFunc(GL_LESS);
+#if 0
+        if (gGameState == 8) {  // ending
+/*             glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
+ */
+          glEnable(GL_DEPTH_TEST);
+            glDepthMask(GL_TRUE);
+   glDepthFunc(GL_LESS);
         //    glDisable(GL_BLEND);
         }
+#endif
         if (cur_shader->shader_id == 0x01200200)
             skybox_setup_post();
         if (cur_shader->shader_id == 0x01a00a00)

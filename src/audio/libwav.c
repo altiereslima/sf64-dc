@@ -93,6 +93,6 @@ int wav_get_info_adpcm(file_t fileL, WavFileInfo *result) {
     result->sample_size = 4;
     result->data_length = fs_total(fileL);
     result->data_offset = 0;
-    printf("%d -> %d\n", fileL, result->data_length);
+//    printf("%d -> %d\n", fileL, result->data_length);
     return 1;
 }

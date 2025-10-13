@@ -73,6 +73,7 @@ void Meteo_MeMeteor1_Update(MeMeteor1* this) {
         (this->obj.pos.y < (gGroundHeight + 20.0f))) {
         this->obj.status = OBJ_DYING;
     }
+    // not this
     Meteo_ReflectDamage(this);
 }
 
@@ -1511,6 +1512,9 @@ void Meteo_MeCrusherEngineGlow_Draw(s32 scale) {
     gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
 
     RCP_SetupDL_64();
+                        gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
     Matrix_Push(&gGfxMatrix);
     Matrix_Scale(gGfxMatrix, 10.0f * xScale, 10.0f * xScale, 10.0f * xScale, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
@@ -1557,6 +1561,9 @@ void Meteo_MeCrusher_Draw(MeCrusher* this) {
 
     RCP_SetupDL_64();
     gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
+                        gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
+                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 
     for (i = 0; i < 6; i++) {
         if ((this->fwork[i + 3] != 0) && (this->fwork[11] == 0.0f)) {
@@ -2045,7 +2052,7 @@ void Meteo_LevelStart(Player* player) {
                     z = gActors[player->meTargetIndex].obj.pos.z - (greatFox->obj.pos.z - 1190.0f);
 
                     sp64 = Math_RadToDeg(Math_Atan2F(x, z));
-                    x = sqrtf(SQ(x) + SQ(z));
+                    x = shz_sqrtf_fsrra(SQ(x) + SQ(z));
                     sp68 = Math_RadToDeg(-Math_Atan2F(y, x));
 
                     Matrix_RotateY(gCalcMatrix, M_DTOR * sp64, MTXF_NEW);

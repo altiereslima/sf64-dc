@@ -744,7 +744,7 @@ volatile int doing_glare = 0;
 
 void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8 r, u8 g, u8 b, u8 a) {
     if (a != 0) {
-        gDPPipeSync((*gfxPtr)++);
+        //gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
         gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
         if (!doing_glare) {

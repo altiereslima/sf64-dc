@@ -313,7 +313,7 @@ void Andross_James_Update(ActorTeamArwing* this) {
     yaw = Math_RadToDeg(Math_Atan2F(xDisplacement, zDisplacement));
 
     Math_SmoothStepToAngle(&this->orient.x,
-                           Math_RadToDeg(Math_Atan2F(yDisplacement, sqrtf(SQ(xDisplacement) + SQ(zDisplacement)))),
+                           Math_RadToDeg(Math_Atan2F(yDisplacement, shz_sqrtf_fsrra(SQ(xDisplacement) + SQ(zDisplacement)))),
                            0.1f, this->fwork[2], 0.0f);
 
     temp_fv1 = Math_SmoothStepToAngle(&this->orient.y, yaw, 0.1f, this->fwork[2], 0.0001f) * 40.0f;
@@ -1200,7 +1200,7 @@ void Andross_AndBrain_Update(AndBrain* this) {
     yaw = Math_RadToDeg(Math_Atan2F(xDisplacement, zDisplacement));
 
     Math_SmoothStepToAngle(&this->orient.x,
-                           Math_RadToDeg(Math_Atan2F(yDisplacement, sqrtf(SQ(xDisplacement) + SQ(zDisplacement)))),
+                           Math_RadToDeg(Math_Atan2F(yDisplacement, shz_sqrtf_fsrra(SQ(xDisplacement) + SQ(zDisplacement)))),
                            0.1f, this->fwork[2], 0.0f);
     Math_SmoothStepToAngle(&this->orient.y, yaw, 0.1f, this->fwork[2], 0.0f);
 
@@ -1608,7 +1608,7 @@ void Andross_AndSuction_Update(EffectAndSuction* this) {
                 sp34 = gBosses[0].obj.pos.z - 100.0f;
 
                 yaw = Math_Atan2F(sp3C - effectXpos, sp34 - effectZpos);
-                sp40 = sqrtf(SQ(sp3C - effectXpos) + SQ(sp34 - effectZpos));
+                sp40 = shz_sqrtf_fsrra(SQ(sp3C - effectXpos) + SQ(sp34 - effectZpos));
                 pitch = -Math_Atan2F(sp38 - effectYpos, sp40);
 
                 Matrix_RotateY(gCalcMatrix, yaw, MTXF_NEW);
@@ -2039,7 +2039,7 @@ void Andross_AndAndross_Update(AndAndross* this) {
         yDisplacement = gPlayer[0].pos.y - this->vwork[2].y;
         zDisplacement = gPlayer[0].trueZpos - this->vwork[2].z;
         yaw = Math_RadToDeg(Math_Atan2F(xDisplacement, zDisplacement));
-        pitch = Math_RadToDeg(Math_Atan2F(yDisplacement, sqrtf(SQ(xDisplacement) + SQ(zDisplacement))));
+        pitch = Math_RadToDeg(Math_Atan2F(yDisplacement, shz_sqrtf_fsrra(SQ(xDisplacement) + SQ(zDisplacement))));
 
         if ((yaw > 30.0f) && (yaw < 180.0f)) {
             yaw = 30.0f;
@@ -2067,7 +2067,7 @@ void Andross_AndAndross_Update(AndAndross* this) {
         zDisplacement = gPlayer[0].trueZpos - this->vwork[3].z;
 
         yaw = Math_RadToDeg(Math_Atan2F(xDisplacement, zDisplacement));
-        pitch = Math_RadToDeg(Math_Atan2F(yDisplacement, sqrtf(SQ(xDisplacement) + SQ(zDisplacement))));
+        pitch = Math_RadToDeg(Math_Atan2F(yDisplacement, shz_sqrtf_fsrra(SQ(xDisplacement) + SQ(zDisplacement))));
 
         if ((yaw > 30.0f) && (yaw < 180.0f)) {
             yaw = 30.0f;
@@ -3921,6 +3921,29 @@ f32 sAndAmbientR;
 f32 sAndAmbientG;
 f32 sAndAmbientB;
 
+#if 1
+static const float __attribute__((aligned(32))) explode_sin_tbl[9] = {
+    0.642787610f,  // 40°
+    0.984807753f,  // 80°
+    0.866025404f,  // 120°
+    0.342020143f,  // 160°
+   -0.342020143f,  // 200°
+   -0.866025404f,  // 240°
+   -0.984807753f,  // 280°
+   -0.642787610f   // 320°
+};
+
+static const float __attribute__((aligned(32))) explode_cos_tbl[9] = {
+    0.766044443f,  // 40°
+    0.173648178f,  // 80°
+   -0.500000000f,  // 120°
+   -0.939692621f,  // 160°
+   -0.939692621f,  // 200°
+   -0.500000000f,  // 240°
+    0.173648178f,  // 280°
+    0.766044443f   // 320°
+};
+#endif
 void Andross_LevelComplete(Player* player) {
     s32 i;
     s32 sp90;
@@ -4233,11 +4256,35 @@ void Andross_LevelComplete(Player* player) {
                                               boss->obj.pos.z + RAND_FLOAT_CENTERED(350.0f), RAND_FLOAT_CENTERED(10.0f),
                                               60.0f, RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(5.5f) + 15.5f);
             }
-
+#if 1
+            __builtin_prefetch(explode_sin_tbl);
             sp80 = RAND_FLOAT(40.0f);
+            f32 s_sp80 = sinf(sp80);
+            __builtin_prefetch(explode_cos_tbl);
+            f32 c_sp80 = cosf(sp80);
+#endif
             for (i = 0; i < 36; i += 4) {
+        #if 1
+                // sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
+                // cos(a+b) = cos(a)cos(b) - sin(a)sin(b)
+                if (i == 0) {
+                    sp8C = s_sp80 * D_ctx_80177A48[2];
+                    sp84 = c_sp80 * D_ctx_80177A48[2];
+                } else {
+                    f32 est = explode_sin_tbl[(i>>2)-1];
+                    f32 ect = explode_cos_tbl[(i>>2)-1];
+                    sp8C = ((est * c_sp80) + (ect * s_sp80)) * D_ctx_80177A48[2];
+                    sp84 = ((ect * c_sp80) - (est * s_sp80)) * D_ctx_80177A48[2];
+                }
+
+//                if (i == 0) {
+//                    sp8C = 0.0f;
+//                    sp84 = 
+//                }
+#else
                 sp8C = sinf((i * 10.0f * M_DTOR) + sp80) * D_ctx_80177A48[2];
                 sp84 = cosf((i * 10.0f * M_DTOR) + sp80) * D_ctx_80177A48[2];
+#endif
                 Effect_FireSmoke1_SpawnMoving(sp8C, 300.0f, sp84, 0.0f, 0.0f, 0.0f, RAND_FLOAT(5.5f) + 15.5f);
             }
 

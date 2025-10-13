@@ -109,7 +109,7 @@ void Training_Enemy_Update(ActorAllRange* this) {
 
     if (((this->index + gGameFrameCount) % 8) == 0) {
         this->fwork[19] = Math_RadToDeg(Math_Atan2F(xPos, zPos));
-        this->fwork[20] = Math_RadToDeg(Math_Atan2F(yPos, sqrtf(SQ(xPos) + SQ(zPos))));
+        this->fwork[20] = Math_RadToDeg(Math_Atan2F(yPos, shz_sqrtf_fsrra(SQ(xPos) + SQ(zPos))));
     }
 
     targetAngle2 = this->fwork[20];

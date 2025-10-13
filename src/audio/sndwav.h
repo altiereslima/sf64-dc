@@ -8,9 +8,9 @@ __BEGIN_DECLS
 typedef enum {
     /* 0 */ WAV_PLAYER_BGM,
     /* 1 */ WAV_PLAYER_FANFARE,
-//    /* 2 */ WAV_PLAYER_SFX,
-//    /* 3 */ WAV_PLAYER_VOICE,
-/*2*/    /* 4 */ WAV_PLAYER_MAX,
+    /* 2 */ WAV_PLAYER_SFX,
+    /* 3 */ WAV_PLAYER_VOICE,
+    /* 4 */ WAV_PLAYER_MAX,
 } WavPlayerId;
 
 typedef int wav_stream_hnd_t;

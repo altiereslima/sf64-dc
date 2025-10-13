@@ -503,6 +503,8 @@ void func_radio_800BB388(void) {
 
     if (gRadioTextBoxScaleY == 1.3f) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_85);
+        gSPSetOtherModeHi(gMasterDisp++, G_AD_PATTERN | G_CD_MAGICSQ | G_CK_NONE | G_TC_FILT | G_TF_POINT | G_TT_RGBA16 | G_TL_TILE |
+                           G_TD_CLAMP | G_TP_NONE | G_CYC_1CYCLE | G_PM_NPRIMITIVE);
         gMsgCharIsPrinting =
             Message_DisplayText(&gMasterDisp, gRadioMsg, gRadioPrintPosX, gRadioPrintPosY, gRadioMsgCharIndex);
     }
@@ -720,6 +722,7 @@ void Radio_Draw(void) {
                 (gCurrentRadioPortrait != RCID_STATIC) && (gCurrentRadioPortrait != RCID_STATIC + 1) &&
                 (gCurrentRadioPortrait != RCID_1000)) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
                 Graphics_DisplaySmallText(31, 167, 1.0f, 1.0f, "DOWN");
                 HUD_TeamDownWrench_Draw(1);
@@ -769,6 +772,7 @@ void Radio_Draw(void) {
                 (gPlayer[0].state == PLAYERSTATE_ACTIVE) && (gCurrentRadioPortrait != RCID_STATIC) &&
                 (gCurrentRadioPortrait != RCID_STATIC + 1) && (gCurrentRadioPortrait != RCID_1000)) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
                 Graphics_DisplaySmallText(31, 167, 1.0f, 1.0f, "DOWN");
             }

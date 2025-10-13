@@ -1153,7 +1153,7 @@ void Aquas_801ABA40(PlayerShot* shot) {
                     sp74 = shot->obj.pos.z - D_i3_801C41B8[2];
 
                     sp6C = Math_RadToDeg(Math_Atan2F(sp7C, sp74));
-                    sp70 = Math_RadToDeg(-Math_Atan2F(sp78, sqrtf(SQ(sp7C) + SQ(sp74))));
+                    sp70 = Math_RadToDeg(-Math_Atan2F(sp78, shz_sqrtf_fsrra(SQ(sp7C) + SQ(sp74))));
 
                     Math_SmoothStepToAngle(&shot->obj.rot.y, sp6C, 1.0f, 100.0f, 0.00001f);
                     Math_SmoothStepToAngle(&shot->obj.rot.x, sp70, 1.0f, 100.0f, 0.00001f);
@@ -1707,7 +1707,7 @@ void Aquas_AqSanada_Update(AqSanada* this) {
             }
 
             Math_RadToDeg(Math_Atan2F(sp80, sp78));
-            sp70 = sqrtf(SQ(sp80) + SQ(sp78));
+            sp70 = shz_sqrtf_fsrra(SQ(sp80) + SQ(sp78));
             Math_RadToDeg(-Math_Atan2F(sp7C, sp70));
 
             this->fwork[0] += (this->iwork[0] + 1) * 5.0f;
@@ -1870,7 +1870,7 @@ void Aquas_AqSanada_Draw(AqSanada* this) {
         if (i >= 2) {
             yRot = RAD_TO_DEG(Math_Atan2F(gPlayer[0].cam.eye.x - D_i3_801C27C0->pos.x,
                                           gPlayer[0].cam.eye.z - (D_i3_801C27C0->pos.z + gPathProgress)));
-            xz = sqrtf(((gPlayer[0].cam.eye.z - (D_i3_801C27C0->pos.z + gPathProgress)) *
+            xz = shz_sqrtf_fsrra(((gPlayer[0].cam.eye.z - (D_i3_801C27C0->pos.z + gPathProgress)) *
                         (gPlayer[0].cam.eye.z - (D_i3_801C27C0->pos.z + gPathProgress))) +
                        ((gPlayer[0].cam.eye.x - D_i3_801C27C0->pos.x) * (gPlayer[0].cam.eye.x - D_i3_801C27C0->pos.x)));
             xRot = RAD_TO_DEG(-Math_Atan2F(gPlayer[0].cam.eye.y - D_i3_801C27C0->pos.y, xz));
@@ -2157,7 +2157,7 @@ void Aquas_AqBacoonMuscle_Draw(AqBacoonMuscle* this) {
     gSP1Triangle(gMasterDisp++, 2, 3, 0, 0);
     gSP1Triangle(gMasterDisp++, 4, 5, 6, 0);
     gSP1Triangle(gMasterDisp++, 6, 7, 4, 0);
-    gDPPipeSync(gMasterDisp++);
+    //gDPPipeSync(gMasterDisp++);
     gDPSetTextureLUT(gMasterDisp++, G_TT_NONE);
 }
 
@@ -3203,8 +3203,8 @@ void Aquas_AqBacoon_Update(AqBacoon* this) {
         sp100 = gPlayer[0].pos.y - this->obj.pos.y;
         spFC = gPlayer[0].trueZpos - this->obj.pos.z;
         spE8 = Math_RadToDeg(Math_Atan2F(sp104, spFC));
-        // spEC = sqrtf(SQ(sp104) + SQ(spFC));
-        spE4 = Math_RadToDeg(-Math_Atan2F(sp100, sqrtf(SQ(sp104) + SQ(spFC))));
+        // spEC = shz_sqrtf_fsrra(SQ(sp104) + SQ(spFC));
+        spE4 = Math_RadToDeg(-Math_Atan2F(sp100, shz_sqrtf_fsrra(SQ(sp104) + SQ(spFC))));
         if ((spE8 <= 40.0f) || (spE8 >= 320.0f)) {
             Math_SmoothStepToAngle(&D_i3_801C4308[15], spE8, 1.0f, 5.0f, 0.001f);
         }
@@ -3246,8 +3246,8 @@ void Aquas_AqBacoon_Update(AqBacoon* this) {
 
     spE8 = Math_RadToDeg(Math_Atan2F(sp104, spFC));
     spE0 = Math_RadToDeg(Math_Atan2F(spF8, spF0));
-    spFC = sqrtf(SQ(sp104) + SQ(spFC));
-    spF0 = sqrtf(SQ(spF8) + SQ(spF0));
+    spFC = shz_sqrtf_fsrra(SQ(sp104) + SQ(spFC));
+    spF0 = shz_sqrtf_fsrra(SQ(spF8) + SQ(spF0));
     spE4 = Math_RadToDeg(-Math_Atan2F(sp100, spFC));
     spEC = Math_RadToDeg(-Math_Atan2F(spF4, spF0));
 
@@ -3960,7 +3960,7 @@ void Aquas_AqSculpin_Update(AqSculpin* this) {
                     sp88.y = gPlayer[0].pos.y - this->obj.pos.y;
                     sp88.z = gPlayer[0].trueZpos - this->obj.pos.z;
                     this->fwork[2] = Math_RadToDeg(Math_Atan2F(sp88.x, sp88.z));
-                    this->fwork[3] = Math_RadToDeg(-Math_Atan2F(sp88.y, sqrtf(SQ(sp88.x) + SQ(sp88.z))));
+                    this->fwork[3] = Math_RadToDeg(-Math_Atan2F(sp88.y, shz_sqrtf_fsrra(SQ(sp88.x) + SQ(sp88.z))));
                     Matrix_RotateY(gCalcMatrix, this->fwork[2] * M_DTOR, MTXF_NEW);
                     Matrix_RotateX(gCalcMatrix, this->fwork[3] * M_DTOR, MTXF_APPLY);
                     sp7C.x = sp7C.y = 0.0f;
@@ -4308,7 +4308,7 @@ void Aquas_AqAnglerFish_Update(AqAnglerFish* this) {
                         }
                     }
                 }
-                sp98 = sqrtf(SQ(this->obj.pos.z - this->fwork[16]) + SQ(this->obj.pos.x - this->fwork[15]));
+                sp98 = shz_sqrtf_fsrra(SQ(this->obj.pos.z - this->fwork[16]) + SQ(this->obj.pos.x - this->fwork[15]));
                 this->fwork[13] -= 20.0f;
                 this->fwork[14] += 5.0f;
 
@@ -4455,7 +4455,7 @@ void Aquas_AqSpindlyFish_Update(AqSpindlyFish* this) {
             temp_dz = this->fwork[3] - this->obj.pos.z;
 
             spA8 = Math_RadToDeg(Math_Atan2F(temp_dx, temp_dz));
-            temp_dz = Math_RadToDeg(-Math_Atan2F(temp_dy, sqrtf(SQ(temp_dx) + SQ(temp_dz))));
+            temp_dz = Math_RadToDeg(-Math_Atan2F(temp_dy, shz_sqrtf_fsrra(SQ(temp_dx) + SQ(temp_dz))));
             temp_dy = Math_SmoothStepToAngle(&this->obj.rot.y, spA8, 0.1f, 1.0f, 0);
             Math_SmoothStepToAngle(&this->obj.rot.x, temp_dz, 0.1f, 1.0f, 0);
 
@@ -4817,7 +4817,7 @@ void Aquas_AqGaroa_Update(AqGaroa* this) {
                     temp_dz = gPlayer[0].trueZpos - 50.0f - effect->obj.pos.z;
 
                     temp_fs2 = Math_RadToDeg(Math_Atan2F(spAC, temp_dz));
-                    temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, sqrtf(SQ(spAC) + SQ(temp_dz))));
+                    temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, shz_sqrtf_fsrra(SQ(spAC) + SQ(temp_dz))));
 
                     Matrix_RotateY(gCalcMatrix, M_DTOR * temp_fs2, MTXF_NEW);
                     Matrix_RotateX(gCalcMatrix, M_DTOR * temp1, MTXF_APPLY);
@@ -4851,7 +4851,7 @@ void Aquas_AqGaroa_Update(AqGaroa* this) {
                     temp_dz = gPlayer[0].trueZpos - 50.0f - effect->obj.pos.z;
 
                     temp_fs2 = Math_RadToDeg(Math_Atan2F(spAC, temp_dz));
-                    temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, sqrtf(SQ(spAC) + SQ(temp_dz))));
+                    temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, shz_sqrtf_fsrra(SQ(spAC) + SQ(temp_dz))));
 
                     Matrix_RotateY(gCalcMatrix, M_DTOR * temp_fs2, MTXF_NEW);
                     Matrix_RotateX(gCalcMatrix, M_DTOR * temp1, MTXF_APPLY);
@@ -4887,7 +4887,7 @@ void Aquas_AqGaroa_Update(AqGaroa* this) {
             if (this->timer_0C0 == 0) {
                 temp_dy = gPlayer[0].pos.y - 50.0f - this->obj.pos.y;
                 temp_dz = gPlayer[0].trueZpos - this->obj.pos.z;
-                temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, sqrtf(SQ(spAC) + SQ(temp_dz))));
+                temp1 = Math_RadToDeg(-Math_Atan2F(temp_dy, shz_sqrtf_fsrra(SQ(spAC) + SQ(temp_dz))));
                 Matrix_RotateY(gCalcMatrix, this->obj.rot.y * M_DTOR, MTXF_NEW);
                 Matrix_RotateX(gCalcMatrix, M_DTOR * temp1, MTXF_APPLY);
 
@@ -5195,7 +5195,7 @@ void Aquas_AqSquid_Update(AqSquid* this) {
                 spf9C = gPlayer[0].trueZpos + RAND_FLOAT_CENTERED(200.0f) - this->vwork[26].z;
 
                 sp94 = Math_RadToDeg(Math_Atan2F(spfA4, spf9C));
-                spf98 = Math_RadToDeg(-Math_Atan2F(spA0, sqrtf(SQ(spfA4) + SQ(spf9C))));
+                spf98 = Math_RadToDeg(-Math_Atan2F(spA0, shz_sqrtf_fsrra(SQ(spfA4) + SQ(spf9C))));
 
                 Matrix_RotateY(gCalcMatrix, M_DTOR * sp94, MTXF_NEW);
                 Matrix_RotateX(gCalcMatrix, M_DTOR * spf98, MTXF_APPLY);
@@ -6355,7 +6355,7 @@ void Aquas_801BD3B0(AqFishGroup* this, f32 x, f32 y, f32 z) {
 
     if ((gGameFrameCount % 4) == 0) {
         this->fwork[6] = Math_RadToDeg(Math_Atan2F(x, z));
-        temp = sqrtf(SQ(x) + SQ(z));
+        temp = shz_sqrtf_fsrra(SQ(x) + SQ(z));
         this->fwork[7] = Math_RadToDeg(-Math_Atan2F(y, temp));
 
         Matrix_RotateY(gCalcMatrix, this->obj.rot.y * M_DTOR, MTXF_NEW);
@@ -6728,7 +6728,7 @@ void Aquas_AqOyster_Update(AqOyster* this) {
                     sp60 = gPlayer[0].trueZpos - this->obj.pos.z;
 
                     sp58 = Math_RadToDeg(Math_Atan2F(sp68, sp60));
-                    sp5C = Math_RadToDeg(-Math_Atan2F(sp64, sqrtf(SQ(sp68) + SQ(sp60))));
+                    sp5C = Math_RadToDeg(-Math_Atan2F(sp64, shz_sqrtf_fsrra(SQ(sp68) + SQ(sp60))));
 
                     Aquas_801BE274(this, sp58, sp5C);
 

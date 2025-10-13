@@ -1999,6 +1999,10 @@ void SectorY_SyShogun_Draw(SyShogun* this) {
 
         if (this->fwork[46] != 0.0f) {
             RCP_SetupDL_49();
+gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+//                      gDPSetEnvColor(gMasterDisp++, 255,255,255, 255);//255);
+
             gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, (s32) this->fwork[46], (s32) this->fwork[46], 0,
                             (s32) this->fwork[46]);
             gDPSetEnvColor(gMasterDisp++, 0, 0, 0, 255);

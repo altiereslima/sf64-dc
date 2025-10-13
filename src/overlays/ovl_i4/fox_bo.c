@@ -556,7 +556,7 @@ s32 Bolse_8018CE5C(BoLaserCannon* this) {
         if (this->fwork[6] < 0.0f) {
             this->fwork[6] += 360.0f;
         }
-        this->fwork[5] = Math_RadToDeg(Math_Atan2F(y, sqrtf(SQ(x) + SQ(z))));
+        this->fwork[5] = Math_RadToDeg(Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z))));
     }
 
     Math_SmoothStepToF(&this->orient.x, this->fwork[5], 0.1f, 4.8f, 0.1f);
@@ -946,7 +946,7 @@ s32 Bolse_8018E3FC(BoBase* this) {
                     var_fs0 += 360.0f;
                 }
 
-                z = sqrtf(SQ(x) + SQ(z));
+                z = shz_sqrtf_fsrra(SQ(x) + SQ(z));
                 temp = Math_RadToDeg(Math_Atan2F(y, z));
 
                 D_i4_801A0488[i].unk_0C = D_i4_8019EFAC[j];

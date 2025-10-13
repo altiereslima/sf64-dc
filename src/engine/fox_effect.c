@@ -375,6 +375,9 @@ void Effect_ElectricArc_Draw(EffectElectricArc* this) {
 }
 
 void Effect_PinkExplosion_Draw(EffectPinkExplosion* this) {
+//gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+  //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                      gDPSetEnvColor(gMasterDisp++, 255,255,255, 255);//255);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, this->alpha);
     Graphics_SetScaleMtx(this->scale2);
     gSPDisplayList(gMasterDisp++, D_BG_SPACE_2006F50);
@@ -407,6 +410,7 @@ void Effect_Effect367_Draw(Effect367* this) {
 //    return;
     if (this->timer_50 == 0) {
         Graphics_SetScaleMtx(this->scale2);
+        gDPSetEnvColor(gMasterDisp++, 255,255,255, 255);//255);
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, this->alpha);
         gSPDisplayList(gMasterDisp++, D_BG_PLANET_20112C0);
     }
@@ -570,8 +574,8 @@ void Effect_Sparkle_Draw(EffectSparkle* this) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_63);
     }
 
-    gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
-    gDPSetEnvColor(gMasterDisp++, 255, 255, 0, 255);
+    gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 0, 255);
+    gDPSetEnvColor(gMasterDisp++, 255, 255, 255, 255);
     Graphics_SetScaleMtx(this->scale2 * this->scale1);
     gSPDisplayList(gMasterDisp++, aStarDL);
     RCP_SetupDL(&gMasterDisp, SETUPDL_64);

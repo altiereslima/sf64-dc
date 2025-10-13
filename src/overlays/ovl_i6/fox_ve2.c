@@ -363,7 +363,7 @@ void Venom2_LevelComplete(Player* player) {
             }
 
             sp84 = Math_RadToDeg(Math_Atan2F(sp94, sp8C));
-            sp8C = sqrtf(SQ(sp94) + SQ(sp8C));
+            sp8C = shz_sqrtf_fsrra(SQ(sp94) + SQ(sp8C));
             pad88 = Math_RadToDeg(-Math_Atan2F(sp90, sp8C));
             Math_SmoothStepToAngle(&player->xRot_120, pad88, 0.1f, D_ctx_80177A48[4], 0.0f);
             pad80 = Math_SmoothStepToAngle(&player->yRot_114, sp84, 0.1f, D_ctx_80177A48[4], 0.0f) * 20.0f;

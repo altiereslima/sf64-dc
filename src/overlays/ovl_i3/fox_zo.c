@@ -3823,7 +3823,7 @@ void Zoness_8019A4E0(Actor* this, f32 xPos, f32 yPos, f32 zPos, f32 arg4) {
     Vec3f dest;
 
     yAngle = +Math_Atan2F(x, z);
-    xAngle = -Math_Atan2F(y, sqrtf(SQ(x) + SQ(z)));
+    xAngle = -Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z)));
 
     Matrix_RotateY(gCalcMatrix, yAngle, MTXF_NEW);
     Matrix_RotateX(gCalcMatrix, xAngle, MTXF_APPLY);
@@ -3912,7 +3912,7 @@ void Zoness_ZoSpikeBall_Update(ZoSpikeBall* this) {
                 Math_SmoothStepToF(&this->fwork[5], 0.0f, 1.0f, 30.0f, 0.0f);
                 sp4C = fabsf(this->obj.pos.x - sZoFwork[ZO_BSF_65_X]);
                 sp48 = fabsf(this->obj.pos.z - sZoFwork[ZO_BSF_65_Z]);
-                var_fa0 = sqrtf(SQ(sp4C) + SQ(sp48)) * 0.5f;
+                var_fa0 = shz_sqrtf_fsrra(SQ(sp4C) + SQ(sp48)) * 0.5f;
                 Zoness_8019A4E0(this, sZoFwork[ZO_BSF_65_X], sZoFwork[ZO_BSF_65_Y] - var_fa0, sZoFwork[ZO_BSF_65_Z],
                                 30.0f);
                 this->vel.z -= gPathVelZ;
@@ -4007,9 +4007,9 @@ void Zoness_ZoSpikeBall_Draw(ZoSpikeBall* this) {
         temp_fs0 = sZoFwork[ZO_BSF_65_Y] - this->obj.pos.y;
         temp_fa1 = sZoFwork[ZO_BSF_65_Z] - this->obj.pos.z;
 
-        temp_fs3 = sqrtf(SQ(temp_fa0) + SQ(temp_fs0) + SQ(temp_fa1));
+        temp_fs3 = shz_sqrtf_fsrra(SQ(temp_fa0) + SQ(temp_fs0) + SQ(temp_fa1));
         temp_fs4 = Math_Atan2F(temp_fa0, temp_fa1);
-        temp_fs0_2 = -Math_Atan2F(temp_fs0, sqrtf(SQ(temp_fa0) + SQ(temp_fa1)));
+        temp_fs0_2 = -Math_Atan2F(temp_fs0, shz_sqrtf_fsrra(SQ(temp_fa0) + SQ(temp_fa1)));
         var_s4 = temp_fs3 * 0.01428571f;// / 70.0f;
         if (var_s4 > 50) {
             var_s4 = 50;

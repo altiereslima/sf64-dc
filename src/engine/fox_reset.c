@@ -13,7 +13,7 @@ void Graphics_NMIWipe(void) {
     gViewport->vp.vtrans[2] = G_MAXZ / 2;
     gViewport->vp.vtrans[3] = 0;
     gSPViewport(gMasterDisp++, gViewport);
-    gDPPipeSync(gMasterDisp++);
+    //gDPPipeSync(gMasterDisp++);
     gDPSetScissor(gMasterDisp++, G_SC_NON_INTERLACE, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN,
                   SCREEN_HEIGHT - SCREEN_MARGIN);
 

@@ -57,8 +57,10 @@ extern void* segmented_to_virtual(const void* addr);
 #define F_2PI       6.28318531f
 #define F_PI_18     0.17453293f
 #endif
-#define RAD_TO_DEG(radians) (((radians) * 180.0f) / F_PI)
-#define DEG_TO_RAD(degrees) (((degrees) / 180.0f) * F_PI)
+#define RAD_TO_DEG(radians) (M_RTOD*(radians))
+//(((radians) * 180.0f) / F_PI)
+#define DEG_TO_RAD(degrees) (M_DTOR*(degrees))
+//(((degrees) / 180.0f) * F_PI)
 
 #define SIN_DEG(angle) sinf((M_DTOR)*(angle))
 #define COS_DEG(angle) cosf((M_DTOR)*(angle))

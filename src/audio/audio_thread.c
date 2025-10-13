@@ -189,6 +189,7 @@ SPTask* AudioThread_CreateTask(void) {
 }
 #endif
 
+#include "sndwav.h"
 
 void AudioThread_ProcessGlobalCmd(AudioCmd* cmd) {
     s32 i;
@@ -218,14 +219,13 @@ void AudioThread_ProcessGlobalCmd(AudioCmd* cmd) {
             break;
         case AUDIOCMD_OP_GLOBAL_MUTE:
             for (i = 0; i < ARRAY_COUNT(gSeqPlayers); i++) {
-
                 SequencePlayer* seqplayer = &gSeqPlayers[i];
-                //wav_pause(i);
-
+//                wav_pause(i);
+                if (i < 2)
+                    wav_volume(i, 0);
                 seqplayer->muted = 1;
                 seqplayer->recalculateVolume = 1;
             }
-//            wav_pause();
             break;
         case AUDIOCMD_OP_GLOBAL_UNMUTE:
             if (cmd->asUInt == 1) {
@@ -242,11 +242,12 @@ void AudioThread_ProcessGlobalCmd(AudioCmd* cmd) {
             }
             for (i = 0; i < ARRAY_COUNT(gSeqPlayers); i++) {
                 SequencePlayer* seqplayer = &gSeqPlayers[i];
-
+//                wav_play(i);
+                if (i < 2)
+                    wav_volume(i, 160);
                 seqplayer->muted = 0;
                 seqplayer->recalculateVolume = 1;
             }
-//            wav_play();
             break;
         case AUDIOCMD_OP_GLOBAL_SYNC_LOAD_INSTRUMENT:
             AudioLoad_SyncLoadInstrument(cmd->arg0, cmd->arg1, cmd->arg2);

@@ -2017,7 +2017,8 @@ void Map_Draw(void) {
     }
 
     Lib_Texture_Mottle((u16*)aMapVenomCloudEffectTex, (u16*) D_MAP_6048F80, 5);
-    gfx_texture_cache_invalidate(aMapVenomCloudEffectTex);
+//    gfx_texture_cache_invalidate(aMapVenomCloudEffectTex);
+//    gfx_texture_cache_invalidate(aMapVenomCloudEffectTex);
 }
 
 s32 Map_801A05B4(void) {
@@ -2454,7 +2455,7 @@ void Map_ZoomPlanet_Setup(void) {
     y = sZoomPlanetCamEye.y - sMapCamEyeY;
     z = sZoomPlanetCamEye.z - sMapCamEyeZ;
 
-    D_menu_801CEA68 = sqrtf(SQ(x) + SQ(y) + SQ(z));
+    D_menu_801CEA68 = shz_sqrtf_fsrra(SQ(x) + SQ(y) + SQ(z));
 }
 
 // Camera zooms into planet before briefing starts
@@ -3491,7 +3492,7 @@ void Map_801A48C0(f32 speed) {
     y = sZoomPlanetCamEye.y - sPathFollowCamEyeY;
     z = sZoomPlanetCamEye.z - sMapCamEyeZ;
 
-    temp = sqrtf(SQ(x) + SQ(y) + SQ(z));
+    temp = shz_sqrtf_fsrra(SQ(x) + SQ(y) + SQ(z));
 
     angle = M_DTOR * ((1 - (temp / D_menu_801CEA68)) * 180.0f);
 
@@ -4566,7 +4567,7 @@ void Map_PlanetAnim2(PlanetId planetId) {
         y2 = sPlanetPositions[PLANET_SOLAR].y - sPlanetPositions[planetId].y;
         z2 = sPlanetPositions[PLANET_SOLAR].z - sPlanetPositions[planetId].z;
 
-        x1 = Math_Atan2F(y2, sqrtf(SQ(x2) + SQ(z2)));
+        x1 = Math_Atan2F(y2, shz_sqrtf_fsrra(SQ(x2) + SQ(z2)));
         y1 = -Math_Atan2F(x2, z2);
 
         src.x = 0.0f;
@@ -4697,7 +4698,7 @@ void Map_VenomCloud2_Draw(PlanetId planetId) {
     Matrix_Copy(gGfxMatrix, &D_menu_801CDE20[planetId]);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPZFight(gMasterDisp++,0);
-
+    // jnmartin84
     gSPDisplayList(gMasterDisp++, gMapVenomCloudDL);
     gSPZFight(gMasterDisp++,0);
 
@@ -4806,21 +4807,22 @@ void Map_VenomCloud_Draw(f32* zAngle, f32 next, f32 scale, int which) {
     Matrix_SetGfxMtx(&gMasterDisp);
 
     gSPZFight(gMasterDisp++,which);
-   gSPDisplayList(gMasterDisp++, aMapVenomCloudDL);
-    gSPZFight(gMasterDisp++,which);
-#if 0
+   //gSPDisplayList(gMasterDisp++, aMapVenomCloudDL);
+#if 1
 // @port This should be aMapVenomCloudDL but torch is stupid sometimes
     u8* buffer = SEGMENTED_TO_VIRTUAL(aMapVenomCloudEffectTex);
     gfx_texture_cache_invalidate(aMapVenomCloudEffectTex);
     gfx_texture_cache_invalidate((uintptr_t)aMapVenomCloudEffectTex + (64*32));
     gSPVertex(gMasterDisp++, ast_map_seg6_vtx_47F00, 8, 0);
-    gDPLoadTextureBlock(gMasterDisp++, buffer, G_IM_FMT_IA, G_IM_SIZ_8b, 64, 33, 0, G_TX_NOMIRROR | G_TX_WRAP,
+    gDPLoadTextureBlock(gMasterDisp++, buffer, G_IM_FMT_IA, G_IM_SIZ_8b, 64, 32, 0, G_TX_NOMIRROR | G_TX_WRAP,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
     gSP2Triangles(gMasterDisp++, 1, 2, 3, 0, 1, 3, 0, 0);
     gDPLoadTextureBlock(gMasterDisp++, buffer + 64 * 32, G_IM_FMT_IA, G_IM_SIZ_8b, 64, 32, 0, G_TX_NOMIRROR | G_TX_WRAP,
                         G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
     gSP2Triangles(gMasterDisp++, 5, 6, 7, 0, 5, 7, 4, 0);
 #endif
+    gSPZFight(gMasterDisp++,which);
+
     Matrix_Pop(&gGfxMatrix);
 
     *zAngle += next;
@@ -5342,7 +5344,7 @@ void Map_Area6Ships_Draw(void) {
             y = sPlanetPositions[PLANET_SOLAR].y - src.y;
             z = sPlanetPositions[PLANET_SOLAR].z - src.z;
 
-            x1 = Math_Atan2F(y, sqrtf(SQ(x) + SQ(z)));
+            x1 = Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z)));
             y1 = -Math_Atan2F(x, z);
 
             dest.x = 0.0f;
@@ -6324,7 +6326,7 @@ void Map_Arwing_Draw(s32 index) {
     y = sPlanetPositions[PLANET_SOLAR].y - dest.y;
     z = sPlanetPositions[PLANET_SOLAR].z - dest.z;
 
-    x1 = Math_Atan2F(y, sqrtf(SQ(x) + SQ(z)));
+    x1 = Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z)));
     y1 = -Math_Atan2F(x, z);
 
     src.x = 0.0f;
@@ -6402,7 +6404,7 @@ void Map_PathLines_Draw(s32 index) {
     y = srcPos.y - destPos.y;
     z = srcPos.z - destPos.z;
 
-    target = sqrtf(SQ(x) + SQ(y) + SQ(z));
+    target = shz_sqrtf_fsrra(SQ(x) + SQ(y) + SQ(z));
 
     gTexturedLines[index].mode = 4;
 
@@ -6415,7 +6417,7 @@ void Map_PathLines_Draw(s32 index) {
     gTexturedLines[index].posBB.z = destPos.z;
 
     gTexturedLines[index].yRot = Math_Atan2F(x, z);
-    gTexturedLines[index].xRot = -Math_Atan2F(y, sqrtf(SQ(x) + SQ(z)));
+    gTexturedLines[index].xRot = -Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z)));
 
     switch (gPlanetPathStatus[index]) {
         case 1:
@@ -6601,7 +6603,7 @@ void Map_PathLinePos(s32 index, Vec3f* src, Vec3f* dest) {
 
 void Map_CamMatrixRot(void) {
     f32 xRot =
-        Math_Atan2F(sMapCamEyeY - sMapCamAtY, sqrtf(SQ(sMapCamEyeX - sMapCamAtX) + SQ(sMapCamEyeZ - sMapCamAtZ)));
+        Math_Atan2F(sMapCamEyeY - sMapCamAtY, shz_sqrtf_fsrra(SQ(sMapCamEyeX - sMapCamAtX) + SQ(sMapCamEyeZ - sMapCamAtZ)));
     f32 yRot = -Math_Atan2F(sMapCamEyeX - sMapCamAtX, sMapCamEyeZ - sMapCamAtZ);
 
     Matrix_RotateY(gGfxMatrix, -yRot, MTXF_APPLY);

@@ -639,11 +639,13 @@ void Object_LoadLevelObjects(void) {
   //static ObjectInit aZoLevelObjects_Boss[] = { { 100.0f,    3000,     -30,       0, {  0,   0,   0}, OBJ_BOSS_ZO_SARUMARINE }};
     //gLevelObjects = aZoLevelObjects_Boss;
 //}
+#if 1
+// A6 boss
 if (gCurrentLevel == LEVEL_AREA_6) {
   static ObjectInit aA6LevelObjects_Boss[] = { { /* 255100.0f,  -10000,       0,       0, {  0,   0,   0}, */100.0f,    3000,       0,       0, {  0, 180,   0}, OBJ_BOSS_A6_GORGON },};
     gLevelObjects = aA6LevelObjects_Boss;
 }
-
+#endif
     for (i = 0, objInit = &gLevelObjects[gObjectLoadIndex]; i < 10000; i++, gObjectLoadIndex++, objInit++) {
         if (objInit->id <= OBJ_INVALID) {
             break;
@@ -1548,7 +1550,7 @@ void ActorMissileSeek_Update(Actor* this) {
     Vec3f sp98;
     Vec3f sp8C;
     f32 sp88;
-    f32 sp84;
+    f32 sp84 = 0.0f;
     f32 sp80;
     f32 sp7C;
     f32 sp78;

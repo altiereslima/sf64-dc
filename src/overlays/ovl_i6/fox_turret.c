@@ -170,7 +170,7 @@ void Turret_Update(Player* player) {
     gPathProgress = player->zPath;
 
     // These appear to move the camera around unless locked in place with Z
-    if (!(gControllerHold[player->num].button & Z_TRIG) && (sqrtf(SQ(sp2C) + SQ(sp28)) > 55.0f)) {
+    if (!(gControllerHold[player->num].button & Z_TRIG) && (shz_sqrtf_fsrra(SQ(sp2C) + SQ(sp28)) > 55.0f)) {
         if ((gControllerHold[player->num].button & R_CBUTTONS) || (sp2C > 40.0f)) {
             player->unk_008 += 2.0f;
         }

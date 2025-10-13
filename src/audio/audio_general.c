@@ -768,17 +768,17 @@ void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
             }
 
             if (sx_distort) {
-                sprintf(wavfn, "%s/test_split/21_2.wav", fnpre);
+                sprintf(wavfn, "%s/music/21_2.adpcm", fnpre);
                 sx_distort = 0;
             } else if (andross_robot) {
-                sprintf(wavfn, "%s/test_split/33_2.wav", fnpre);
+                sprintf(wavfn, "%s/music/33_2.adpcm", fnpre);
                 andross_robot = 0;
             } else {
-                sprintf(wavfn, "%s/test_split/%02d.wav", fnpre, playId);
+                sprintf(wavfn, "%s/music/%02d.adpcm", fnpre, playId);
             }
 
             wav_destroy(WAV_PLAYER_BGM);
-            wav_create(WAV_PLAYER_BGM, wavfn,looping,0,0);
+            wav_create(WAV_PLAYER_BGM, wavfn, looping, 0, 0);
             sActiveSequences[seqPlayId].seqId = seqId;
             wav_play(WAV_PLAYER_BGM);
             S_SetMusicVolume(WAV_PLAYER_BGM,90);
@@ -2744,7 +2744,7 @@ void Audio_PlayFanfare(u16 seqId, u8 bgmVolume, u8 bgmFadeoutTime, u8 bgmFadeinT
             if (!sStartSeqDisabled) {
                 int looping = 0;
                 int playId = seqId&0x7fff;
-                sprintf(wavfn, "%s/test_split/%02d.wav", fnpre, playId);
+                sprintf(wavfn, "%s/music/%02d.adpcm", fnpre, playId);
 //                if (WAV_PLAYER_FANFARE != SND_STREAM_INVALID) {
                     wav_destroy(WAV_PLAYER_FANFARE);
 //                    WAV_PLAYER_FANFARE = SND_STREAM_INVALID;

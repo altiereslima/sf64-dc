@@ -171,8 +171,8 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char *filename, int loop, int 
         return SND_STREAM_INVALID;
     }
 
-    ///wav_get_info_adpcm(file, &info);
-    wav_get_info_file(file, &info);
+    wav_get_info_adpcm(file, &info);
+    //wav_get_info_file(file, &info);
     streams[playerId].drv_buf = memalign(32, 32768);
 
     if(streams[playerId].drv_buf == NULL) {
@@ -196,6 +196,8 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char *filename, int loop, int 
 			streams[playerId].loop_start = info.data_offset;
 			streams[playerId].loop_end = info.data_offset + info.data_length;
 		}
+        streams[playerId].loop_start &= ~31;
+        streams[playerId].loop_end &= ~31;
 	}
     streams[playerId].callback = audio_cb;
 
@@ -289,7 +291,7 @@ static void *sndwav_thread(void *param) {
         for(i = 0; i < WAV_PLAYER_MAX; i++) {
             switch(streams[i].status) {
                 case SNDDEC_STATUS_RESUMING:
-                    snd_stream_start(streams[i].shnd, streams[i].sample_rate, streams[i].channels - 1);
+                    snd_stream_start_adpcm(streams[i].shnd, streams[i].sample_rate, streams[i].channels - 1);
                     snd_stream_volume(streams[i].shnd, streams[i].vol);
                     streams[i].status = SNDDEC_STATUS_STREAMING;
                     break;

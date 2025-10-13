@@ -488,7 +488,7 @@ void Area6_A6Gorgon_Update(A6Gorgon* this) {
         this->obj.rot.y = RAD_TO_DEG(Math_Atan2F(gPlayer[0].cam.eye.x - this->obj.pos.x,
                                                  gPlayer[0].cam.eye.z - (this->obj.pos.z + gPathProgress)));
         this->obj.rot.x = RAD_TO_DEG(-Math_Atan2F(gPlayer[0].cam.eye.y - this->obj.pos.y,
-                                                  sqrtf(SQ(gPlayer[0].cam.eye.z - (this->obj.pos.z + gPathProgress)) +
+                                                  shz_sqrtf_fsrra(SQ(gPlayer[0].cam.eye.z - (this->obj.pos.z + gPathProgress)) +
                                                         SQ(gPlayer[0].cam.eye.x - this->obj.pos.x))));
     }
 
@@ -728,7 +728,7 @@ void Area6_A6Gorgon_Update(A6Gorgon* this) {
             yaw_10C = Math_Atan2F(dx_11C, dz_114);
             yaw_10C = Math_RadToDeg(yaw_10C);
 
-            pitch_110 = Math_Atan2F(dy_118, sqrtf(SQ(dx_11C) + SQ(dz_114)));
+            pitch_110 = Math_Atan2F(dy_118, shz_sqrtf_fsrra(SQ(dx_11C) + SQ(dz_114)));
             pitch_110 = Math_RadToDeg(-pitch_110);
 
             Math_SmoothStepToAngle(&this->orient.y, yaw_10C, 1.0f, sp104, 0.00001f);
@@ -1133,7 +1133,7 @@ void Area6_A6Gorgon_Update(A6Gorgon* this) {
                         yaw_10C = Math_Atan2F(sp8C.x, sp8C.z);
                         yaw_10C = Math_RadToDeg(yaw_10C);
 
-                        pitch_110 = Math_Atan2F(sp8C.y, sqrtf(SQ(sp8C.x) + SQ(sp8C.z)));
+                        pitch_110 = Math_Atan2F(sp8C.y, shz_sqrtf_fsrra(SQ(sp8C.x) + SQ(sp8C.z)));
                         pitch_110 = Math_RadToDeg(-pitch_110);
 
                         spf124 = D_i3_801C2250[A6_BSS_12_0 + var_s0] - 1;
@@ -1780,10 +1780,10 @@ int restore_gorgonalpha = 0;
         } else {
 //            gSPGorgonAlpha(gMasterDisp++,(u8)255);
             if (arg4 != 0) {
-                //gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                //      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                //gDPSetEnvColor(gMasterDisp++,0,0,0,255);
                 RCP_SetupDL(&gMasterDisp, SETUPDL_27);
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
                 if (arg7 < 18.0f) {
                     // purple
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 255, 255);
@@ -1918,11 +1918,11 @@ void Area6_A6Gorgon_Draw(A6Gorgon* this) {
 //                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
   //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
         // transparent white
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                //    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                  //    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, (s32) D_i3_801C22F0.unk_24);
         // yellow env color
-        gDPSetEnvColor(gMasterDisp++,  255-255, 255-255, 255-0, 255);
+        gDPSetEnvColor(gMasterDisp++,  255, 255, 0, 255);
         Matrix_Scale(gGfxMatrix, 10.0f, 10.0f, 10.0f, MTXF_APPLY);
         Matrix_RotateZ(gGfxMatrix, this->fwork[A6_FWK_33] * M_DTOR, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
@@ -2287,7 +2287,7 @@ void Area6_8018D920(Vec3f* pos) {
     f32 sp68 = pos->y - pos->y;
     f32 sp64 = pos->z - 1000.0f - pos->z;
     f32 yRot = Math_RadToDeg(Math_Atan2F(sp6C, sp64));
-    f32 xRot = Math_RadToDeg(-Math_Atan2F(sp68, sqrtf(SQ(sp6C) + SQ(sp64))));
+    f32 xRot = Math_RadToDeg(-Math_Atan2F(sp68, shz_sqrtf_fsrra(SQ(sp6C) + SQ(sp64))));
     Vec3f speed;
     Vec3f vel;
 
@@ -2305,7 +2305,7 @@ void Area6_8018D920(Vec3f* pos) {
 void Area6_8018DA58(ActorCutscene* this) {
     Vec3f sp5C;
     Vec3f sp50;
-    f32 sp4C;
+    f32 sp4C = 0.0f;
     f32 sp48;
     f32 sp44;
     f32 sp40;
@@ -2365,7 +2365,7 @@ void Area6_8018DA58(ActorCutscene* this) {
             }
 
             sp3C = Math_RadToDeg(Math_Atan2F(sp4C, sp44));
-            sp40 = Math_RadToDeg(-Math_Atan2F(sp48, sqrtf((sp4C * sp4C) + (sp44 * sp44))));
+            sp40 = Math_RadToDeg(-Math_Atan2F(sp48, shz_sqrtf_fsrra((sp4C * sp4C) + (sp44 * sp44))));
 
             if ((sp40 + 40.0f) >= 360.0f) {
                 sp40 -= 360.0f;
@@ -2753,7 +2753,7 @@ void Area6_LevelComplete(Player* player) {
                 spf90.z = -1000.0f;
 
                 sp8C = Math_RadToDeg(Math_Atan2F(spf90.x, spf90.z));
-                sp88 = Math_RadToDeg(-Math_Atan2F(spf90.y, sqrtf(SQ(spf90.x) + SQ(spf90.z))));
+                sp88 = Math_RadToDeg(-Math_Atan2F(spf90.y, shz_sqrtf_fsrra(SQ(spf90.x) + SQ(spf90.z))));
                 if ((sp88 + 40.0f) >= 360.0f) {
                     sp88 -= 360.0f;
                 }

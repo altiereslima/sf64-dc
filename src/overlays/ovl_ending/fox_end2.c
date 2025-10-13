@@ -964,9 +964,9 @@ void Ending_80191C7C(u32 arg0, AssetInfo* asset) {
 
     gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-    gDPSetEnvColor(gMasterDisp++, 255-asset->env.r, 255-asset->env.g, 255-asset->env.b, asset->env.a);
+//                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+  //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+    gDPSetEnvColor(gMasterDisp++, /* 255- */asset->env.r, /* 255- */asset->env.g, /* 255- */asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
 
     Matrix_Translate(gGfxMatrix, asset->unk_18.x + (arg0 - asset->unk_0C) * asset->unk_3C.x,

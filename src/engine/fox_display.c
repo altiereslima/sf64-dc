@@ -122,6 +122,7 @@ void Display_DrawHelpAlert(void) {
         switch (sp7C) {
             case false:
                 RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
                 if (sp78 < 0.0f) {
                     Graphics_DisplaySmallText(43 - 19, 106, 1.0f, 1.0f, "HELP!!");
@@ -132,6 +133,7 @@ void Display_DrawHelpAlert(void) {
 
             case true:
                 RCP_SetupDL(&gMasterDisp, SETUPDL_76);
+        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                 gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 0, 255);
                 Graphics_DisplaySmallText(43 - 19, 106, 1.0f, 1.0f, "HELP!!");
                 Graphics_DisplaySmallText(SCREEN_WIDTH - 43 - 19, 106, 1.0f, 1.0f, "HELP!!");
@@ -756,8 +758,8 @@ void Display_Reticle(Player* player) {
                     gDPSetEnvColor(gMasterDisp++, 255, 255, 0, 255);
                 }
             } else {
-//                RCP_SetupDL_36();
-                RCP_SetupDL(&gMasterDisp, SETUPDL_63);
+                RCP_SetupDL_36();
+//                RCP_SetupDL(&gMasterDisp, SETUPDL_63);
             }
 
             if (i == 1) {

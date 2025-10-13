@@ -3932,7 +3932,7 @@ void ActorEvent_Draw(ActorEvent* this) {
         // jnmartin84 ????
                     gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                       TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                      gDPSetEnvColor(gMasterDisp++, 0, 255, 255, 255);
+                      gDPSetEnvColor(gMasterDisp++, /* 0, 255, 255, */0,0,0, 255);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 0, 0, 255);
     }
 

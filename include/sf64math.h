@@ -60,9 +60,9 @@ typedef union {
 } Matrix; // size = 0x40
 #endif
 
-typedef struct {
-    float m[4][4] /* __attribute__((aligned(32))) */;
-    u64 force_struct_alignment;
+typedef struct __attribute__((aligned(32))) {
+    float m[4][4];
+//    u64 force_struct_alignment;
 } Matrix; // size = 0x40
 
 
@@ -82,7 +82,6 @@ f32 Rand_ZeroOneSeeded(void);
 f32 Math_Atan2F(f32 y, f32 x);
 f32 Math_Atan2F_XY(f32 x, f32 y);
 f32 Math_Atan2F_XYAlt(f32 x, f32 y);
-f32 Math_PowF(f32 base, s32 exp);
 void Math_MinMax(s32* min, s32* max, s32 val1, s32 val2, s32 val3);
 
 f32 Math_SmoothStepToF(f32* value, f32 target, f32 scale, f32 maxStep, f32 minStep);

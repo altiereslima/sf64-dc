@@ -750,7 +750,7 @@ bool Ending_80189C64(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* d
     s32 temp_v0 = *(s32*) data;
 
     if (temp_v0 == 3) {
-        gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
+//        gSPSetGeometryMode(gMasterDisp++, G_CULL_BACK);
     }
 
     switch (limbIndex) {

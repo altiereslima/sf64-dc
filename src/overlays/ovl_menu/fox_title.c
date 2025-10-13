@@ -897,7 +897,7 @@ void Title_Screen_Draw(void) {
     gAmbientB = D_menu_801B830C;
 
     if ((D_menu_801B86A4 < 2) && (D_menu_801B9040 != 0)) {
-        D_menu_801B86D8 = RAD_TO_DEG(Math_Atan2F(-D_menu_801B9060, sqrtf(SQ(-D_menu_801B905C) + SQ(-D_menu_801B9064))));
+        D_menu_801B86D8 = RAD_TO_DEG(Math_Atan2F(-D_menu_801B9060, shz_sqrtf_fsrra(SQ(-D_menu_801B905C) + SQ(-D_menu_801B9064))));
         D_menu_801B86DC = RAD_TO_DEG(Math_Atan2F(D_menu_801B905C, D_menu_801B9064));
 
         Math_SmoothStepToF(&D_menu_801B86C8, D_menu_801B86D8, 0.1f, 100.0f, 0.0001f);
@@ -2091,7 +2091,7 @@ void Title_CsTakeOffSpace_Update(void) {
                     y = D_menu_801AE444[i] - sTitleArwing[i].pos.y;
                     z = D_menu_801AE454[i] + 10.0f - sTitleArwing[i].pos.z;
 
-                    sTitleArwing[i].xRot = RAD_TO_DEG(-Math_Atan2F(y, sqrtf(SQ(x) + SQ(z))));
+                    sTitleArwing[i].xRot = RAD_TO_DEG(-Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z))));
                     sTitleArwing[i].yRot = RAD_TO_DEG(Math_Atan2F(x, z));
                 }
             }
@@ -2198,10 +2198,10 @@ void Title_Cutscene_SetCamera(CameraPoint* arg0, s32 arg1, f32 arg2) {
 
 // Calculation of camera movements using Cubic spline interpolation
 void Title_Camera_Calc(CameraPoint* pos, CameraPoint* arg1, f32 weight, s32 arg3) {
-    f32 temp1;
-    f32 temp2;
-    f32 temp3;
-    f32 temp4;
+    f32 temp1 = 0.0f;
+    f32 temp2 = 0.0f;
+    f32 temp3 = 0.0f;
+    f32 temp4 = 0.0f;
 
     switch (arg3) {
         case 0:
@@ -2345,7 +2345,7 @@ void Title_Arwing_DrawEngineGlow(TitleTeam teamIdx) {
     Matrix_RotateY(gGfxMatrix, -sTitleArwing[teamIdx].yRot * M_DTOR, MTXF_APPLY);
 
     sp3C = -Math_Atan2F(gCsCamEyeX - sTitleArwing[teamIdx].pos.x, gCsCamEyeZ - sTitleArwing[teamIdx].pos.z);
-    temp = sqrtf(SQ(gCsCamEyeZ - sTitleArwing[teamIdx].pos.z) + SQ(gCsCamEyeX - sTitleArwing[teamIdx].pos.x));
+    temp = shz_sqrtf_fsrra(SQ(gCsCamEyeZ - sTitleArwing[teamIdx].pos.z) + SQ(gCsCamEyeX - sTitleArwing[teamIdx].pos.x));
     sp40 = Math_Atan2F(gCsCamEyeY - sTitleArwing[teamIdx].pos.y, temp);
 
     Matrix_RotateY(gGfxMatrix, -sp3C, MTXF_APPLY);
@@ -2401,7 +2401,7 @@ void Title_EngineGlowParticles_Draw(TitleTeam teamIdx) {
     }
 
     sp6C = -Math_Atan2F(gCsCamEyeX - sTitleArwing[teamIdx].pos.x, gCsCamEyeZ - sTitleArwing[teamIdx].pos.z);
-    temp = sqrtf(SQ(gCsCamEyeZ - sTitleArwing[teamIdx].pos.z) + SQ(gCsCamEyeX - sTitleArwing[teamIdx].pos.x));
+    temp = shz_sqrtf_fsrra(SQ(gCsCamEyeZ - sTitleArwing[teamIdx].pos.z) + SQ(gCsCamEyeX - sTitleArwing[teamIdx].pos.x));
     sp70 = Math_Atan2F(gCsCamEyeY - sTitleArwing[teamIdx].pos.y, temp);
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_49);
@@ -2677,7 +2677,7 @@ s32 Title_Team_OverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
         y = D_menu_801B9060 - (sTitleTeam[teamIdx].pos.y + sTitleTeam[teamIdx].unk_14);
         z = D_menu_801B9064 - sTitleTeam[teamIdx].pos.z;
 
-        sTitleTeam[teamIdx].unk_28 = Math_Atan2F(x, sqrtf(SQ(y) + SQ(z))) * M_RTOD;
+        sTitleTeam[teamIdx].unk_28 = Math_Atan2F(x, shz_sqrtf_fsrra(SQ(y) + SQ(z))) * M_RTOD;
         sTitleTeam[teamIdx].unk_2C = Math_Atan2F(y, z) * M_RTOD;
 
         sTitleTeam[teamIdx].unk_38 = sTitleTeam[teamIdx].unk_28;
@@ -3271,7 +3271,7 @@ void Title_NextState_TitleScreen(void) {
             break;
     }
 }
-
+#define DEBUG_ENDING 0
 void Title_NextState_OptionMenu(void) {
     //printf("%s\n", __func__);
     if (gControllerLock == 0) {
@@ -3292,7 +3292,6 @@ void Title_NextState_OptionMenu(void) {
                 if (sWipeHeight < 120) {
                     sWipeHeight += 18;
                 } else {
-                    #define DEBUG_ENDING 0
 #if DEBUG_ENDING
  gGameState = GSTATE_ENDING;  
 #else
@@ -3492,7 +3491,7 @@ void Title_GetCamRot(f32* xRot, f32* yRot) {
     f32 y = gCsCamEyeY - gCsCamAtY;
     f32 z = gCsCamEyeZ - gCsCamAtZ;
 
-    *xRot = -Math_Atan2F(y, sqrtf(SQ(x) + SQ(z))) * M_RTOD;
+    *xRot = -Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z))) * M_RTOD;
     *yRot = +Math_Atan2F(x, z) * M_RTOD;
 }
 

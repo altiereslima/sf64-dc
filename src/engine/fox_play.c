@@ -1121,7 +1121,8 @@ bool Play_CheckDynaFloorCollision(f32* floorHeight, s32* triangleIndex, f32 xPos
     crossProductZ = (deltaX10 * deltaY21) - (deltaY10 * deltaX21);
 
     tempVar = -crossProductX * x0 - crossProductY * y0 - crossProductZ * z0;
-    heightVal = (-tempVar - crossProductX * xPos - crossProductZ * (zPos + gPathProgress + 1500.0f)) / crossProductY;
+    heightVal = (-tempVar - crossProductX * xPos - crossProductZ * (zPos + gPathProgress + 1500.0f)) * shz_fast_invf(crossProductY);
+    // / crossProductY;
 
     if (yPos < heightVal) {
         *floorHeight = heightVal;
@@ -6881,6 +6882,7 @@ void Play_UpdateLevel(void) {
 
         case LEVEL_ZONESS:
             Play_UpdateDynaFloor();
+
             for (gPathTexScroll; gPathTexScroll >= 20.0f; gPathTexScroll -= 20.0f) {
                 Lib_Texture_Scroll(D_ZO_602C2CC, 32, 32, 1);
             }

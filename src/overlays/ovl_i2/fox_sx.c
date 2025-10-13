@@ -214,7 +214,7 @@ void SectorX_8018FA04(f32 x, f32 y, f32 z) {
             Object_SetInfo(&slippy->info, slippy->obj.id);
             slippy->info.hitbox = SEGMENTED_TO_VIRTUAL(aSxBaseWallTile1Hitbox);
             xRot = Math_Atan2F(gPlayer[0].pos.x - x, gPlayer[0].trueZpos - z);
-            pad = sqrtf(SQ(gPlayer[0].pos.x - x) + SQ(gPlayer[0].trueZpos - z));
+            pad = shz_sqrtf_fsrra(SQ(gPlayer[0].pos.x - x) + SQ(gPlayer[0].trueZpos - z));
             yRot = -Math_Atan2F(gPlayer[0].pos.y - y, pad);
             Matrix_RotateY(gCalcMatrix, xRot, MTXF_NEW);
             Matrix_RotateX(gCalcMatrix, yRot, MTXF_APPLY);
@@ -249,7 +249,7 @@ void SectorX_8018FBBC(Vec3f* pos) {
             slippy->state = 1000;
             xRot = Math_Atan2F(slippy->obj.pos.x - pos->x, slippy->obj.pos.z - pos->z);
             yRot = -Math_Atan2F(slippy->obj.pos.y - pos->y,
-                                sqrtf(SQ(slippy->obj.pos.x - pos->x) + SQ(slippy->obj.pos.z - pos->z)));
+                                shz_sqrtf_fsrra(SQ(slippy->obj.pos.x - pos->x) + SQ(slippy->obj.pos.z - pos->z)));
             Matrix_RotateY(gCalcMatrix, xRot, MTXF_NEW);
             Matrix_RotateX(gCalcMatrix, yRot, MTXF_APPLY);
             src.x = 0.0f;
@@ -383,7 +383,7 @@ void SectorX_SxSpyborg_Update(SxSpyborg* this) {
 
     if (this->swork[7] != 0) {
         sp70 = Math_RadToDeg(Math_Atan2F(sp68, sp64));
-        sp6C = Math_RadToDeg(-Math_Atan2F(gPlayer[0].pos.y - (this->obj.pos.y + 334.0f), sqrtf(SQ(sp68) + SQ(sp64))));
+        sp6C = Math_RadToDeg(-Math_Atan2F(gPlayer[0].pos.y - (this->obj.pos.y + 334.0f), shz_sqrtf_fsrra(SQ(sp68) + SQ(sp64))));
         Math_SmoothStepToAngle(&this->fwork[4], sp70, 0.1f, 5.0f, 0.00001f);
         Math_SmoothStepToAngle(&this->fwork[6], sp6C, 0.1f, 5.0f, 0.00001f);
     } else {
@@ -1528,7 +1528,7 @@ void SectorX_LevelStart(Player* player) {
                 y = gActors[5].obj.pos.y - (player->cam.eye.y + 50.0f);
                 z = gActors[5].obj.pos.z - (player->cam.eye.z + 20.0f);
                 xzDeg = Math_RadToDeg(Math_Atan2F(x, z));
-                xyzDeg = Math_RadToDeg(-Math_Atan2F(y, sqrtf(SQ(x) + SQ(z))));
+                xyzDeg = Math_RadToDeg(-Math_Atan2F(y, shz_sqrtf_fsrra(SQ(x) + SQ(z))));
                 Matrix_RotateY(gCalcMatrix, M_DTOR * xzDeg, MTXF_NEW);
                 Matrix_RotateX(gCalcMatrix, M_DTOR * xyzDeg, MTXF_APPLY);
                 src.y = src.x = 0.0f;

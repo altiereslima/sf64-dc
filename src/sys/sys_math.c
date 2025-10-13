@@ -10,8 +10,7 @@ s32 sSeededRandSeed1;
 s32 sSeededRandSeed2;
 
 f32 Math_ModF(f32 value, f32 mod) {
-//    return fmodf(value, mod);
-    return value - ((s32) (value * shz_fast_invf(mod)/* / mod */) * mod);
+    return value - ((s32) (value * shz_fast_invf(mod)) * mod);
 }
 extern volatile OSTime osGetTime(void);
 void Rand_Init(void) {
@@ -63,6 +62,9 @@ f32 Rand_ZeroOneSeeded(void) {
 // copysignf has a branch but penalty-free
 f32 Math_Atan2F(f32 y, f32 x) {
 #if 1
+    if (y == 0.0f && x == 0.0f)
+        return 0.0f;
+
 	float abs_y = fabsf(y) + 1e-10f;
 	float absy_plus_absx = abs_y + fabsf(x);
 	float inv_absy_plus_absx = shz_fast_invf(absy_plus_absx);
@@ -83,20 +85,21 @@ f32 Math_Atan2F(f32 y, f32 x) {
         }
     }
 
+    float recipx = shz_fast_invf(x);
+
     if (x < 0.0f) {
         if (y < 0.0f) {
-            return -(F_PI - Math_FAtanF(fabsf(y / x)));
+            return -(F_PI - Math_FAtanF(fabsf(y * recipx)));
         } else {
-            return F_PI - Math_FAtanF(fabsf(y / x));
+            return F_PI - Math_FAtanF(fabsf(y * recipx));
         }
     } else {
-        return Math_FAtanF(y / x);
+        return Math_FAtanF(y * recipx);
     }
 #endif
 }
 
 f32 Math_Atan2F_XY(f32 x, f32 y) {
-
     float recipy = shz_fast_invf(y);
 
     if ((x == 0.0f) && (y == 0.0f)) {
@@ -150,49 +153,6 @@ f32 Math_Atan2F_XYAlt(f32 x, f32 y) {
 
     return -Math_FAtanF(x * recipy);
 }
-
-#if 0
-f32 Math_FactorialF(f32 n) {
-    f32 out = 1.0f;
-    s32 i;
-
-    for (i = (s32) n; i > 1; i--) {
-        out *= i;
-    }
-
-    return out;
-}
-
-f32 D_800C45E0[] = { 1.0f, 1.0f, 2.0f, 6.0f, 
-    24.0f, 120.0f, 720.0f, 5040.0f, 40320.0f, 
-    362880.0f, 3628800.0f, 39916800.0f, 479001600.0f };
-
-f32 Math_Factorial(s32 n) {
-    f32 out;
-    s32 i;
-
-    if (n > 12) {
-        out = 1.0f;
-
-        for (i = n; i > 1; i--) {
-            out *= i;
-        }
-    } else {
-        out = D_800C45E0[n];
-    }
-    return out;
-}
-
-f32 Math_PowF(f32 base, s32 exp) {
-    f32 out = 1.0f;
-
-    while (exp > 0) {
-        exp--;
-        out *= base;
-    }
-    return out;
-}
-#endif
 
 void Math_MinMax(s32* min, s32* max, s32 val1, s32 val2, s32 val3) {
     if (val1 < val2) {

@@ -221,7 +221,7 @@ void Katina_LaserEnergyParticlesSetup(Effect358* this, f32 x, f32 y, f32 z, f32 
     this->obj.pos.z = z;
 
     xRot = Math_Atan2F(x2 - x, z2 - z);
-    distXZ = sqrtf(SQ(x2 - x) + SQ(z2 - z));
+    distXZ = shz_sqrtf_fsrra(SQ(x2 - x) + SQ(z2 - z));
     yRot = -Math_Atan2F(y2 - y, distXZ);
 
     Matrix_RotateY(gCalcMatrix, xRot, MTXF_NEW);
@@ -2554,7 +2554,7 @@ void Katina_EnemyUpdate(ActorAllRange* this) {
 
         if (((this->index + gGameFrameCount) % 8) == 0) {
             this->fwork[KA_ACTOR_FWORK_19] = Math_RadToDeg(Math_Atan2F(xRand, zRand));
-            xAngle = sqrtf(SQ(xRand) + SQ(zRand));
+            xAngle = shz_sqrtf_fsrra(SQ(xRand) + SQ(zRand));
             this->fwork[KA_ACTOR_FWORK_20] = Math_RadToDeg(Math_Atan2F(yRand, xAngle));
         }
 

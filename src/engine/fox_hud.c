@@ -219,7 +219,7 @@ void HUD_TeamDownWrench_Draw(s32 arg0) {
 
 void TextureRect_CI8_2(Gfx** gfxP, u8* texture, u16* palette, u32 tWidth, u32 tHeight, f32 xPos, f32 yPos, f32 xScale,
                        f32 yScale, f32 xWidth, f32 yWidth) {
-    gDPPipeSync((*gfxP)++);
+    //gDPPipeSync((*gfxP)++);
     gDPLoadTLUT((*gfxP)++, 256, 256, palette);
     gDPLoadTextureBlock((*gfxP)++, texture, G_IM_FMT_CI, G_IM_SIZ_8b, tWidth, tHeight, 0, G_TX_NOMIRROR, G_TX_NOMIRROR,
                         G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
@@ -1749,12 +1749,25 @@ void HUD_PauseScreen_Update(void) {
     }
 }
 
+int do_radar_mark = 0;
+
+#define gSPRadarMark(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x12345678;               \
+    }
+
+
 void HUD_RadarMark_Item_Draw(void) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_62);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
     Matrix_Scale(gGfxMatrix, 18.64f, 21.04f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aOrbDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Enemy_Draw(void) {
@@ -1762,7 +1775,9 @@ void HUD_RadarMark_Enemy_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
     Matrix_Scale(gGfxMatrix, 11.0f, 11.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aOrbDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Boss_Draw(void) {
@@ -1770,7 +1785,9 @@ void HUD_RadarMark_Boss_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
     Matrix_Scale(gGfxMatrix, 130.0f, 130.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aRadarMarkBossDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_KaSaucerer_Draw(void) {
@@ -1778,7 +1795,9 @@ void HUD_RadarMark_KaSaucerer_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 0, 0, 0, 255);
     Matrix_Scale(gGfxMatrix, 125.0f, 125.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aBallDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Missile_Draw(void) {
@@ -1786,7 +1805,9 @@ void HUD_RadarMark_Missile_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 208, 80, 255);
     Matrix_Scale(gGfxMatrix, 30.0f, 30.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aSzMissileRadarMarkDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 f32 D_800D1E10 = 0.0f;
@@ -1812,7 +1833,9 @@ void HUD_RadarMark_Arwing_Draw(s32 colorIdx) {
                     arwingMarkColor[colorIdx][2], arwingMarkColor[colorIdx][3]);
     Matrix_Scale(gGfxMatrix, var_fv1, var_fv2, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aRadarMarkArwingDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_StarWolf_Draw(void) {
@@ -1820,7 +1843,9 @@ void HUD_RadarMark_StarWolf_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 0, 0, 0, 255);
     Matrix_Scale(gGfxMatrix, 54.0f, 54.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aStarWolfRadarMarkDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Katt_Draw(void) {
@@ -1828,7 +1853,9 @@ void HUD_RadarMark_Katt_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 92, 92, 255);
     Matrix_Scale(gGfxMatrix, 54.0f, 54.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, aKattRadarMarkDL);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Supplies_Draw(void) {
@@ -1846,7 +1873,9 @@ void HUD_RadarMark_Supplies_Draw(void) {
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
     Matrix_Scale(gGfxMatrix, 15.0f, 15.0f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, D_1024230);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMissileAlarm_Draw(void) {
@@ -1872,7 +1901,9 @@ void HUD_RadarMissileAlarm_Draw(void) {
     Matrix_Translate(gGfxMatrix, 0.0f, -185.92001f, 0, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, 3.55f, 0.13f, 1.0f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
+    gSPRadarMark(gMasterDisp++);
     gSPDisplayList(gMasterDisp++, D_1024230);
+    gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMark_Draw(s32 type) {
@@ -2041,7 +2072,7 @@ s32 HUD_RadarMarks_Update(void) {
     f32 x1;
     f32 y1;
     f32 z1;
-    f32 x;
+    f32 x = 0;
     f32 y;
     s32 pad;
     f32 temp;
@@ -2238,6 +2269,7 @@ void HUD_RadioCharacterName_Draw(void) {
     if (gGameState == GSTATE_PLAY) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_76);
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 0, 255);
+        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
         switch ((s32) gRadioMsgRadioId) {
             case RCID_FOX:
@@ -2708,7 +2740,7 @@ void HUD_Texture_Scroll(u8* texturePtr, s32 xPos, s32 yPos, u8 type) {
     }
 }
 //#include <string.h>
-__attribute__((optimize("O3")))
+//__attribute__((optimize("O3")))
 void HUD_Texture_Wave(u16* srcTexture, u16* dstTexture) {
     u16 __attribute__((aligned(32))) texwave_buffer[1024];
     u16 *src, *dst;
@@ -3382,7 +3414,7 @@ void HUD_Shield_GoldRings_Score(f32 xPos, f32 yPos) {
 
 void HUD_BombCounter_Draw(f32 x, f32 y) {
     s32 i;
-    s32 sp68;
+    s32 sp68 = 0;
     f32 temp_fv0;
     f32 temp;
 

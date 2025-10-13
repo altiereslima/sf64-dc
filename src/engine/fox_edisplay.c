@@ -641,14 +641,16 @@ void MeMolarRock_Draw(MeMolarRock* this) {
 }
 
 void MeMeteor2_Draw(MeMeteor2* this) {
-    RCP_SetupDL_29(this->work_046, gFogGreen, gFogBlue, gFogAlpha, this->work_048, gFogFar);
+// PVR fog cant handle this
+    //    RCP_SetupDL_29(this->work_046, gFogGreen, gFogBlue, gFogAlpha, this->work_048, gFogFar);
     Matrix_Scale(gGfxMatrix, 0.5f, 0.5f, 0.5f, MTXF_APPLY);
     Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, aMeMeteor1DL);
 }
 
 void MeLaserCannon1_Draw(MeLaserCannon1* this) {
-    RCP_SetupDL_29(this->work_046, gFogGreen, gFogBlue, gFogAlpha, this->work_048, gFogFar);
+// PVR fog cant handle this
+//    RCP_SetupDL_29(this->work_046, gFogGreen, gFogBlue, gFogAlpha, this->work_048, gFogFar);
     gSPDisplayList(gMasterDisp++, aMeLaserCannon1DL);
 }
 
