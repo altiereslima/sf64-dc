@@ -265,9 +265,9 @@ float gl_fog_end;
 
 void gfx_opengl_change_fog(void) {
     float fog_scale;
-    if (gCurrentLevel == LEVEL_ZONESS)
+    if (/* (gGameState == 8) ||  */(gCurrentLevel == LEVEL_ZONESS))
         fog_scale = 0.3f;
-    else if (gCurrentLevel == LEVEL_TITANIA || gCurrentLevel == LEVEL_SOLAR)
+    else if ((gCurrentLevel == LEVEL_TITANIA) || (gCurrentLevel == LEVEL_SOLAR))
         fog_scale = 0.4f;
     else if (gCurrentLevel == LEVEL_SECTOR_Y)
         fog_scale = 0.85f;
@@ -308,7 +308,7 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
     }
 
     if (prg->shader_id & SHADER_OPT_FOG) {
-        if (fog_dirty) {
+        if (fog_dirty /* || (gGameState == 8) */) { // ending
             gfx_opengl_change_fog();
             fog_dirty = 0;
         }
@@ -494,7 +494,7 @@ void capture_framebuffer(int num) {
     int inheight = 480;      // 120;
     uint16_t* out = scaled2; // + (num * 128 * 32);
     int outwidth = 128;      // 64;//128;
-    int outheight = 128;     // 64;//32;
+    int outheight = 64;     // 64;//32;
     int i, j;
     uint32_t* out32 = (uint32_t*) out;
     int fracstep = (inwidth << 16) / outwidth;
@@ -788,6 +788,12 @@ static void add_a_color_post(void) {
 }
 #endif
 extern int try_to_fix_glitch;
+
+void gfx_force_3d_2d(void);
+void gfx_undo_3d_2d(void);
+void  /* __attribute__((noinline))  */gfx_opengl_2d_projection(void);
+void  gfx_opengl_reset_projection(void);
+
 static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     cur_buf = (void*) buf_vbo;
 
@@ -815,14 +821,6 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
     if (is_zmode_decal)
         zmode_decal_setup_pre();
 
-    if (cur_shader->shader_id == 0x01045551) {
-        particle_blend_setup_pre();
-        dc_fast_t* tris = (dc_fast_t*) buf_vbo;
-        for (size_t i = 0; i < 3 * buf_vbo_num_tris; i++) {
-            tris[i].color.array.a = pa;
-        }
-    }
-
     if (do_andross || do_fillrect_blend) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
@@ -839,13 +837,19 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
                 tris[i].vert.z += 0.03f;
         }
     }
+#if 0
     if (do_radar_mark || path_priority_draw) {
+//        if (do_radar_mark)
+//                glBlendFunc(GL_ONE, GL_ONE);
+
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
         glDepthFunc(GL_ALWAYS);
 
         glPushMatrix();
-        glTranslatef(0, 0.0001f, 10.0f);
+        glTranslatef(0, 0.0001f, 100.0f);
     }
- 
+ #endif
     if (use_gorgon_alpha) {
         dc_fast_t* tris = (dc_fast_t*) buf_vbo;
         for (size_t i = 0; i < 3 * buf_vbo_num_tris; i++) {
@@ -863,8 +867,25 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
     glTranslatef(0.0f, 0.01f, 0.01f);
         glDepthFunc(GL_LEQUAL);
 }
- */    glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
-/* if(try_to_fix_glitch) {
+ */
+    if (/* !use_gorgon_alpha &&  */cur_shader->shader_id == 0x01045551) {
+        particle_blend_setup_pre();
+        dc_fast_t* tris = (dc_fast_t*) buf_vbo;
+        for (size_t i = 0; i < 3 * buf_vbo_num_tris; i++) {
+            tris[i].color.array.a = pa;
+        }
+    }
+if(do_radar_mark) {
+gfx_opengl_2d_projection();
+}
+     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
+if(do_radar_mark) {
+gfx_opengl_reset_projection();
+}
+    if (/* !use_gorgon_alpha &&  */cur_shader->shader_id == 0x01045551)
+        particle_blend_setup_post();
+
+     /* if(try_to_fix_glitch) {
     glDepthFunc(GL_LESS);
     glPopMatrix();
 }
@@ -875,12 +896,16 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
         glDepthFunc(GL_LESS);
         glEnable(GL_BLEND);
     }
-
+#if 0
     if (do_radar_mark || path_priority_draw) {
+//        if (do_radar_mark)
+//                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         glPopMatrix();
+        glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
     }
-
+#endif
     if (do_zfight) {
 
         glDepthFunc(GL_LESS);
@@ -890,8 +915,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    if (cur_shader->shader_id == 0x01045551)
-        particle_blend_setup_post();
+    
     if (do_rectdepfix)
         skybox_setup_post();
 
@@ -901,7 +925,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], UNUSED size_t buf_vbo_len
     if (do_menucard || (cur_shader->shader_id == 0x01a00a00 && gLevelType == LEVELTYPE_SPACE))
         over_skybox_setup_post();
 }
-
+extern int do_radar_depth;
 void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     dc_fast_t* tris = buf_vbo;
 
@@ -922,7 +946,22 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
         glDisable(GL_TEXTURE_2D);
     }
 
-    if (do_rectdepfix) {
+    /* if (do_radar_depth) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_ALWAYS);
+        glDisable(GL_BLEND);
+        glDisable(GL_FOG);
+
+        glDrawArrays(GL_QUADS, 0, 4);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
+        glEnable(GL_BLEND);
+        glEnable(GL_FOG);
+
+    } else */ if (do_rectdepfix) {
         skybox_setup_pre();
         glDrawArrays(GL_QUADS, 0, 4);
         skybox_setup_post();
@@ -965,9 +1004,10 @@ void gfx_opengl_draw_triangles_2d(void* buf_vbo, size_t buf_vbo_len, size_t buf_
                     glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
                 }
 
-                if (path_priority_draw) {
-                    glDepthFunc(GL_ALWAYS);
-                }
+                
+            }
+            if (path_priority_draw) {
+                glDepthFunc(GL_ALWAYS);
             }
             glDrawArrays(GL_QUADS, 0, 4);
             if (path_priority_draw) {

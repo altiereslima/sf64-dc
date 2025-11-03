@@ -98,6 +98,8 @@ void Andross_Gate_Draw(ActorEvent* this) {
                            &gIdentityMatrix);
 }
 
+
+extern void *gfx_texture_cache_invalidate(void *addr);
 void Andross_Backdrop_RotEffect(void) {
     s32 rotOffset;
     u32* backdropTex1;
@@ -115,6 +117,8 @@ void Andross_Backdrop_RotEffect(void) {
             backdropTex1[i + ((rotOffset + j) % 32U)] = backdropTex2[i + j];
         }
     }
+
+    gfx_texture_cache_invalidate(backdropTex1);
 }
 
 // Path to the real Andross
@@ -4257,14 +4261,14 @@ void Andross_LevelComplete(Player* player) {
                                               60.0f, RAND_FLOAT_CENTERED(10.0f), RAND_FLOAT(5.5f) + 15.5f);
             }
 #if 1
-            __builtin_prefetch(explode_sin_tbl);
+//            __builtin_prefetch(explode_sin_tbl);
             sp80 = RAND_FLOAT(40.0f);
-            f32 s_sp80 = sinf(sp80);
-            __builtin_prefetch(explode_cos_tbl);
-            f32 c_sp80 = cosf(sp80);
+//            f32 s_sp80 = sinf(sp80);
+//            __builtin_prefetch(explode_cos_tbl);
+//            f32 c_sp80 = cosf(sp80);
 #endif
             for (i = 0; i < 36; i += 4) {
-        #if 1
+        #if 0
                 // sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
                 // cos(a+b) = cos(a)cos(b) - sin(a)sin(b)
                 if (i == 0) {

@@ -1343,6 +1343,9 @@ void Cutscene_WarpZoneComplete(Player* player);
 void Cutscene_FortunaComplete(Player* player);
 void Cutscene_CoComplete2(Player* player);
 
+#define USE_CUTSCENE_RECORDINGS 0
+
+#if USE_CUTSCENE_RECORDINGS
 typedef struct Record {
     u8 vis;
     u16 frame;
@@ -1537,9 +1540,7 @@ void Cutscene_LevelComplete(Player* player) {
     }
 }
 
-
-
-#if 0
+#else
 void Cutscene_LevelComplete(Player* player) {
     s32 btnHold;
     s32 btnPress;

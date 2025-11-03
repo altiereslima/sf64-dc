@@ -1263,10 +1263,11 @@ void Display_ArwingWingTrail_Draw(Player* player) {
             sp50 = 0.0f;
         }
 
-//        RCP_SetupDL_64();
-        RCP_SetupDL(&gMasterDisp, SETUPDL_67);
-        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 64,64,64,255);//255, 255, 255, 255);//100);
-        gDPSetEnvColor(gMasterDisp++,0,0,0,100);
+        RCP_SetupDL_64();
+//        RCP_SetupDL(&gMasterDisp, SETUPDL_67);
+//        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 64,64,64,255);//255, 255, 255, 255);//100);
+//        gDPSetEnvColor(gMasterDisp++,0,0,0,100);
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
 
         if (player->arwing.leftWingState == WINGSTATE_INTACT) {
             Matrix_Push(&gGfxMatrix);
@@ -1952,7 +1953,7 @@ void Display_Update(void) {
     Display_DrawHelpAlert();
     sPlayersVisible[gPlayerNum] = false;
     Matrix_Pop(&gGfxMatrix);
-#if 1
+#if 0
     gLaserStrength[0] = 2;
     gLifeCount[0] = 9;
     gBombCount[0] = 9;

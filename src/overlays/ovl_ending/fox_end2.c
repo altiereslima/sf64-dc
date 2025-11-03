@@ -35,14 +35,14 @@ void Ending_8018CE20(u32 arg0) {
                     if (D_ending_80192E74[i].unk_10 == 1) {
                         xPos = (SCREEN_WIDTH - Graphics_GetLargeTextWidth((char *)D_ending_80192E74[i].unk_00)) / 2;
                         RCP_SetupDL(&gMasterDisp, SETUPDL_83);
-                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+//                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
                         Graphics_DisplayLargeText(xPos, D_ending_80192E74[i].unk_0E, 1.0f, 1.0f,
                                                   (char *)D_ending_80192E74[i].unk_00);
 
                     } else if (D_ending_80192E74[i].unk_10 == 2) {
                         RCP_SetupDL(&gMasterDisp, SETUPDL_83);
-                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+//                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
                         Lib_TextureRect_IA8(&gMasterDisp, D_ending_80192E74[i].unk_00 + 192 * 5 * 0, 192, 5, 64.0f,
                                             105.0f, 1.0f, 1.0f);
@@ -326,7 +326,7 @@ void Ending_8018E1B8(u32 arg0, AssetInfo* asset) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_63);
     }
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -385,7 +385,7 @@ void Ending_8018E7B8(u32 arg0, AssetInfo* asset) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_63);
     }
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -443,7 +443,7 @@ void Ending_Floor_Draw(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
 
@@ -487,7 +487,7 @@ void Ending_8018F2A8(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
 
@@ -525,7 +525,7 @@ void Ending_8018F64C(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -592,7 +592,7 @@ void Ending_8018FC60(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -655,7 +655,7 @@ void Ending_80190274(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
 
@@ -710,7 +710,7 @@ void Ending_80190778(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -845,7 +845,7 @@ void Ending_80191294(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
     gDPSetPrimColor(gMasterDisp++, 0, 0, asset->prim.r, asset->prim.g, asset->prim.b, asset->prim.a);
@@ -911,7 +911,7 @@ void Ending_80191710(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
     
     gDPSetEnvColor(gMasterDisp++, asset->env.r, asset->env.g, asset->env.b, asset->env.a);
@@ -993,7 +993,7 @@ void Ending_80191C7C(u32 arg0, AssetInfo* asset) {
 
     RCP_SetupDL(&gMasterDisp, asset->unk_08);
 
-    gSPFogPosition(gMasterDisp++, asset->fogNear, asset->fogFar);
+    gSPFogPosition(gMasterDisp++, 995, 1000);//asset->fogNear, asset->fogFar);
     gDPSetFogColor(gMasterDisp++, asset->fog.r, asset->fog.g, asset->fog.b, 0);
 //                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
   //                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);

@@ -73,6 +73,7 @@ volatile int do_zflip = 0;
 //#define SCREEN_WIDTH 640
 //#define SCREEN_HEIGHT 240
 
+float screen_2d_z;
 
 
 #define HALF_SCREEN_WIDTH (SCREEN_WIDTH / 2)
@@ -82,8 +83,9 @@ volatile int do_zflip = 0;
 #define RATIO_Y (gfx_current_dimensions.height / (2.0f * HALF_SCREEN_HEIGHT))
 uint8_t er,eg,eb,ea;
 uint8_t pr,pg,pb,pa;
-
-
+extern int do_radar_mark;
+extern int use_gorgon_alpha;
+extern int do_radar_depth;
 int do_andross = 0;
 
 // enough to submit the nintendo logo in one go
@@ -581,7 +583,7 @@ static void import_texture_rgba16(int tile) {
     uint32_t i;
 
     if (do_the_blur) {
-        gfx_rapi->upload_texture((uint8_t*) scaled2, /* 64 */128, /* 64 */128, GL_UNSIGNED_SHORT_1_5_5_5_REV);
+        gfx_rapi->upload_texture((uint8_t*) scaled2, /* 64 */128, /* 64 */64, GL_UNSIGNED_SHORT_1_5_5_5_REV);
         return;
     }
 
@@ -1292,6 +1294,9 @@ static void __attribute__((noinline)) gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2
         matrix_dirty = 0;
     }
 
+	if (do_radar_mark)
+		gfx_flush();
+
     __builtin_prefetch(v3);
 
     uint8_t depth_test = (rsp.geometry_mode & G_ZBUFFER) == G_ZBUFFER;
@@ -1394,7 +1399,7 @@ static void __attribute__((noinline)) gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2
     float recip_tex_height = 0.03125; // 1 / 32
     uint8_t usetex = used_textures[0];
     uint8_t linear_filter = (rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT;
-int specdepfix = 0;
+	//int specdepfix = 0;
     if (usetex) {
         if (rdp.textures_changed[0]) {
             // necessary
@@ -1492,11 +1497,19 @@ int specdepfix = 0;
     float ofs = linear_filter ? 0.5f : 0.0f;
     float uls = (float) (rdp.texture_tile.uls * 0.25f) - ofs;
     float ult = (float) (rdp.texture_tile.ult * 0.25f) - ofs;
+	if (do_radar_mark) {
+		screen_2d_z += 1.0f;
+	}
     for (i = 0; i < 3; i++) {
-        buf_vbo[buf_num_vert].vert.x = v_arr[i]->x;
-        buf_vbo[buf_num_vert].vert.y = v_arr[i]->y;
-        buf_vbo[buf_num_vert].vert.z = v_arr[i]->z;
-
+		if (!do_radar_mark) {
+			buf_vbo[buf_num_vert].vert.x = v_arr[i]->x;
+			buf_vbo[buf_num_vert].vert.y = v_arr[i]->y;
+	        buf_vbo[buf_num_vert].vert.z = v_arr[i]->z;
+		} else {
+			buf_vbo[buf_num_vert].vert.x = (v_arr[i]->_x * SCREEN_WIDTH) + SCREEN_WIDTH;
+			buf_vbo[buf_num_vert].vert.y = SCREEN_HEIGHT - (v_arr[i]->_y * SCREEN_HEIGHT);
+			buf_vbo[buf_num_vert].vert.z = screen_2d_z;
+		}
         if (usetex) {
 #if 1
             buf_vbo[buf_num_vert].texture.u = (v_arr[i]->u - uls) * recip_tex_width;
@@ -1647,14 +1660,20 @@ int specdepfix = 0;
         }
 
         if (lit) {
-			if (gCurrentLevel == LEVEL_AREA_6) {
-            color_r = ((((/* 255 +  */color_r)/*  >> 1 */) * light_r) >> 8) & 0xff;
-            color_g = ((((/* 255 +  */color_g)/*  >> 1 */) * light_g) >> 8) & 0xff;
-            color_b = ((((/* 255 +  */color_b)/*  >> 1 */) * light_b) >> 8) & 0xff;
+			if (gGameState != 8) {
+				if (gCurrentLevel == LEVEL_AREA_6 || gCurrentLevel == LEVEL_VENOM_1 || gCurrentLevel == LEVEL_VENOM_2 || gCurrentLevel == LEVEL_VENOM_ANDROSS) {
+				color_r = ((((/* 255 +  */color_r)/*  >> 1 */) * light_r) >> 8) & 0xff;
+				color_g = ((((/* 255 +  */color_g)/*  >> 1 */) * light_g) >> 8) & 0xff;
+				color_b = ((((/* 255 +  */color_b)/*  >> 1 */) * light_b) >> 8) & 0xff;
+				} else {
+				color_r = ((((255 + color_r) >> 1) * light_r) >> 8) & 0xff;
+				color_g = ((((255 + color_g) >> 1) * light_g) >> 8) & 0xff;
+				color_b = ((((255 + color_b) >> 1) * light_b) >> 8) & 0xff;
+				}
 			} else {
-            color_r = ((((255 + color_r) >> 1) * light_r) >> 8) & 0xff;
-            color_g = ((((255 + color_g) >> 1) * light_g) >> 8) & 0xff;
-            color_b = ((((255 + color_b) >> 1) * light_b) >> 8) & 0xff;
+				color_r = ((((/* 255 +  */color_r)/*  >> 1 */) * light_r) >> 8) & 0xff;
+				color_g = ((((/* 255 +  */color_g)/*  >> 1 */) * light_g) >> 8) & 0xff;
+				color_b = ((((/* 255 +  */color_b)/*  >> 1 */) * light_b) >> 8) & 0xff;
 			}
             buf_vbo[buf_num_vert].color.packed = PACK_ARGB8888(color_r, color_g, color_b, color_a);
         }
@@ -1664,7 +1683,7 @@ int specdepfix = 0;
     }
     buf_vbo_num_tris += 1;
 
-    if (/* try_to_fix_glitch || */ path_priority_draw || do_space_bg || do_rectdepfix || do_menucard || buf_vbo_num_tris == MAX_BUFFERED) {
+    if (/* use_gorgon_alpha ||  *//* try_to_fix_glitch || */do_radar_mark || path_priority_draw || do_space_bg || do_rectdepfix || do_menucard || buf_vbo_num_tris == MAX_BUFFERED) {
         gfx_flush();
     }
 }
@@ -2036,7 +2055,7 @@ static void  gfx_sp_moveword(uint8_t index,/*  UNUSED uint16_t offset, */ uint32
 		case G_MW_FOG:
 			int16_t new_mul = (int16_t) (data >> 16);
 			int16_t new_ofs = (int16_t) data;
-			if ((new_mul != fog_mul) || (new_ofs != fog_ofs)) {
+			if (/* (gGameState == 8) ||  */((new_mul != fog_mul) || (new_ofs != fog_ofs))) {
 				fog_mul = rsp.fog_mul = new_mul;
 				fog_ofs = rsp.fog_offset = new_ofs;
 				float recip_fog_mul = shz_fast_invf(fog_mul);
@@ -2340,10 +2359,10 @@ static void gfx_dp_set_fog_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	rdp.fog_color.b = b;
 	changed |= (a != rdp.fog_color.a);
 	rdp.fog_color.a = a;
-	if (changed) {
+	if (/* (gGameState == 8) || */ changed) {
 		fog_dirty = 1;
 		float fog_color[4] = { rdp.fog_color.r * recip255, rdp.fog_color.g * recip255, rdp.fog_color.b * recip255,
-			rdp.fog_color.a * recip255 };
+			1.0f };//rdp.fog_color.a * recip255 };
 		glFogfv(GL_FOG_COLOR, fog_color);
 	}
 }
@@ -2361,8 +2380,30 @@ static void  gfx_dp_set_fill_color(uint32_t packed_color) {
 	rdp.fill_color.a = a * 255;
 }
 
-float screen_2d_z;
 
+void gfx_force_3d_2d(void) {
+//	glMatrixMode(GL_PROJECTION);
+//	glPushMatrix();
+//	glLoadIdentity();
+//	glOrtho(-1, 1, -1, 1, -0.001f, 1.0f);  // near plane very close to camera
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+static const GLfloat flattenZ[16] = {
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 0, -1e-6f,  // all verts go near front
+    0, 0, 0, 1
+};
+glMultMatrixf(flattenZ);
+	//	glDepthRange(0.0f, 0.0f);
+}
+
+void gfx_undo_3d_2d(void) {
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
 
 // in here instead of gfx_gldc.c becasue of `matrix_dirty` and `rsp` references
 void  /* __attribute__((noinline))  */gfx_opengl_2d_projection(void) {
@@ -3064,11 +3105,8 @@ void generate_display_list(uint16_t *codeout, void *segaddr, Gfx *cmd) {
 */
 #endif
 
-extern int do_radar_mark;
-extern int use_gorgon_alpha;
 extern uint8_t gorgon_alpha;
 extern Gfx aAndBackdropDL[];
-
 extern Gfx aLandmasterModelDL[];
 extern Gfx D_A6_6015EE0[];
 extern Gfx aAwBodyDL[];
@@ -3196,6 +3234,8 @@ irq_disable();
 				do_menucard ^= 1;
 			} else if((cmd->words.w1) == 0x46554369) {
 				do_rectdepfix ^= 1;
+			} else if((cmd->words.w1) == 0xaaaabbbb) {
+				do_radar_depth ^= 1;	
 			} else if ((cmd->words.w1) == 0x46664369) {
 				do_space_bg ^= 1;	
 //				printf("do_space_bg is now %d\n", do_space_bg);
@@ -3219,12 +3259,12 @@ irq_disable();
 //#define	G_RDPLOADSYNC		0xe6	/* -26 */
 
 		switch (opcode) {
-/* 			case G_RDPLOADSYNC:
+			//case G_RDPLOADSYNC:
 			case G_RDPPIPESYNC:
-			case G_RDPTILESYNC:
-			case G_RDPFULLSYNC:
+			//case G_RDPTILESYNC:
+			//case G_RDPFULLSYNC:
 				gfx_flush();
-				break; */
+				break;
 
 			// RSP commands:
 			case G_MTX:

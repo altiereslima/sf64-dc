@@ -135,8 +135,6 @@ f32 Math_Atan2F(f32 y, f32 x) {
 }
 
 f32 Math_Atan2F_XY(f32 x, f32 y) {
-    return Math_Atan2F(x,y);
-#if 0
     if ((x == 0.0f) && (y == 0.0f)) {
         return 0.0f;
     }
@@ -157,18 +155,18 @@ f32 Math_Atan2F_XY(f32 x, f32 y) {
         }
     }
 
-    float recipy = shz_fast_invf(y);
+    float xovery = shz_divf(x,y);// x * shz_fast_invf(y);
 
     if (x < 0.0f) {
+        float res = F_PI - Math_FAtanF(fabsf(xovery));
         if (y < 0.0f) {
-            return -(F_PI - Math_FAtanF(fabsf(x * recipy)));
+            return -res;
         } else {
-            return F_PI - Math_FAtanF(fabsf(x * recipy));
+            return res;
         }
     } else {
-        return Math_FAtanF(x *recipy);
+        return Math_FAtanF(xovery);
     }
-#endif
 }
 
 f32 Math_Atan2F_XYAlt(f32 x, f32 y) {

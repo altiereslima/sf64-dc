@@ -1732,6 +1732,13 @@ bool Ending_8018BCB0(void) {
 
     return sp5C;
 }
+#define gSPFixDepthCut2(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46664369;                                           \
+    }
 
 void Ending_8018C21C(void) {
     Vec3f sp124[3] = {
@@ -1758,7 +1765,9 @@ void Ending_8018C21C(void) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_17);
         Matrix_Translate(gGfxMatrix, 0.0f, -1200.0f, -6000.0f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
+        gSPFixDepthCut2(gMasterDisp++);
         gSPDisplayList(gMasterDisp++, aEndCorneriaBackdropDL);
+        gSPFixDepthCut2(gMasterDisp++);
         Matrix_Pop(&gGfxMatrix);
     } else {
         Matrix_Push(&gGfxMatrix);
@@ -1766,7 +1775,9 @@ void Ending_8018C21C(void) {
         Matrix_Translate(gGfxMatrix, -2000.0f, -3000.0f, 3000.0f, MTXF_APPLY);
         Matrix_RotateY(gGfxMatrix, 110.0f * M_DTOR, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
+        gSPFixDepthCut2(gMasterDisp++);
         gSPDisplayList(gMasterDisp++, aEndCorneriaBackdropDL);
+        gSPFixDepthCut2(gMasterDisp++);
         Matrix_Pop(&gGfxMatrix);
     }
 
@@ -1827,6 +1838,7 @@ void Ending_8018C21C(void) {
                         }
                     } else {
                         RCP_SetupDL(&gMasterDisp, SETUPDL_23);
+
                         Matrix_Translate(gGfxMatrix, gActors[i].obj.pos.x, gActors[i].obj.pos.y, gActors[i].obj.pos.z,
                                          MTXF_APPLY);
                         Matrix_Scale(gGfxMatrix, gActors[i].scale, gActors[i].scale, gActors[i].scale, MTXF_APPLY);

@@ -1374,6 +1374,42 @@ s32 HUD_PauseScreenInput(void) {
     return ret;
 }
 
+#define gSPRadarMark(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x12345678;               \
+    }
+#if 0
+void HUD_LoseLifeExplosion_Draw(s32 animFrames) {
+    u32* sLoseLifePlanetTexs[] = { D_BG_PLANET_200B6B8, D_BG_PLANET_200A628, D_BG_PLANET_2009598, D_BG_PLANET_2008508, D_BG_PLANET_2007478,
+    D_BG_PLANET_20063E8, D_BG_PLANET_200C748, D_BG_PLANET_2005358, D_BG_PLANET_20042C8, D_BG_PLANET_2003238,
+    D_BG_PLANET_20021A8, D_BG_PLANET_2001118, (u32*)D_BG_SPACE_2000088, D_BG_PLANET_2010AB8, D_BG_PLANET_2010228,
+    D_BG_PLANET_200F998, D_BG_PLANET_200F108, D_BG_PLANET_200E878,
+    };
+    u16 *sLoseLifeSpaceTexs[] = {
+    D_BG_SPACE_2006748,D_BG_SPACE_2005EB8,D_BG_SPACE_2005628,D_BG_SPACE_2004D98,D_BG_SPACE_2004508,
+    D_BG_SPACE_2003C78, D_BG_SPACE_20033E8,D_BG_SPACE_2002B58,D_BG_SPACE_20022C8,D_BG_SPACE_20019B0,
+    D_BG_SPACE_20011A8,D_BG_SPACE_2000918,D_BG_SPACE_2000088,
+    };
+    s32 sLoseLifePrimColors[] = {
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 200, 150, 100, 50,
+    };
+
+    if (animFrames != 0) {
+        animFrames--;
+
+        RCP_SetupDL(&gMasterDisp,SETUPDL_36);
+        gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, sLoseLifePrimColors[animFrames]);
+        if (gLevelType == LEVELTYPE_PLANET) {
+            Lib_TextureRect_RGBA32(&gMasterDisp, sLoseLifePlanetTexs[animFrames], 32, 32, 160-8, 120-8, 1.0f, 1.0f);
+        } else {
+            Lib_TextureRect_RGBA32(&gMasterDisp, sLoseLifeSpaceTexs[animFrames], 32, 32, 160-8, 120-8, 1.0f, 1.0f);
+        }
+    }
+}
+#endif
 void HUD_LoseLifeExplosion_Draw(s32 animFrames) {
     Gfx* sLoseLifePlanetAnimDLs[] = {
         D_BG_PLANET_200B630, D_BG_PLANET_200A5A0, D_BG_PLANET_2009510, D_BG_PLANET_2008480, D_BG_PLANET_20073F0,
@@ -1398,24 +1434,18 @@ void HUD_LoseLifeExplosion_Draw(s32 animFrames) {
         Matrix_Translate(gGfxMatrix, 3.9f, -3.3f, -100.0f, MTXF_NEW);
         Matrix_Scale(gGfxMatrix, 0.37f, 0.37f, 0.37f, MTXF_APPLY);
         Matrix_SetGfxMtx(&gMasterDisp);
-
+        gSPRadarMark(gMasterDisp++);
         if (gLevelType == LEVELTYPE_PLANET) {
             gSPDisplayList(gMasterDisp++, sLoseLifePlanetAnimDLs[animFrames]);
         } else {
             gSPDisplayList(gMasterDisp++, sLoseLifeSpaceAnimDLs[animFrames]);
         }
+        gSPRadarMark(gMasterDisp++);
 
         Matrix_Pop(&gGfxMatrix);
     }
 }
 
-#define gSPFixDepthCut(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554369;                                           \
-    }
 void HUD_PauseScreen_Update(void) {
     s32 i;
     s32 j;
@@ -1511,9 +1541,7 @@ void HUD_PauseScreen_Update(void) {
                 sPauseScreenTimer[0] = 0;
 
             case 3:
-            gSPFixDepthCut(gMasterDisp++);
                 Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
-            gSPFixDepthCut(gMasterDisp++);
 
                 gFillScreenAlphaTarget = 0;
 
@@ -1562,9 +1590,7 @@ void HUD_PauseScreen_Update(void) {
                 break;
 
             case 4:
-            gSPFixDepthCut(gMasterDisp++);
                 Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
-            gSPFixDepthCut(gMasterDisp++);
                 if (sPauseScreenTimer[0] < 140) {
                     break;
                 }
@@ -1582,9 +1608,7 @@ void HUD_PauseScreen_Update(void) {
                 }
 
             case 5:
-             gSPFixDepthCut(gMasterDisp++);
                Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, 0, 0, 0, 255);
-            gSPFixDepthCut(gMasterDisp++);
 
                 for (i = 0; i < 6; i++) {
                     if (gPrevPlanetTeamShields[i] == -1) {
@@ -1751,13 +1775,6 @@ void HUD_PauseScreen_Update(void) {
 
 int do_radar_mark = 0;
 
-#define gSPRadarMark(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x12345678;               \
-    }
 
 
 void HUD_RadarMark_Item_Draw(void) {
@@ -1983,7 +2000,14 @@ void HUD_RadarMark_Draw(s32 type) {
             break;
     }
 }
-
+#define gSPRadarDepth(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0xaaaabbbb;                                           \
+    }
+int do_radar_depth = 0;
 void HUD_RadarWindow_Draw(f32 x, f32 y) {
     f32 sVsRadarWindowXpos[] = { 20.0f, 180.0f, 20.0f, 180.0f };
     f32 sVsRadarWindowYpos[] = { 72.0f, 72.0f, 192.0f, 192.0f };
@@ -2009,12 +2033,15 @@ void HUD_RadarWindow_Draw(f32 x, f32 y) {
         xScale1 = 1.70f;
         yScale1 = 1.70f;
     }
-
+//            gSPRadarMark(gMasterDisp++);
+//gSPRadarDepth(gMasterDisp++);
     RCP_SetupDL(&gMasterDisp, SETUPDL_78);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 60, 60, 255, 170);
     HUD_MsgWindowBg_Draw(xPos + 1.0f, yPos + 1.0f, xScale, yScale);
+//gSPRadarDepth(gMasterDisp++);
     gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
     HUD_RadarWindowFrame_Draw(xPos, yPos, xScale1, yScale1);
+//            gSPRadarMark(gMasterDisp++);
 }
 
 void HUD_RadarMarks_Setup(void) {

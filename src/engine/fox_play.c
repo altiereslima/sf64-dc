@@ -545,6 +545,9 @@ void Play_InitEnvironment(void) {
     gFogBlue = sEnvironment->fogB;
     gFogNear = sEnvironment->fogN;
     gFogFar = sEnvironment->fogF;
+    if (gCurrentLevel == LEVEL_KATINA) {
+        gFogFar = 1006;
+    }
     if (gFogFar <= gFogNear) gFogFar = gFogNear + 4;
 
     gLight1R = gLight2R = D_ctx_80161A70 = sEnvironment->lightR;
@@ -858,7 +861,7 @@ void Player_DamageWings(Player* player, s32 side, s32 damage) {
     }
 }
 
-#define I_DONT_WANT_TO_DIE 1
+#define I_DONT_WANT_TO_DIE 0
 void Player_ApplyDamage(Player* player, s32 direction, s32 damage) {
 #if I_DONT_WANT_TO_DIE
     return;

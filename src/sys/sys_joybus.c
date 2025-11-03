@@ -182,109 +182,84 @@ int cc_debug_toggle = 0;
 void Map_Main(void);
 
 void Controller_UpdateInput(void) {
-#if 1
     s32 i;
     for (i = 0; i < 4; i++) {
-
-    maple_device_t *cont;
-    cont_state_t *state;
-    ucheld = 0;
-    cont = maple_enum_type(i, MAPLE_FUNC_CONTROLLER);
-    gControllerPlugged[i] = !!cont;//(sp1F >> i) & 1;
-    if (!cont)
-        continue;
-    if (cont) {
-        sControllerStatus[i].status = 1;
-        sNextController[i].errno = 0;
-        maple_device_t *puru = maple_enum_type(i, MAPLE_FUNC_PURUPURU);
-        gControllerRumbleEnabled[i] = !!puru;//(sp1F >> i) & 1;
-    }
-
-    state = maple_dev_status(cont);
-
-    if (strcmp("/pc", fnpre) == 0) {
-        if (/* (state->buttons & CONT_START) &&  */state->ltrig && state->rtrig) {
-            if (state->buttons & CONT_START) {
-//            profiler_stop();
-//            profiler_clean_up();
-            // give vmu a chance to write and close
-            exit(0);
-            } //else {
-//                if (state->buttons && CONT_A)
-  //                  Map_Main();
-   //         }
+        maple_device_t* cont;
+        cont_state_t* state;
+        ucheld = 0;
+        cont = maple_enum_type(i, MAPLE_FUNC_CONTROLLER);
+        gControllerPlugged[i] = (!!cont) && (cont->port == i);
+        if (!gControllerPlugged[i])
+            continue;
+        if (gControllerPlugged[i]) {
+            sControllerStatus[i].status = 1;
+            sNextController[i].errno = 0;
+            maple_device_t* puru = maple_enum_type(i, MAPLE_FUNC_PURUPURU);
+            gControllerRumbleEnabled[i] = !!puru;
         }
-    }
-    const char stickH =state->joyx;
-    const char stickV = 0xff-((uint8_t)(state->joyy));
 
-    if (state->buttons & CONT_A)
-        ucheld |= N64_CONT_A;//A_BUTTON;
-    if (state->buttons & CONT_X)
-        ucheld |= N64_CONT_B;//B_BUTTON;
-    if (state->ltrig)
-        ucheld |= N64_CONT_G;//Z_TRIG;
-    if (state->rtrig)
-        ucheld |= N64_CONT_R;//R_TRIG;
-    if (state->buttons & CONT_START)
-       ucheld |= N64_CONT_START;//START_BUTTON;
+        state = maple_dev_status(cont);
 
-    if (state->buttons & CONT_Y)
-        ucheld |= L_CBUTTONS;//C_UP
-    if (state->buttons & CONT_B)
-        ucheld |= D_CBUTTONS;//C_RIGHT
-    if (state->buttons & CONT_DPAD_UP)
-        ucheld |= U_CBUTTONS;//U_CBUTTONS;
-    if (state->buttons & CONT_DPAD_RIGHT)
-        ucheld |= R_CBUTTONS;//R_CBUTTONS;
+        if (strcmp("/pc", fnpre) == 0) {
+            if (state->ltrig && state->rtrig) {
+                if (state->buttons & CONT_START) {
+                    // profiler_stop();
+                    // profiler_clean_up();
+                    //  give vmu a chance to write and close
+                    thd_sleep(3000);
+                    exit(0);
+                } // else {
+                  // if (state->buttons && CONT_A)
+                  // Map_Main();
+                //}
+            }
+        }
+        const char stickH = state->joyx;
+        const char stickV = 0xff - ((uint8_t) (state->joyy));
 
-//if(state->buttons & CONT_DPAD_DOWN) {
-  //  cc_debug_toggle = !cc_debug_toggle;
-//}
+        if (state->buttons & CONT_A)
+            ucheld |= N64_CONT_A; // A_BUTTON;
+        if (state->buttons & CONT_X)
+            ucheld |= N64_CONT_B; // B_BUTTON;
+        if (state->ltrig)
+            ucheld |= N64_CONT_G; // Z_TRIG;
+        if (state->rtrig)
+            ucheld |= N64_CONT_R; // R_TRIG;
+        if (state->buttons & CONT_START)
+            ucheld |= N64_CONT_START; // START_BUTTON;
 
-    sNextController[i].stick_x = ((float)stickH/127)*80;
-        sNextController[i].stick_y = ((float)stickV/127)*80;
+        if (state->buttons & CONT_Y)
+            ucheld |= L_CBUTTONS; // C_UP
+        if (state->buttons & CONT_B)
+            ucheld |= D_CBUTTONS; // C_RIGHT
+        if (state->buttons & CONT_DPAD_UP)
+            ucheld |= U_CBUTTONS; // U_CBUTTONS;
+        if (state->buttons & CONT_DPAD_RIGHT)
+            ucheld |= R_CBUTTONS; // R_CBUTTONS;
 
+        sNextController[i].stick_x = ((float) stickH / 127) * 80;
+        sNextController[i].stick_y = ((float) stickV / 127) * 80;
 
-    if (sNextController[i].stick_x < -50)
-        ucheld |= N64_CONT_LEFT;
-    if (sNextController[i].stick_x > 50)
-        ucheld |= N64_CONT_RIGHT;
-    if (sNextController[i].stick_y < -50)
-        ucheld |= N64_CONT_DOWN;
-    if (sNextController[i].stick_y > 50)
-        ucheld |= N64_CONT_UP;
+        if (sNextController[i].stick_x < -50)
+            ucheld |= N64_CONT_LEFT;
+        if (sNextController[i].stick_x > 50)
+            ucheld |= N64_CONT_RIGHT;
+        if (sNextController[i].stick_y < -50)
+            ucheld |= N64_CONT_DOWN;
+        if (sNextController[i].stick_y > 50)
+            ucheld |= N64_CONT_UP;
 
-
-//printf("ucheld %04x\n",ucheld);
-sNextController[i].button = ucheld;
+        sNextController[i].button = ucheld;
 
         Controller_AddDeadZone(i);
-            sPrevController[i] = gControllerHold[i];
-            gControllerHold[i] = sNextController[i];
-            gControllerPress[i].button =
-                (gControllerHold[i].button ^ sPrevController[i].button) & gControllerHold[i].button;
-gControllerHold[i].errno = 0;
-            }    
-
+        sPrevController[i] = gControllerHold[i];
+        gControllerHold[i] = sNextController[i];
+        gControllerPress[i].button =
+            (gControllerHold[i].button ^ sPrevController[i].button) & gControllerHold[i].button;
+        gControllerHold[i].errno = 0;
+    }
 
 #if 0
-    for (i = 1; i < 4; i++) {
-        if ((gControllerPlugged[i] == 1) && (sNextController[i].errno == 0)) {
-            sPrevController[i] = gControllerHold[i];
-            gControllerHold[i] = sNextController[i];
-            gControllerPress[i].button =
-                (gControllerHold[i].button ^ sPrevController[i].button) & gControllerHold[i].button;
-            Controller_AddDeadZone(i);
-        } else {
-            gControllerHold[i].button = gControllerHold[i].stick_x = gControllerHold[i].stick_y =
-                gControllerHold[i].errno = gControllerPress[i].button = gControllerPress[i].stick_x =
-                    gControllerPress[i].stick_y = gControllerPress[i].errno = 0;
-        }
-    }
-#endif
-#endif
-
     maple_device_t *controller;
 	// now move on to the keyboard and mouse additions
 	controller = maple_enum_type(0, MAPLE_FUNC_KEYBOARD);
@@ -294,10 +269,10 @@ gControllerHold[i].errno = 0;
             shader_debug_toggle = !shader_debug_toggle;
         }
     }
+#endif
 }
 
 void Controller_ReadData(void) {
-#if 1
     s32 i;
 
     if (gControllerLock != 0) {
@@ -307,16 +282,12 @@ void Controller_ReadData(void) {
                 sNextController[i].errno = 0;
         }
     } else {
-    //    osContStartReadData(&gSerialEventQueue);
-  //      MQ_WAIT_FOR_MESG(&gSerialEventQueue, NULL);
-//        osContGetReadData(sNextController);
         for (i = 0; i < 4; i++) {
             sNextController[i].button = sNextController[i].stick_x = sNextController[i].stick_y =
                 sNextController[i].errno = 0;
         }
+    }
 
-}
-#endif
     osSendMesg(&gControllerMesgQueue, (OSMesg) SI_CONT_READ_DONE, OS_MESG_NOBLOCK);
 }
 
@@ -346,6 +317,7 @@ void Save_WriteData(void) {
     last_write = SI_SAVE_FAILED;
     //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
 }
+
 void I_RumbleThread(void *param)
 {
 	(void)param;

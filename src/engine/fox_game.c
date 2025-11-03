@@ -182,11 +182,11 @@ void Game_InitMasterDL(Gfx** dList) {
         gfx_texture_cache_invalidate(scaled2);
 //        }
         //gDPPipeSync((*dList)++);
-        gDPSetCycleType((*dList)++, G_CYC_1CYCLE);
-        gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-        gDPSetRenderMode((*dList)++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
-        gDPSetPrimColor((*dList)++, 0x00, 0x00, RGBA16_RED(gBgColor) * 8, RGBA16_GRN(gBgColor) * 8,
-                        RGBA16_BLU(gBgColor) * 8, gBlurAlpha);
+//        gDPSetCycleType((*dList)++, G_CYC_1CYCLE);
+  //      gDPSetCombineMode((*dList)++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+    //    gDPSetRenderMode((*dList)++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+//        gDPSetPrimColor((*dList)++, 0x00, 0x00,255,255,255, /* RGBA16_RED(gBgColor) * 8, RGBA16_GRN(gBgColor) * 8,
+  //                      RGBA16_BLU(gBgColor) * 8 ,*/ gBlurAlpha);
     } else {
         if (!force_screen_fill_colors){
             gDPSetFillColor((*dList)++, FILL_COLOR(gBgColor | 1));}
@@ -657,8 +657,9 @@ void Game_Update(void) {
 //        Wipe_Draw(WIPE_CIRCULAR, gCircleWipeFrame);
 
         if (!partialFill) {
-            Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, gFillScreenRed,
-                                   gFillScreenGreen, gFillScreenBlue, gFillScreenAlpha);
+            if (gFillScreenAlpha)
+                Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, gFillScreenRed,
+                                    gFillScreenGreen, gFillScreenBlue, gFillScreenAlpha);
         }
         Audio_dummy_80016A50();
 if(gBlurAlpha < 255) {

@@ -20,6 +20,14 @@ static PlanetId sPlanetArray[][3] = {
     { PLANET_VENOM, PLANET_VENOM, SAVE_SLOT_VENOM_2 },
 };
 
+#define gSPPathPriority(pkt)                                       \
+    {                                                                                   \
+        Gfx* _g = (Gfx*) (pkt);                                                         \
+                                                                                        \
+        _g->words.w0 = 0x424C4E44; \
+        _g->words.w1 = 0x46004400;                                           \
+    }
+
 void Map_LevelSelect(void) {
     static s32 mission = 0;
     static s32 difficulty = 0;
@@ -99,19 +107,20 @@ void Map_LevelSelect(void) {
     if ((sCurrentPlanetId >= 0) && (sCurrentPlanetId < PLANET_MAX)) {
         RCP_SetupDL(&gMasterDisp, SETUPDL_83);
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 0, 255);
-
-        Graphics_DisplaySmallText(20, 200, 1.0f, 1.0f, "PLANET:");
-        Graphics_DisplaySmallText(80, 200, 1.0f, 1.0f, sLevelSelectPlanetNames[sPlanetArray[mission][difficulty]]);
+        gSPPathPriority(gMasterDisp++);
+//        Graphics_DisplaySmallText(20, 200, 1.0f, 1.0f, "PLANET:");
+//        Graphics_DisplaySmallText(80, 200, 1.0f, 1.0f, sLevelSelectPlanetNames[sPlanetArray[mission][difficulty]]);
 
         if (startOption) {
             if ((sCurrentPlanetId == PLANET_SECTOR_X) || (sCurrentPlanetId == PLANET_METEO)) {
-                Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "WARP ZONE");
+    //            Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "WARP ZONE");
             } else if (sCurrentPlanetId == PLANET_VENOM) {
-                Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "ANDROSS");
+      //          Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "ANDROSS");
             } else if (sCurrentPlanetId == PLANET_AREA_6) {
-                Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "BETA SB");
+  //              Graphics_DisplaySmallText(80, 210, 1.0f, 1.0f, "BETA SB");
             }
         }
+        gSPPathPriority(gMasterDisp++);
     }
 
     if (gControllerPress[0].button & A_BUTTON) {
@@ -122,7 +131,7 @@ void Map_LevelSelect(void) {
     if (timer > 0) {
         timer--;
     }
-#define BYPASS_BRIEFING 1
+#define BYPASS_BRIEFING 0
 #if BYPASS_BRIEFING
     // Bypass briefing
     if ((timer == 0) && (startLevel == 1)) {
@@ -147,6 +156,12 @@ void Map_LevelSelect(void) {
             // gSavedPathProgress = gPathProgress = zStart;
         }
     }
+#else
+        if (startOption && ((gCurrentLevel == LEVEL_METEO) || (gCurrentLevel == LEVEL_SECTOR_X) ||
+                            (sPlanetArray[mission][difficulty] == SAVE_SLOT_VENOM_2))) {
+            gLevelPhase = 1;
+        }
+
 #endif
 }
 
