@@ -4452,7 +4452,7 @@ u16 gMsg_ID_20235[] = {
 // (v and C< (C<)).
 u16 gMsg_ID_20236[] = {
     PRI2, _T, _r, _y, SPC, _a, SPC, _s, _o, _m, _e, _r, _s, _a, _u, _l, _t, NWL, 
-    LPR, ADN, SPC, _a, _n, _d, SPC, _Y, RPR, PRD, NWL, //_C, ALF, SPC, CLF, RPR, PRD, NWL, 
+    LPR, CDN, SPC, ADN, SPC, _a, _n, _d, SPC, _Y, RPR, PRD, NWL, //_C, ALF, SPC, CLF, RPR, PRD, NWL, 
     END, 
 };
 // Try a U-turn
@@ -4476,7 +4476,7 @@ u16 gMsg_ID_20238[] = {
 u16 gMsg_ID_20239[] = {
     PRI2, _U, _s, _e, SPC, _t, _h, _e, SPC, _b, _o, _o, _s, _t, SPC, _t, _o, NWL, 
 //    _g, _e, _t, SPC, _t, _h, _r, _u, SPC, LPR, _C, ALF, SPC, CLF, RPR, PRD, NWL, 
-    _g, _e, _t, SPC, _t, _h, _r, _u, SPC, LPR, _Y, RPR, PRD, NWL,//_C, ALF, SPC, CLF, RPR, PRD, NWL, 
+    _g, _e, _t, SPC, _t, _h, _r, _o, _u, _g, _h, SPC, LPR, _Y, RPR, PRD, NWL,//_C, ALF, SPC, CLF, RPR, PRD, NWL, 
     END, 
 };
 // I'm here to rescue 
@@ -4543,7 +4543,7 @@ u16 gMsg_ID_20268[] = {
 // from ROB64 (C> (C>)).
 u16 gMsg_ID_20269[] = {
     PRI2, _I, _n, _c, _o, _m, _i, _n, _g, SPC, _m, _e, _s, _s, _a, _g, _e, SPC, NWL, 
-    _f, _r, _o, _m, SPC, _R, _O, _B, _6, _4, SPC, LPR, _C, ART, SPC, CRT, RPR, PRD, NWL, 
+    _f, _r, _o, _m, SPC, _R, _O, _B, _6, _4, SPC, LPR, CRT, SPC, ART, RPR, PRD, NWL, 
     END, 
 };
 // Incoming!
@@ -5363,7 +5363,7 @@ u16 gMsg_ID_23020[] = {
 // change the camera
 // angle.
 u16 gMsg_ID_23021[] = {
-    PRI1, _P, _r, _e, _s, _s, SPC, /* _C,  */AUP, /* SPC, CUP, */ SPC, _t, _o, SPC, NWL, 
+    PRI1, _P, _r, _e, _s, _s, SPC, CUP, SPC, /* _C,  */AUP, /* SPC, CUP, */ SPC, _t, _o, SPC, NWL, 
     _c, _h, _a, _n, _g, _e, SPC, _t, _h, _e, SPC, _c, _a, _m, _e, _r, _a, NWL, 
     _a, _n, _g, _l, _e, PRD, NWL, 
     END, 
@@ -5373,7 +5373,7 @@ u16 gMsg_ID_23021[] = {
 // C> (C>).
 u16 gMsg_ID_23022[] = {
     PRI1, _T, _o, SPC, _r, _e, _s, _p, _o, _n, _d, SPC, _t, _o, SPC, NWL, 
-    _m, _e, _s, _s, _a, _g, _e, _s, CMA, SPC, _p, _r, _e, _s, _s, NWL, 
+    _m, _e, _s, _s, _a, _g, _e, _s, CMA, SPC, _p, _r, _e, _s, _s, NWL, CRT, SPC,
     /* _C,  */ART, /* SPC, CRT,  */PRD, NWL, 
     END, 
 };
