@@ -67,8 +67,15 @@ python3 -m pip install -r ./tools/requirements-python.txt
 
 ```bash
 git submodule update --init --recursive
-make -f Makefile.dc toolchain
+cd tools
+make
+cd ..
 ```
+
+for macos, you may need to change `make` to the following:
+`CMAKE_POLICY_VERSION_MINIMUM=3.5 gmake`
+
+for the n64 tools build
 
 #### 5. Prepare a base ROM
 
