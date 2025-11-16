@@ -473,9 +473,9 @@ run_game_loop:
 }
 
 int main(int argc, char **argv) {
-    FILE* fntest = fopen("/pc/sf_data/ast_logo.bin", "rb");
+    FILE* fntest = fopen("/pc/sf_data/logo.bin", "rb");
     if (NULL == fntest) {
-        fntest = fopen("/cd/sf_data/ast_logo.bin", "rb");
+        fntest = fopen("/cd/sf_data/logo.bin", "rb");
         if (NULL == fntest) {
             printf("Cant load from /pc or /cd");
             printf("\n");
