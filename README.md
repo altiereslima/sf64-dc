@@ -101,7 +101,6 @@ Run `./generate_sf_data.sh` to make segmented ELF files for link-time symbol res
 
 Lastly, run `./link.sh` to create an output ELF file.
 
-There's also a target for generating a CDI, requiring `mkdcdisc` to be installed and on your path:
-`make -f Makefile.dc cdi`
+If you want a CDI, check out `test.sh` for details on how to make one.
 
 Good luck.
