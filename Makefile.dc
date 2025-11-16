@@ -75,6 +75,9 @@ ifeq ($(COMPILER),kos-cc)
 
 # -fno-lto 
 # 
+
+  CFLAGS += -DTESTING_MODE
+
   NON_MATCHING := 1
 endif
 

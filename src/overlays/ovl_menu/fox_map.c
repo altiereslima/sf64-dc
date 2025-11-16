@@ -4705,8 +4705,8 @@ gDPSetCombineLERP(gMasterDisp++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TE
     Matrix_Pop(&gGfxMatrix);
 }
 
+static f32 D_menu_801B6A74 = 0.0f;
 void Map_SolarRays_Draw(PlanetId planetId) {
-    static f32 D_menu_801B6A74 = 0.0f;
     s32 alpha = sPlanets[PLANET_VENOM].alpha;
 
     if (sPlanets[planetId].alpha > 128) {
@@ -5808,14 +5808,13 @@ void Map_PathPlanet_Draw(s32 missionIdx, f32 x, f32 y, PlanetId planetId) {
                 gDPSetCombineLERP(gMasterDisp++, PRIMITIVE, ENVIRONMENT, TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0, PRIMITIVE, ENVIRONMENT,
                            TEXEL0, ENVIRONMENT, TEXEL0, 0, PRIMITIVE, 0);
 
-                gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 128);
-                gDPSetEnvColor(gMasterDisp++, 31, 0, 0, 255);
-
+                gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 224);
+                gDPSetEnvColor(gMasterDisp++, 255,255,255, 255);
+                Matrix_RotateZ(gGfxMatrix, M_DTOR * -D_menu_801B6A74*2.0f, MTXF_APPLY);
                 Matrix_Scale(gGfxMatrix, 0.8f, 0.8f, 0.8f, MTXF_APPLY);
+                Matrix_Translate(gGfxMatrix, 1.0f, 0.0f, 2.0f, MTXF_APPLY);
                 Matrix_SetGfxMtx(&gMasterDisp);
-
                 gSPDisplayList(gMasterDisp++, sMapPlanets[sPlanets[planetId].id]);
-
                 Matrix_Pop(&gGfxMatrix);
             }
             break;

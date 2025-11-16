@@ -505,9 +505,7 @@ static  __attribute__((noinline)) uint8_t gfx_texture_cache_lookup(int tile, str
 	return 0;
 }
 
-// more than enough for a 64 * 64 16-bit image; no overflow should happen at this point
-extern uint16_t __attribute__((aligned(32))) rgba16_buf[128 * 128];
-//extern uint8_t __attribute__((aligned(32))) xform_buf[8192];
+extern uint16_t __attribute__((aligned(16384))) rgba16_buf[64 * 64];
 
 static void __attribute__((noinline)) import_texture(int tile);
 
@@ -1237,6 +1235,7 @@ static void __attribute__((noinline)) gfx_sp_vertex(uint8_t n_vertices, uint8_t 
 	/* if (print_ti) {
 		printf("sp_vert %d %d %08x\n", n_vertices, dest_index, vertices);
 	} */
+    __builtin_prefetch(&table256[192]);
 	shz_xmtrx_load_4x4(&rsp.MP_matrix);
     if (rsp.geometry_mode & G_LIGHTING) {
         if (rsp.lights_changed) {

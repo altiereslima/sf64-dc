@@ -1566,12 +1566,13 @@ s32 Katina_BossOverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
     switch (limbIndex) {
         case 1:
             rot->y += boss->fwork[BOSS_HATCH_1_ANGLE];
-
-            if ((boss->swork[BOSS_HATCH_1_FLASH_TIMER] % 2) != 0) {
+            // % 2 != 0
+            if (boss->swork[BOSS_HATCH_1_FLASH_TIMER] & 1) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                        gDPSetEnvColor(gMasterDisp++,0,0,0,255);            }
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
+            }
 
             if (boss->swork[BOSS_HATCH_1_HP] <= 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
@@ -1582,12 +1583,13 @@ s32 Katina_BossOverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
 
         case 2:
             rot->y += boss->fwork[BOSS_HATCH_2_ANGLE];
-
-            if ((boss->swork[BOSS_HATCH_2_FLASH_TIMER] % 2) != 0) {
+            // % 2 != 0
+            if (boss->swork[BOSS_HATCH_2_FLASH_TIMER] & 1) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                        gDPSetEnvColor(gMasterDisp++,0,0,0,255);            }
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
+            }
 
             if (boss->swork[BOSS_HATCH_2_HP] <= 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
@@ -1599,11 +1601,12 @@ s32 Katina_BossOverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
         case 3:
             rot->y += boss->fwork[BOSS_HATCH_3_ANGLE];
 
-            if ((boss->swork[BOSS_HATCH_3_FLASH_TIMER] % 2) != 0) {
+            if (boss->swork[BOSS_HATCH_3_FLASH_TIMER] & 1) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                        gDPSetEnvColor(gMasterDisp++,0,0,0,255);            }
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
+            }
 
             if (boss->swork[BOSS_HATCH_3_HP] <= 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
@@ -1615,11 +1618,12 @@ s32 Katina_BossOverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
         case 4:
             rot->y -= boss->fwork[BOSS_HATCH_4_ANGLE];
 
-            if ((boss->swork[BOSS_HATCH_4_FLASH_TIMER] % 2) != 0) {
+            if (boss->swork[BOSS_HATCH_4_FLASH_TIMER] & 1) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                        gDPSetEnvColor(gMasterDisp++,0,0,0,255);            }
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
+            }
 
             if (boss->swork[BOSS_HATCH_4_HP] <= 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
@@ -1631,11 +1635,12 @@ s32 Katina_BossOverrideLimbDraw(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* r
         case 9:
             pos->x -= boss->fwork[BOSS_CORE_LEVEL];
 
-            if ((boss->swork[BOSS_CORE_FLASH_TIMER] % 2) != 0) {
+            if (boss->swork[BOSS_CORE_FLASH_TIMER] & 1) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_30);
-                    gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-                        gDPSetEnvColor(gMasterDisp++,0,0,0,255);            }
+                gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                    TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+                gDPSetEnvColor(gMasterDisp++,0,0,0,255);
+            }
 
             if (boss->swork[BOSS_CORE_HP] <= 0) {
                 RCP_SetupDL(&gMasterDisp, SETUPDL_57);
@@ -1675,10 +1680,10 @@ void Katina_KaSaucerer_Draw(KaSaucerer* this) {
         if (this->fwork[BOSS_LASER_LIGHT_SCALE] > 0.0f) {
             RCP_SetupDL(&gMasterDisp, SETUPDL_67);
             Matrix_Push(&gGfxMatrix);
-                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
+            gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                            TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
 
-                                        gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
+            gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 255);
             gDPSetEnvColor(gMasterDisp++, 255-0, 255-255, 255-255, 255);
             Matrix_Translate(gGfxMatrix, 0.0f, 500.0f, 0.0f, MTXF_APPLY);
             Matrix_Scale(gGfxMatrix, this->fwork[BOSS_LASER_LIGHT_SCALE], this->fwork[BOSS_LASER_LIGHT_SCALE],

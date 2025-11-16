@@ -41,32 +41,3 @@ f32 Math_FAtanF(f32 x) {
         return x * recip1pconv;/// (1.0f + conv);
     }
 }
-#if 0
-
-f32 Math_FAtan2F(f32 y, f32 x) {
-    if ((y == 0.0f) && (x == 0.0f)) {
-        return 0.0f;
-    }
-    if (x == 0.0f) {
-        if (y < 0.0f) {
-            return -F_PI / 2.0f;
-        }
-        return F_PI / 2.0f;
-    }
-    if (x < 0.0f) {
-        if (y < 0.0f) {
-            return -(F_PI - Math_FAtanF(fabsf(y / x)));
-        }
-        return F_PI - Math_FAtanF(fabsf(y / x));
-    }
-    return Math_FAtanF(y / x);
-}
-
-f32 Math_FAsinF(f32 x) {
-    return Math_FAtan2F(x, sqrtf(1.0f - SQ(x)));
-}
-
-f32 Math_FAcosF(f32 x) {
-    return F_PI / 2.0f - Math_FAsinF(x);
-}
-#endif

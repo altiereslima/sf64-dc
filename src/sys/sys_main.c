@@ -241,7 +241,6 @@ Gfx* gMasterDisp;
 Gfx* gUnkDisp2;
 Lightsn* gLight;
 FrameBuffer* gFrameBuffer;
-u16* gTextureRender;
 
 u8 gVIsPerFrame;
 u32 gSysFrameCount;
@@ -305,7 +304,6 @@ void Graphics_InitializeTask(u32 frameCount) {
     gLight = gGfxPool->lights;
 
     gFrameBuffer = &gFrameBuffers[frameCount % 3];
-    gTextureRender = &gTextureRenderBuffer[0];
 
     gGfxMatrix = &sGfxMatrixStack[0];
     gCalcMatrix = &sCalcMatrixStack[0];

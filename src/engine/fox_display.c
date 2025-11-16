@@ -1968,7 +1968,13 @@ void Display_Update(void) {
     Display_DrawHelpAlert();
     sPlayersVisible[gPlayerNum] = false;
     Matrix_Pop(&gGfxMatrix);
-#if 1
+// cheats
+#ifdef TESTING_MODE
+#define EXTRA_EVERYTHING 1
+#else
+#define EXTRA_EVERYTHING 0
+#endif
+#if EXTRA_EVERYTHING
     gLaserStrength[0] = 2;
     gLifeCount[0] = 9;
     gBombCount[0] = 9;

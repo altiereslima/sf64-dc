@@ -117,8 +117,8 @@ extern int do_radar_mark;
 extern int do_space_bg;
 
 /* Used for rescaling textures into pow2 dims */
-extern uint16_t __attribute__((aligned(32))) scaled[128 * 128];
-extern uint16_t __attribute__((aligned(32))) scaled2[512 * 256];
+extern uint16_t __attribute__((aligned(32))) scaled[64 * 64];
+extern uint16_t __attribute__((aligned(32))) scaled2[256 * 128];
 
 // prim color
 extern uint8_t pa;

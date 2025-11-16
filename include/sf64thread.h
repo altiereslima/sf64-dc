@@ -169,7 +169,6 @@ extern Gfx* gMasterDisp;
 extern Gfx* gUnkDisp2;
 extern Lightsn* gLight;
 extern FrameBuffer* gFrameBuffer;
-extern u16* gTextureRender;
 
 extern u8 gVIsPerFrame;
 extern u32 gSysFrameCount;
