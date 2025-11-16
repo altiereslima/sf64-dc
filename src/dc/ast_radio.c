@@ -4452,7 +4452,7 @@ u16 gMsg_ID_20235[] = {
 // (v and C< (C<)).
 u16 gMsg_ID_20236[] = {
     PRI2, _T, _r, _y, SPC, _a, SPC, _s, _o, _m, _e, _r, _s, _a, _u, _l, _t, NWL, 
-    LPR, CDN, SPC, ADN, SPC, _a, _n, _d, SPC, _Y, RPR, PRD, NWL, //_C, ALF, SPC, CLF, RPR, PRD, NWL, 
+    LPR, ADN, SPC, _a, _n, _d, SPC, _Y, RPR, PRD, NWL, //_C, ALF, SPC, CLF, RPR, PRD, NWL, 
     END, 
 };
 // Try a U-turn
