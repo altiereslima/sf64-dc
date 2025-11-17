@@ -11,11 +11,8 @@
 #include <stdlib.h>
 #include "../dcprofiler.h"
 
-//#define SAMPLES_HIGH 533
-#define SAMPLES_HIGH 464
-//560
-#define SAMPLES_LOW 432
-//528
+#define SAMPLES_HIGH 560
+#define SAMPLES_LOW 528
 
 uintptr_t arch_stack_32m = 0x8d000000;
 
@@ -499,32 +496,25 @@ int main(int argc, char **argv) {
 #if MODS_ISVIEWER == 1
 #include "../mods/isviewer.c"
 #endif
-//533
-/* #define SAMPLES_HIGH 560
-#define SAMPLES_LOW 528 */
-extern void *cb_next_left(void);
-extern void *cb_next_right(void);
-void *AudioThread(UNUSED void *arg) {
+
+void* AudioThread(UNUSED void* arg) {
     Matrix __attribute__((aligned(32))) tmpmtx;
     uint64_t last_vbltick = vblticker;
-    
-    while (1) {
-        while (vblticker <= last_vbltick)
-            genwait_wait((void*)&vblticker, NULL, 5, NULL);
 
-//        shz_xmtrx_store_4x4(&tmpmtx);
+    while (1) {
+        while (vblticker <= last_vbltick + 1)
+            genwait_wait((void*) &vblticker, NULL, 15, NULL);
 
         __builtin_prefetch(audio_buffer[0]);
         last_vbltick = vblticker;
         __builtin_prefetch(audio_buffer[1]);
 
-        /* int samplecount = gSysFrameCount & 1 ? SAMPLES_HIGH : SAMPLES_LOW; */
+        int samplecount = gSysFrameCount & 1 ? SAMPLES_HIGH : SAMPLES_LOW;
+        AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], samplecount);
+        AudioThread_CreateNextAudioBuffer(audio_buffer[0] + (samplecount), audio_buffer[1] + (samplecount),
+                                          samplecount);
 
-        AudioThread_CreateNextAudioBuffer(//cb_next_left(), cb_next_right(), 448);//
-            audio_buffer[0], audio_buffer[1], /* samplecount */448);
-        audio_api->play((u8 *)audio_buffer[0], (u8*)audio_buffer[1], /* samplecount<<2 */1792);
-
-//        shz_xmtrx_load_4x4(&tmpmtx);
+        audio_api->play((u8*) audio_buffer[0], (u8*) audio_buffer[1], samplecount * 8);
     }
 
     return NULL;
