@@ -413,7 +413,7 @@ void Main_ThreadEntry(void* arg0) {
     //    profiler_start();
     Game_Initialize();
 
-// #define MEMTEST
+//#define MEMTEST
 #if defined(MEMTEST)
     for (int mi = 0; mi < 8 * 1048576; mi += 65536) {
         void* test_m = malloc(mi);
@@ -470,11 +470,6 @@ run_game_loop:
         gDPFullSync(gMasterDisp++);
         gSPEndDisplayList(gMasterDisp++);
         Graphics_SetTask();
-        visPerFrame = MIN(gVIsPerFrame, 4);
-        validVIsPerFrame = MAX(visPerFrame, gGfxVImesgQueue.validCount + 1);
-        for (i = 0; i < validVIsPerFrame; i += 1) { // Can't be ++
-            MQ_WAIT_FOR_MESG(&gGfxVImesgQueue, NULL);
-        }
 
         Audio_Update();
         gfx_end_frame();
