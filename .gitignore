@@ -1,4 +1,9 @@
-.vscode
+*.elf
+*.tgz
+*.cdi
+*.iso
+music/
+.vscode/
 .DS_Store
 asm
 expected
