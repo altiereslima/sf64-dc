@@ -498,10 +498,9 @@ static inline uint16_t rgb565_to_argb1555(uint16_t rgb565) {
 void capture_framebuffer(int num) {
 #if 1
 #if LOWRES
-for (int y=0;y<240;y+=4) {
-        for (int x=0;x<320;x+=4) {
-            uint16_t pix = ;
-            scaled2[((y>>2)*128) + (x>>2)] = vram_s[(y*320) + x];
+    for (int y=0;y<240;y+=2) {
+        for (int x=0;x<320;x+=2) {
+            scaled2[(y<<7) + (x>>1)] = vram_s[((y<<8) + (y << 6)) + x];
         }
     }
 #else
