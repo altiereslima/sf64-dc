@@ -792,6 +792,19 @@ static __attribute__((noinline)) void import_texture_ci8(int tile) {
 
 	gfx_rapi->upload_texture((uint8_t*) rgba16_buf, width, height, GL_UNSIGNED_SHORT_1_5_5_5_REV);
 }
+#define DEBUG_PROF 1
+#if DEBUG_PROF
+
+typedef struct debug_float_s {
+    float val;
+    float min;
+    float max;
+    float avg;
+} debug_float_t;
+void update_debug_float(debug_float_t *df);
+extern debug_float_t debug_millis_tex;
+#endif
+#include <kos.h>
 
 static void __attribute__((noinline)) import_texture(int tile) {
 	uint8_t fmt = rdp.texture_tile.fmt;
@@ -813,6 +826,13 @@ static void __attribute__((noinline)) import_texture(int tile) {
 
 	if (cl_rv)
 		return;
+#if DEBUG_PROF
+
+	uint64_t dstart;
+	uint64_t dend;
+
+		dstart = perf_cntr_timer_ns();
+#endif
 
 	if (fmt == G_IM_FMT_RGBA) {
 		if (siz == G_IM_SIZ_16b) {
@@ -842,6 +862,13 @@ static void __attribute__((noinline)) import_texture(int tile) {
 			import_texture_ci8(tile);
 		}
 	}
+#if DEBUG_PROF
+
+			dend = perf_cntr_timer_ns();
+		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
+        debug_millis_tex.val += last_delta * 1e-6f;
+		update_debug_float(&debug_millis_tex);
+#endif
 }
 
 static void gfx_normalize_vector(float v[3]) {
@@ -2023,12 +2050,15 @@ static void gfx_calc_and_set_viewport(const Vp_t* viewport) {
 	rdp.viewport_or_scissor_changed = 1;
 }
 
+#if 0
 static void gfx_update_lookat(uint8_t index, const void *data) {
-//	if (memcmp(rsp.lookat + ((index - G_MV_LOOKATY) >> 1), data, sizeof(Light_t))) {
+printf("update lookat\n");
+	//	if (memcmp(rsp.lookat + ((index - G_MV_LOOKATY) >> 1), data, sizeof(Light_t))) {
 		n64_memcpy(rsp.lookat + ((index - G_MV_LOOKATY) >> 1), data, sizeof(Light_t));
 		rsp.lights_changed = 1;
 //	}
 }
+#endif
 
 static void gfx_update_light(uint8_t index, const void* data) {
 //	if (memcmp(rsp.current_lights + ((index - G_MV_L0) >> 1), data, sizeof(Light_t))) {
@@ -2043,10 +2073,12 @@ static void  gfx_sp_movemem(uint8_t index, const void* data) {
 		case G_MV_VIEWPORT:
 			gfx_calc_and_set_viewport((const Vp_t*) data);
 			break;
+#if 0
 		case G_MV_LOOKATY:
 		case G_MV_LOOKATX:
 			gfx_update_lookat(index, data);
 			break;
+#endif
 		case G_MV_L0:
 		case G_MV_L1:
 		case G_MV_L2:
@@ -2692,8 +2724,9 @@ int ever_did = 0;
 extern int ending_great_fox;
 extern Gfx aGreatFoxDamagedDL[];
 extern Gfx aGreatFoxIntactDL[];
-#include <kos.h>
-extern float debug_millis_gfx;
+#if DEBUG_PROF
+extern debug_float_t debug_millis_gfx;
+#endif
 static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 	uint64_t dstart;
 	uint64_t dend;
@@ -2708,8 +2741,9 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 
 	__builtin_prefetch(cmd);
 
+#if DEBUG_PROF
 		dstart = perf_cntr_timer_ns();
-
+#endif
 	for (;;) {
 		uint32_t opcode = cmd->words.w0 >> 24;
 
@@ -2807,8 +2841,11 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 			
 			case (uint8_t) G_ENDDL: {
 				ending_great_fox = 0;
+#if DEBUG_PROF
 				goto endfunc;
-//				return;
+#else
+				return;
+#endif
 			}
 			
 			case (uint8_t) G_SETGEOMETRYMODE:
@@ -2931,28 +2968,28 @@ static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
 		}
 		__builtin_prefetch((void*)(++cmd) + 32);
 	}
+#if DEBUG_PROF
 endfunc:
 		dend = perf_cntr_timer_ns();
 		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
-        debug_millis_gfx = last_delta * 1e-6f;
+        debug_millis_gfx.val = last_delta * 1e-6f;
+		update_debug_float(&debug_millis_gfx);
+#endif
 }
 
 static void gfx_sp_reset() {
-	rsp.modelview_matrix_stack_size = 1;
+	rsp.modelview_matrix_stack_size = 0;
 	rsp.current_num_lights = 0;
 	rsp.lights_changed = 1;
-	rsp.lookat[LOOKAT_Y_IDX].dir[0] = 0;
-	rsp.lookat[LOOKAT_Y_IDX].dir[1] = 127;
-	rsp.lookat[LOOKAT_Y_IDX].dir[2] = 0;
-	rsp.lookat[LOOKAT_X_IDX].dir[0] = 127;
-	rsp.lookat[LOOKAT_X_IDX].dir[1] = 0;
-	rsp.lookat[LOOKAT_X_IDX].dir[2] = 0;
 	rendering_state.textures[0]->cms = 6;
 	rendering_state.textures[0]->cmt = 6;
 	rendering_state.textures[1]->cms = 6;
 	rendering_state.textures[1]->cmt = 6;
 	//rendering_state.fog_change = 0;
 	alpha_noise = 0;
+#if DEBUG_PROF
+	debug_millis_tex.val = 0;
+#endif
 }
 
 void gfx_get_dimensions(uint32_t* width, uint32_t* height) {
@@ -2993,6 +3030,13 @@ void gfx_init(struct GfxWindowManagerAPI* wapi, struct GfxRenderingAPI* rapi, co
 
 	memset(&oops_node, 0, sizeof(oops_node));
 	oops_node.texture_id = oops_texture_id;
+
+ 	rsp.lookat[LOOKAT_Y_IDX].dir[0] = 0;
+	rsp.lookat[LOOKAT_Y_IDX].dir[1] = 127;
+	rsp.lookat[LOOKAT_Y_IDX].dir[2] = 0;
+	rsp.lookat[LOOKAT_X_IDX].dir[0] = 127;
+	rsp.lookat[LOOKAT_X_IDX].dir[1] = 0;
+	rsp.lookat[LOOKAT_X_IDX].dir[2] = 0;
 }
 
 struct GfxRenderingAPI* gfx_get_current_rendering_api(void) {

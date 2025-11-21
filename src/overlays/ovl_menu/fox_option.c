@@ -3743,7 +3743,7 @@ void Option_CardLightning_Draw(void) {
     Lib_InitOrtho(&gMasterDisp);
 
     Matrix_Push(&gGfxMatrix);
-
+    Matrix_LookAt(gGfxMatrix, 0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, MTXF_APPLY);
     Matrix_Translate(gGfxMatrix, sLightningXpos, sLightningYpos, 0.0f, MTXF_APPLY);
     Matrix_Scale(gGfxMatrix, sLightningXScale, sLightningYScale, 1.0f, MTXF_APPLY);
 

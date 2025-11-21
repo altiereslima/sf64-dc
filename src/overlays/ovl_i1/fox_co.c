@@ -2923,6 +2923,11 @@ void Corneria_CsTeamSetup(ActorCutscene* this, s32 teamIdx) {
     this->info.cullDistance = 200.0f;
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
+
+//aAwCockpitGlassClouldReflextionTex
+//extern u16 MyGlassTex[];
+void n64_memcpy(void* dst, const void* src, size_t size);
+
 extern void gfx_texture_cache_invalidate(void *addr);
 void Corneria_LevelStart(Player* player) {
     s32 i;
@@ -3033,6 +3038,7 @@ void Corneria_LevelStart(Player* player) {
     switch (player->csState) {
         case 0: // LevelStart initialization
             gCsFrameCount = 0;
+//            n64_memcpy(segmented_to_virtual(aAwCockpitGlassClouldReflextionTex), segmented_to_virtual(aCoBackdropTex), 64*32*2);
             player->csState = 1;
             player->csTimer = 600;
             player->pos.y = 6000.0f;

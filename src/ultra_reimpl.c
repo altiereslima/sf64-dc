@@ -228,7 +228,6 @@ void eeprom_flush(UNUSED void* arg) {
     
 }
 
-// only 1 is a successful return value
 s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 #if 1
     maple_device_t* vmudev = NULL;
@@ -242,6 +241,7 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 
     vmudev = maple_enum_type(0, MAPLE_FUNC_MEMCARD);
     if (!vmudev) {
+        
         return 0;
     }
     //vid_border_color(255, 0, 255);
@@ -251,7 +251,8 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 
         if (FILEHND_INVALID == eeprom_file) {
             //vid_border_color(0, 0, 0);
-            return 0;
+            
+            return 1;
         }
 
         //vid_border_color(255, 255, 0);
@@ -280,13 +281,8 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
             return 0;
         }
 
-        ssize_t rv = fs_write(eeprom_file, pkg_out, pkg_size);
+        fs_write(eeprom_file, pkg_out, pkg_size);
         free(pkg_out);
-        if (rv == -1 || rv < pkg_size) {
-            fs_close(eeprom_file);
-            eeprom_file = FILEHND_INVALID;
-            return 0;
-        }
         oneshot_timer_reset(timer);
     } else {
         fs_close(eeprom_file);
@@ -295,7 +291,8 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 
         if (FILEHND_INVALID == eeprom_file) {
             //vid_border_color(0, 0, 0);
-            return 0;
+            
+            return EEPROM_TYPE_4K;
         }
 
         oneshot_timer_reset(timer);
@@ -351,18 +348,11 @@ s32 osEepromLongRead(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
         }
 
         // skip header
-        off_t offrv = fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
-        if (offrv != (off_t)((512 * 2) + (address * 8))) {
+        fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
+        ssize_t rv = fs_read(eeprom_file, buffer, length);
+        if (rv != length) {
             //vid_border_color(0, 0, 0);
-            fs_close(eeprom_file);
-            eeprom_file = FILEHND_INVALID;
-            return 1;
-        }
-                ssize_t rv = fs_read(eeprom_file, buffer, length);
-        if (rv == -1 || rv != length) {
-            fs_close(eeprom_file);
-            eeprom_file = FILEHND_INVALID;
-            //vid_border_color(0, 0, 0);
+            
             return 1;
         }
 
@@ -372,6 +362,7 @@ s32 osEepromLongRead(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
         return 0;
     } else {
         //vid_border_color(0, 0, 0);
+        
         return 1;
     }
 #else
@@ -405,18 +396,11 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
             return 1;
         }
         // skip header
-        off_t offrv = fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
-        if (offrv != (off_t)((512 * 2) + (address * 8))) {
-            //vid_border_color(0, 0, 0);
-            fs_close(eeprom_file);
-            eeprom_file = FILEHND_INVALID;
-            return 1;
-        }
+        fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
         ssize_t rv = fs_write(eeprom_file, buffer, length);
         if (rv != length) {
             //vid_border_color(0, 0, 0);
-            fs_close(eeprom_file);
-            eeprom_file = FILEHND_INVALID;
+            
             return 1;
         }
 

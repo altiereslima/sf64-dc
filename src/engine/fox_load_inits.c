@@ -1,7 +1,7 @@
 #include "sf64dma.h"
 
-#include "../segments.h"
 #if 0
+#include "../segments.h"
 Scene sNoOvl_Logo[1] = {
     { NO_OVERLAY,
       { /* 0x1 */ NO_SEGMENT,

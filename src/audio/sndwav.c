@@ -122,10 +122,22 @@ void wav_shutdown(void) {
     }
 }
 
+/* char *player_names[4] = {
+    "BGM",
+    "FANFARE",
+    "SFX",
+    "VOICE"
+}; */
+
 void wav_destroy(WavPlayerId playerId) {
+//    printf("DESTROY [%s]", player_names[playerId]);
+//    printf("\tshnd ");
+
 	if(streams[playerId].shnd == SND_STREAM_INVALID) {
+//        printf("INVALID\n");
         return;
     }
+//    printf(" %08x\n", streams[playerId].shnd);
 
     mutex_lock(&stream_mutex);
 
@@ -137,6 +149,7 @@ void wav_destroy(WavPlayerId playerId) {
 
     if(streams[playerId].wave_file != FILEHND_INVALID) {
         fs_close(streams[playerId].wave_file);
+        streams[playerId].wave_file = FILEHND_INVALID;
     }
 
 	mutex_unlock(&stream_mutex);
@@ -146,6 +159,8 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char *filename, int loop, int 
     file_t file;
     WavFileInfo info;
     wav_stream_hnd_t index;
+//    printf("CREATE [%s]", player_names[playerId]);
+//    printf("\tshnd ");
 
 	index = streams[playerId].shnd;
 	if (index != SND_STREAM_INVALID) {
@@ -168,6 +183,10 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char *filename, int loop, int 
     }
 
     index = snd_stream_alloc(audio_cb, 32768);
+//	if(index == SND_STREAM_INVALID) {
+//        printf("INVALID\n");
+//    }
+//    printf(" %08x\n", index);
 
     if(index == SND_STREAM_INVALID) {
 //    	mutex_unlock(&stream_mutex);

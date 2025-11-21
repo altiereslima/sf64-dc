@@ -81,6 +81,7 @@ extern void* segmented_to_virtual(const void* addr);
 #define PRINTF
 #else
 #define PRINTF(...)
+//#define PRINTF printf
 #endif
 
 #define ALIGNED(x) __attribute__((aligned(x)))

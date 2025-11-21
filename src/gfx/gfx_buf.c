@@ -9,3 +9,5 @@ uint16_t __attribute__((aligned(16384))) rgba16_buf[64 * 64];
 /* static */ uint16_t __attribute__((aligned(32))) scaled[64 * 64]; // 64*64*8*2
 
 /* static */ uint16_t __attribute__((aligned(32))) scaled2[256 * 128];//64*64];
+
+//uint16_t __attribute__((aligned(32))) MyGlassTex[64*32];
