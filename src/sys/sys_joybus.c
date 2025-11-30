@@ -92,6 +92,16 @@ OSContPad sPrevController[4]={0};
 OSContStatus sControllerStatus[4]={1};
 OSPfs sControllerMotor[4]={0};
 
+
+void I_RumbleThread(void *param);
+#include <stdio.h>
+#include <kos/thread.h>
+#include <kos/worker_thread.h>
+
+
+kthread_worker_t *rumble_worker_thread;
+kthread_attr_t rumble_worker_attr;
+
 void Controller_AddDeadZone(s32 contrNum) {
     s32 temp_v0 = gControllerHold[contrNum].stick_x;
     s32 temp_a2 = gControllerHold[contrNum].stick_y;
@@ -202,6 +212,15 @@ void Controller_Init(void) {
 
     maple_attach_callback(MAPLE_FUNC_PURUPURU, Rumble_Scan);
     maple_detach_callback(MAPLE_FUNC_PURUPURU, Rumble_Scan);
+
+#if 1
+    rumble_worker_attr.create_detached = 1;
+	rumble_worker_attr.stack_size = 4096;
+	rumble_worker_attr.stack_ptr = NULL;
+	rumble_worker_attr.prio = PRIO_DEFAULT;
+	rumble_worker_attr.label = "I_RumbleThread";
+	rumble_worker_thread = thd_worker_create_ex(&rumble_worker_attr, I_RumbleThread, NULL);
+#endif
 }
 
 u16 ucheld;
@@ -346,6 +365,26 @@ void Save_WriteData(void) {
     //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
 }
 
+struct rumble_data_s {
+    maple_device_t *dev;
+    uint32_t packet;
+};
+struct rumble_data_s datas[4];
+
+
+void I_RumbleThread(void *param)
+{
+	(void)param;
+	kthread_job_t *next_job = thd_worker_dequeue_job(rumble_worker_thread);
+
+	if (next_job) {
+        uint32_t i = (uint32_t)next_job->data;
+		purupuru_rumble_raw(datas[i].dev, datas[i].packet);
+	}
+}
+
+kthread_job_t jobs[4];
+
 void Controller_Rumble(void) {
     for (int i = 0; i < 4; i++) {
         if (!gControllerPlugged[i])
@@ -379,7 +418,14 @@ void Controller_Rumble(void) {
                      gControllerRumbleTimers[i] : 1,
         };
 
-        purupuru_rumble_raw(RumbleDevice[i], rumble.raw);
+        datas[i].dev = RumbleDevice[i];
+        datas[i].packet = rumble.raw;
+        jobs[i].data = i;
+
+        thd_worker_add_job(rumble_worker_thread, &jobs[i]);
+        thd_worker_wakeup(rumble_worker_thread);
+
+//        purupuru_rumble_raw(RumbleDevice[i], rumble.raw);
 
         gControllerRumbleFlags[i] = 0;
     }
