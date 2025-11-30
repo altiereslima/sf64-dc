@@ -3881,15 +3881,6 @@ void ActorEvent_SxWarpGate_Draw(ActorEvent* this) {
                            &gIdentityMatrix);
 }
 
-s32 ActorEvent_OverrideLimbDrawUnused(s32 limbIndex, Gfx** dList, Vec3f* pos, Vec3f* rot, void* thisx) {
-    gSPClearGeometryMode(gMasterDisp++, G_TEXTURE_GEN);
-    if ((limbIndex == 3) || (limbIndex == 5)) {
-        gSPTexture(gMasterDisp++, 5000, 5000, 0, G_TX_RENDERTILE, G_ON);
-        gSPSetGeometryMode(gMasterDisp++, G_TEXTURE_GEN);
-    }
-    return 0;
-}
-
 s32 SyShipDebris_Draw(SyShipDebris* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_60);
     gSPDisplayList(gMasterDisp++, aSyDebrisDL);

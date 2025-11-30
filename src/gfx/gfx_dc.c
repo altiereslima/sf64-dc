@@ -51,9 +51,6 @@ static void gfx_dc_set_keyboard_callbacks(UNUSED uint8_t (*on_key_down)(int scan
 }
 
 static void gfx_dc_main_loop(void (*run_one_game_iter)(void)) {
-    while (1) {
-        run_one_game_iter();
-    }
 }
 
 static void gfx_dc_get_dimensions(uint32_t *width, uint32_t *height) {
@@ -98,9 +95,9 @@ typedef enum LevelId {
 extern LevelId gCurrentLevel;
 
 static uint8_t gfx_dc_start_frame(void) {
+#if 0
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
-
     if (skip_debounce) {
         skip_debounce--;
         return 1;
@@ -114,23 +111,25 @@ static uint8_t gfx_dc_start_frame(void) {
         last_time = cur_time;
         return 0;
     }
-
+#endif
     return 1;
 }
 
 static void gfx_dc_swap_buffers_begin(void) {
 }
 
-static void gfx_dc_swap_buffers_end(void) {
-    /* Lets us yield to other threads*/
-    glKosSwapBuffers();
+uint32_t __attribute__((aligned(32))) frametimes[6] = {0, 16, 33, 50, 67, 83};
 
+static void gfx_dc_swap_buffers_end(void) {
     // Number of microseconds a frame should take (anywhere between 2 and 5 VIs per frame)
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
+    /* Lets us yield to other threads*/
+    glKosSwapBuffers();
+
     last_time = cur_time;
-    const float OneFrameTime = 16.666667f;
-    uint32_t ActualFrameTime = (uint32_t)(gVIsPerFrame * OneFrameTime);
+    //const float OneFrameTime = 16.666667f;
+    uint32_t ActualFrameTime = frametimes[gVIsPerFrame];//(uint32_t)(gVIsPerFrame * OneFrameTime);
 
 
     if (force_vis && elapsed < ActualFrameTime) {

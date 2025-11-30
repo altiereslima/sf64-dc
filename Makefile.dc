@@ -396,17 +396,17 @@ build/src/assets/ast_zoness/%.o :  OPTFLAGS := -fno-common -fno-toplevel-reorder
 
 # per-file flags
 
-build/src/libc_math64.o:  OPTFLAGS := -O3
-build/src/audio/mixer.o: OPTFLAGS := -O3
-build/src/gfx/gfx_retro_dc.o: OPTFLAGS := -O3
+build/src/libc_math64.o:  OPTFLAGS := -O2
+build/src/audio/mixer.o: OPTFLAGS := -O2
+build/src/gfx/gfx_retro_dc.o: OPTFLAGS := -O2
 build/src/sys/sys_matrix.o: OPTFLAGS := -O2
-build/src/sys/sys_math.o: OPTFLAGS := -O3
+build/src/sys/sys_math.o: OPTFLAGS := -O2
 
 # cc & asm-processor
-build/src/libultra/gu/lookat.o:      OPTFLAGS := -O3
-build/src/libultra/gu/ortho.o:       OPTFLAGS := -O3
-build/src/libultra/gu/perspective.o: OPTFLAGS := -O3
-build/src/libultra/gu/mtxutil.o:     OPTFLAGS := -O3
+build/src/libultra/gu/lookat.o:      OPTFLAGS := -O2
+build/src/libultra/gu/ortho.o:       OPTFLAGS := -O2
+build/src/libultra/gu/perspective.o: OPTFLAGS := -O2
+build/src/libultra/gu/mtxutil.o:     OPTFLAGS := -O2
 
 all: uncompressed
 

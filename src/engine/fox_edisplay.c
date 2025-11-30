@@ -896,6 +896,7 @@ void ItemCheckpoint_Draw(ItemCheckpoint* this) {
 void ItemSilverRing_Draw(ItemSilverRing* this) {
     RCP_SetupDL(&gMasterDisp, SETUPDL_29);
     gSPTexture(gMasterDisp++, 3000, 0, 0, G_TX_RENDERTILE, G_ON);
+//    gSPTexture(gMasterDisp++, 1900, 1700, 0, G_TX_RENDERTILE, G_ON);
     gSPSetGeometryMode(gMasterDisp++, G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
     Graphics_SetScaleMtx(this->width);
     gSPDisplayList(gMasterDisp++, aItemSilverRingDL);

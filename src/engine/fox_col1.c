@@ -485,11 +485,6 @@ bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
     return var_v1;
 }
 
-#ifndef F_PI
-#define F_PI        3.1415926f   /* pi             */
-#endif
-float my_acosf (float a);
-
 bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHeader* colHeader, Vec3f* hitPosOut,
                    f32* hitAnglesOut) {
     Vec3s* polyVtxPos[3];
@@ -597,7 +592,7 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
                 // check if the angle between the normal and velocity is > 90. That is, the object was moving toward the
                 // front of the polygon
                 f32 recipThing = shz_fast_invf((VEC3F_MAG(&polyPlane.normal) * speed));
-                if (/* Math_FAcosF */my_acosf(tempf * recipThing) > DEG_TO_RAD(90.0f)) {
+                if (/* Math_FAcosF */shz_acosf(tempf * recipThing) > DEG_TO_RAD(90.0f)) {
                     // Calculate the time since the plane was crossed. Reusing the temp is required to match
                     f32 reciptemp = shz_fast_invf(tempf);
                     tempf = (DOT_XYZ(&polyPlane.normal, &objRel) + polyPlane.dist) * reciptemp; // / tempf;

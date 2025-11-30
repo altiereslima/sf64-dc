@@ -1,11 +1,6 @@
 #include "n64sys.h"
 #include <math.h>
 
-#ifndef F_PI
-#define F_PI        3.1415926f   /* pi             */
-#endif
-
-
 f32 Math_FAtanF(f32 x) {
     s32 sector;
     s32 i;

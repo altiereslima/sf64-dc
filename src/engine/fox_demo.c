@@ -1343,7 +1343,7 @@ void Cutscene_WarpZoneComplete(Player* player);
 void Cutscene_FortunaComplete(Player* player);
 void Cutscene_CoComplete2(Player* player);
 
-#define USE_CUTSCENE_RECORDINGS 0
+#define USE_CUTSCENE_RECORDINGS 1
 
 #if USE_CUTSCENE_RECORDINGS
 typedef struct Record {
@@ -2740,10 +2740,9 @@ void ActorCutscene_SyShip_Setup(ActorCutscene* this, s32 idx) {
         }
     }
 }
-#ifndef F_PI
-#define F_PI        3.1415926f   /* pi             */
-#endif
+
 #include "sh4zam.h"
+
 void ActorCutscene_Draw(ActorCutscene* this) {
     static f32 D_800CA210 = 0.0f;
     static f32 D_800CA214 = 0.0f;

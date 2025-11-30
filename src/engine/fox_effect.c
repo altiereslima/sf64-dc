@@ -2148,6 +2148,8 @@ void Effect_FireSmoke_Draw(EffectFireSmoke* this) {
         Matrix_SetGfxMtx(&gMasterDisp);
         gSPDisplayList(gMasterDisp++, D_800D18A0[this->unk_4C]);
     }
+    Matrix_Translate(gGfxMatrix, 0.0f, 0.0f, 1.0f, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gMasterDisp);
     gSPDisplayList(gMasterDisp++, D_800D18A0[this->unk_4C]);
 }
 
