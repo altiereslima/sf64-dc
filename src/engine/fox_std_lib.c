@@ -268,11 +268,9 @@ void Animation_DrawSkeleton(s32 mode, Limb** skeletonSegment, Vec3f* jointTable,
     }
 }
 
-//#include <stdio.h>
-//#include <stdlib.h>
 // 360/65536
 #define FRAMEDATA_SCALE 0.00549316f
-extern Animation D_TI_A0002BC;
+
 s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameTable) {
 
     Animation* animation = SEGMENTED_TO_VIRTUAL(animationSegment);
@@ -291,20 +289,12 @@ s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameT
 
     frameTable++, key++;
     for (i = 1; i <= limbCount; i++, key++, frameTable++) {
-#if 0
         temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
         frameTable->x = temp * FRAMEDATA_SCALE;
         temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
         frameTable->y = temp * FRAMEDATA_SCALE;
         temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
         frameTable->z = temp * FRAMEDATA_SCALE;
-#endif
-        temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
-        frameTable->x = temp * 360.0f / 65536.0f;
-        temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
-        frameTable->y = temp * 360.0f / 65536.0f;
-        temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
-        frameTable->z = temp * 360.0f / 65536.0f;
     }
     return limbCount + 1;
 }
@@ -314,126 +304,6 @@ s32 Animation_GetFrameCount(Animation* animationSegment) {
 
     return animation->frameCount;
 }
-
-void Animation_FindBoundingBox(Gfx* dList, s32 len, Vec3f* min, Vec3f* max, s32* vtxFound, s32* vtxCount,
-                               Vtx** vtxList) {
-    s64* sp44 = SEGMENTED_TO_VIRTUAL(dList);
-    s64* var_s0;
-
-    for (var_s0 = sp44; (s32) (*var_s0 >> 0x38) != G_ENDDL && var_s0 - sp44 < len; var_s0++) {
-        switch ((s32) (*var_s0 >> 0x38)) {
-            case G_DL:
-                Animation_FindBoundingBox(*var_s0 & 0xFFFFFFFF, (*var_s0 >> 0x20) & 0xFFFF, min, max, vtxFound,
-                                          vtxCount, vtxList);
-                break;
-            case G_VTX:
-                *vtxList = SEGMENTED_TO_VIRTUAL(*var_s0 & 0xFFFFFFFF);
-                *vtxCount = (*var_s0 >> 0x30) & 0xF;
-                break;
-            case G_TRI1:
-                if (!*vtxFound) {
-                    *vtxFound = 1;
-                    max->x = min->x = (*vtxList)[*var_s0 & 0xFF].v.ob[0];
-                    max->y = min->y = (*vtxList)[*var_s0 & 0xFF].v.ob[1];
-                    max->z = min->z = (*vtxList)[*var_s0 & 0xFF].v.ob[2];
-                } else {
-                    min->x = MIN(min->x, (*vtxList)[*var_s0 & 0xFF].v.ob[0]);
-                    min->y = MIN(min->y, (*vtxList)[*var_s0 & 0xFF].v.ob[1]);
-                    min->z = MIN(min->z, (*vtxList)[*var_s0 & 0xFF].v.ob[2]);
-                    max->x = MAX(max->x, (*vtxList)[*var_s0 & 0xFF].v.ob[0]);
-                    max->y = MAX(max->y, (*vtxList)[*var_s0 & 0xFF].v.ob[1]);
-                    max->z = MAX(max->z, (*vtxList)[*var_s0 & 0xFF].v.ob[2]);
-                }
-                min->x = MIN(min->x, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[0]);
-                min->y = MIN(min->y, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[1]);
-                min->z = MIN(min->z, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[2]);
-                max->x = MAX(max->x, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[0]);
-                max->y = MAX(max->y, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[1]);
-                max->z = MAX(max->z, (*vtxList)[(*var_s0 >> 8) & 0xFF].v.ob[2]);
-                min->x = MIN(min->x, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[0]);
-                min->y = MIN(min->y, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[1]);
-                min->z = MIN(min->z, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[2]);
-                max->x = MAX(max->x, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[0]);
-                max->y = MAX(max->y, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[1]);
-                max->z = MAX(max->z, (*vtxList)[(*var_s0 >> 0x10) & 0xFF].v.ob[2]);
-                break;
-        }
-    }
-}
-
-void Animation_GetDListBoundingBox(Gfx* dList, s32 len, Vec3f* min, Vec3f* max) {
-    s32 vtxFound = 0;
-    s32 vtxCount;
-    Vtx* vtxList;
-
-    Animation_FindBoundingBox(dList, len, min, max, &vtxFound, &vtxCount, &vtxList);
-}
-
-#if 0
-void Animation_GetSkeletonBoundingBox(Limb** skeletonSegment, Animation* animationSegment, s32 frame, Vec3f* min,
-                                      Vec3f* max) {
-    JointKey* key;
-    u16* frameData;
-    Animation* animation;
-    Limb* limb;
-    u16 var_t6;
-    s32 vtxFound;
-    s32 vtxCount;
-    Vtx* vtxList;
-    Vec3f boundBox[8];
-    Vec3f boundBoxRot[8];
-    s32 i;
-    Limb** skeleton = (Limb**) SEGMENTED_TO_VIRTUAL(skeletonSegment);
-
-    limb = (Limb*) SEGMENTED_TO_VIRTUAL(skeleton[0]);
-    animation = (Animation*) SEGMENTED_TO_VIRTUAL(animationSegment);
-    key = (JointKey*) SEGMENTED_TO_VIRTUAL(animation->jointKey);
-    frameData = (u16*) SEGMENTED_TO_VIRTUAL(animation->frameData);
-
-    if (frame < (s16) key[1].zLen) {
-        var_t6 = frameData[(s16) key[1].z + frame];
-    } else {
-        var_t6 = frameData[(s16) key[1].z];
-    }
-    Matrix_RotateZ(gGfxMatrix, (((s32) var_t6 * 360.0f) / 65536.0f) * M_DTOR, MTXF_NEW);
-    if (frame < (s16) key[1].yLen) {
-        var_t6 = frameData[(s16) key[1].y + frame];
-    } else {
-        var_t6 = frameData[(s16) key[1].y];
-    }
-    Matrix_RotateY(gGfxMatrix, (((s32) var_t6 * 360.0f) / 65536.0f) * M_DTOR, MTXF_APPLY);
-    if (frame < (s16) key[1].xLen) {
-        var_t6 = frameData[(s16) key[1].x + frame];
-    } else {
-        var_t6 = frameData[(s16) key[1].x];
-    }
-    Matrix_RotateX(gGfxMatrix, (((s32) var_t6 * 360.0f) / 65536.0f) * M_DTOR, MTXF_APPLY);
-    vtxFound = 0;
-    if (limb->dList != NULL) {
-        Animation_FindBoundingBox(limb->dList, 8192, min, max, &vtxFound, &vtxCount, &vtxList);
-        if (vtxFound) {
-            boundBox[0].x = boundBox[3].x = boundBox[4].x = boundBox[7].x = min->x;
-            boundBox[0].y = boundBox[1].y = boundBox[4].y = boundBox[5].y = max->y;
-            boundBox[0].z = boundBox[1].z = boundBox[2].z = boundBox[3].z = max->z;
-            boundBox[1].x = boundBox[2].x = boundBox[5].x = boundBox[6].x = max->x;
-            boundBox[2].y = boundBox[3].y = boundBox[6].y = boundBox[7].y = min->y;
-            boundBox[4].z = boundBox[5].z = boundBox[6].z = boundBox[7].z = min->z;
-            for (i = 0; i < 8; i++) {
-                // Matrix_MultVec3f(gGfxMatrix, boundBox[i], boundBoxRot[i]); should logically go here
-            }
-            *min = *max = boundBoxRot[0];
-            for (i = 1; i < 8; i++) {
-                min->x = MIN(min->x, boundBoxRot[i].x);
-                max->x = MAX(max->x, boundBoxRot[i].x);
-                min->y = MIN(min->y, boundBoxRot[i].y);
-                max->y = MAX(max->y, boundBoxRot[i].y);
-                min->z = MIN(min->z, boundBoxRot[i].z);
-                max->z = MAX(max->z, boundBoxRot[i].z);
-            }
-        }
-    }
-}
-#endif
 
 f32 Math_SmoothStepToF(f32* value, f32 target, f32 scale, f32 maxStep, f32 minStep) {
     f32 val = *value;
@@ -716,50 +586,6 @@ void Lib_TextureRect_IA8_MirY(Gfx** gfxPtr, u8* texture, u32 width, u32 height, 
                         (s32) (1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
 }
 
-void Lib_TextureRect_IA16(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                          f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_NOMIRROR | G_TX_WRAP,
-                        G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, 0, 0, (s32) (1.0f / xScale * 1024.0f),
-                        (s32) (1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirX(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                               f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, (width - 1) * 32, 0,
-                        (u16) (s32) (-1.0f / xScale * 1024.0f), (s32) (1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirY(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                               f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, 0, (height - 1) * 32,
-                        (s32) (1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirXY(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                                f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, (width - 1) * 32, (height - 1) * 32,
-                        (u16) (s32) (-1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
-}
-
 void Lib_TextureRect_RGBA32(Gfx** gfxPtr, u32* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
                             f32 yScale) {
     if (height == 1)
@@ -771,27 +597,14 @@ void Lib_TextureRect_RGBA32(Gfx** gfxPtr, u32* texture, u32 width, u32 height, f
                         (s32) (1.0f / yScale * 1024.0f));
 }
 
-
-#define gSPFillrectBlend(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554380;                                           \
-    }
-
-volatile int doing_glare = 0;
-
 void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8 r, u8 g, u8 b, u8 a) {
     if (a != 0) {
         gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
-        gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
-//        if (!doing_glare) {
-            gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);
-            gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-  //      }
+        gDPSetRenderMode((*gfxPtr)++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+        gDPSetEnvColor((*gfxPtr)++, 255 - r, 255 - g, 255 - b, 255);
+        gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                          TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
         gDPFillRectangle((*gfxPtr)++, ulx, uly, lrx, lry);
     }
 }
@@ -822,7 +635,7 @@ void Graphics_DisplayHUDNumber(s32 xPos, s32 yPos, s32 number) {
                             D_1010830, D_1010880, D_10108D0, D_1010920, D_1010970 };
     s32 place;
     s32 startNumber = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     number %= 10000000;
     place = 1000000;
@@ -845,7 +658,7 @@ u8* sSmallNumberTex[] = { aSmallText_0, aSmallText_1, aSmallText_2, aSmallText_3
 void Graphics_DisplaySmallNumber(s32 xPos, s32 yPos, s32 number) {
     s32 place;
     s32 startNumber = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     number %= 10000000;
     place = 1000000;
@@ -892,7 +705,7 @@ void Graphics_DisplayLargeText(s32 xPos, s32 yPos, f32 xScale, f32 yScale, char*
     s32 pad4C;
     s32 width;
     s32 startPrint = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     while (text[0] != 0) {
         charIndex = 0;
@@ -1147,7 +960,7 @@ s32 Graphics_GetLargeTextWidth(char* text) {
 void Graphics_DisplayLargeNumber(s32 xPos, s32 yPos, s32 number) {
     s32 place;
     s32 startNumber = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     number %= 10000000;
     place = 1000000;

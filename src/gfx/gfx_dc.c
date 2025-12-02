@@ -11,15 +11,12 @@
 
 #if LOWRES
 #define SCR_WIDTH (320)
-// for fsaa
-// (640*2)
 #define SCR_HEIGHT (240)
 #else
 #define SCR_WIDTH (640)
-// for fsaa
-// (640*2)
 #define SCR_HEIGHT (480)
 #endif
+
 static int force_vis = 1;
 static unsigned int last_time = 0;
 
@@ -40,9 +37,11 @@ static void gfx_dc_init(UNUSED const char *game_name, UNUSED uint8_t start_in_fu
 }
 
 static void gfx_dc_set_fullscreen_changed_callback(UNUSED void (*on_fullscreen_changed)(uint8_t is_now_fullscreen)) {
+    ;
 }
 
 static void gfx_dc_set_fullscreen(UNUSED uint8_t enable) {
+    ;
 }
 
 static void gfx_dc_set_keyboard_callbacks(UNUSED uint8_t (*on_key_down)(int scancode),
@@ -51,9 +50,7 @@ static void gfx_dc_set_keyboard_callbacks(UNUSED uint8_t (*on_key_down)(int scan
 }
 
 static void gfx_dc_main_loop(void (*run_one_game_iter)(void)) {
-    while (1) {
-        run_one_game_iter();
-    }
+    ;
 }
 
 static void gfx_dc_get_dimensions(uint32_t *width, uint32_t *height) {
@@ -63,8 +60,7 @@ static void gfx_dc_get_dimensions(uint32_t *width, uint32_t *height) {
 
 /* What events should we be handling? */
 static void gfx_dc_handle_events(void) {
-    /* Lets us yield to other threads*/
-    //DelayThread(100);
+    ;
 }
 
 uint8_t skip_debounce = 0;
@@ -97,20 +93,23 @@ typedef enum LevelId {
 } LevelId;
 extern LevelId gCurrentLevel;
 
+uint32_t __attribute__((aligned(32))) frametimes[6] = {0, 17, 33, 50, 67, 84};
+
 static uint8_t gfx_dc_start_frame(void) {
+    // keep this disabled unless you like jitter
+#if 0
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
-#if 1
     if (skip_debounce) {
         skip_debounce--;
         return 1;
     }
-    const float OneFrameTime = 16.666667f;
-    uint32_t ActualFrameTime = (uint32_t)(gVIsPerFrame * OneFrameTime);
+    uint32_t ActualFrameTime = frametimes[gVIsPerFrame];
 
     // skip if frame took longer than (gVIsPerFrame * 16.666667) ms
     if (elapsed > ActualFrameTime) {
-        skip_debounce = 3; // skip a max of once every 4 (1+3) frames
+        // skip_debounce = 3; // skip a max of once every 4 (1+3) frames
+        skip_debounce = 1; // skip every other
         last_time = cur_time;
         return 0;
     }
@@ -119,21 +118,22 @@ static uint8_t gfx_dc_start_frame(void) {
 }
 
 static void gfx_dc_swap_buffers_begin(void) {
+    ;
 }
 
 static void gfx_dc_swap_buffers_end(void) {
-    /* Lets us yield to other threads*/
-    glKosSwapBuffers();
-
-    // Number of microseconds a frame should take (anywhere between 2 and 5 VIs per frame)
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
+
+    // swap before doing any kind of delay or passing of thread
+    glKosSwapBuffers();
+
     last_time = cur_time;
-    const float OneFrameTime = 16.666667f;
-    uint32_t ActualFrameTime = (uint32_t)(gVIsPerFrame * OneFrameTime);
 
+    // Number of microseconds a frame should take (anywhere between 2 and 5 VIs per frame)
+    uint32_t ActualFrameTime = frametimes[gVIsPerFrame];
 
-    if (force_vis && elapsed < ActualFrameTime) {
+    if (force_vis && (elapsed < ActualFrameTime)) {
 #ifdef DEBUG
         printf("elapsed %d ms fps %f delay %d \n", elapsed, 1000.0f / elapsed, ActualFrameTime - elapsed);
 #endif

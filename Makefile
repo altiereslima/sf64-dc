@@ -478,8 +478,7 @@ OVERLAY_OBJS := $(OVERLAY_I1_OBJS) \
                 $(OVERLAY_UNUSED_OBJS)
 
 # Miscellaneous objects
-MISC_OBJS := build/src/driverominit.o \
-             build/src/libc_math64.o \
+MISC_OBJS := build/src/libc_math64.o \
              build/src/dmatable.o \
              build/src/buffers.o \
              build/src/dc/ast_radio.o
@@ -735,6 +734,7 @@ extract:
 	@$(CAT) yamls/$(VERSION)/$(REV)/header.yaml yamls/$(VERSION)/$(REV)/main.yaml yamls/$(VERSION)/$(REV)/assets.yaml yamls/$(VERSION)/$(REV)/overlays.yaml > $(SPLAT_YAML)
 	$(call print2,Extracting...)
 	@$(SPLAT) $(SPLAT_YAML)
+	@rm -rf src/driverominit.c
 	@rm -rf src/libc_sprintf.c
 	@rm -rf src/libultra/gu/cosf.c
 	@rm -rf src/libultra/gu/sinf.c

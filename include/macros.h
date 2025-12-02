@@ -2,8 +2,8 @@
 #define MACROS_H
 #include <stdio.h>
 #include "alignment.h"
-extern long unsigned int gSegments[16];
 
+extern long unsigned int gSegments[16];
 extern void* segmented_to_virtual(const void* addr);
 
 #define SCREEN_WIDTH  320
@@ -27,27 +27,23 @@ extern void* segmented_to_virtual(const void* addr);
 #define RAND_FLOAT_CENTERED_SEEDED(width) ((Rand_ZeroOneSeeded()-0.5f)*(width))
 
 #define SEGMENTED_TO_VIRTUAL(segment) segmented_to_virtual((segment))
- //((void*)OS_PHYSICAL_TO_K0(gSegments[((uintptr_t)(segment)<<4)>>0x1C]+(((uintptr_t)(segment))&0xFFFFFF)))
 #define SEGMENTED_TO_VIRTUAL_JP(segment) segmented_to_virtual((segment))
-//((void*)OS_PHYSICAL_TO_K0(gSegments[((uintptr_t)(segment)&(0xF<<0x18))>>0x18]+(((uintptr_t)(segment))&0xFFFFFF)))
 
 #define ARRAY_COUNT(arr) (s32)(sizeof(arr) / sizeof(arr[0]))
 #define ARRAY_COUNTU(arr) (u32)(sizeof(arr) / sizeof(arr[0]))
 #define SIGN_OF(x) (((x) > 0) ? 1 : ((x) == 0) ? 0 : -1)
 #define SQ(x) ((x) * (x))
 #define CUBE(x) ((x) * (x) * (x))
+
 #include "sh4zam.h"
-#define DOT_XYZ(v1Ptr, v2Ptr) shz_dot8f((f32)((v1Ptr)->x), (f32)((v1Ptr)->y), (f32)((v1Ptr)->z), 0, (f32)((v2Ptr)->x), (f32)((v2Ptr)->y), (f32)((v2Ptr)->z), 0)
 
-//(((v1Ptr)->x * (v2Ptr)->x) + ((v1Ptr)->y * (v2Ptr)->y) + ((v1Ptr)->z * (v2Ptr)->z))
-
+#define DOT_XYZ(v1Ptr, v2Ptr) shz_dot6f((f32)((v1Ptr)->x), (f32)((v1Ptr)->y), (f32)((v1Ptr)->z), (f32)((v2Ptr)->x), (f32)((v2Ptr)->y), (f32)((v2Ptr)->z))
 #define VEC3F_MAG(vecPtr) shz_sqrtf_fsrra(DOT_XYZ(vecPtr, vecPtr))
-
-//sqrtf(DOT_XYZ(vecPtr, vecPtr))
 
 #define ABS(x) ((x) >= 0 ? (x) : -(x))
 #define ABSF(x) ((x) >= 0.0f ? (x) : -(x))
 #define ROUND(float) ((s32)((float)+0.5f))
+
 #ifndef F_PI
 #define F_PI        3.1415926f   /* pi             */
 #define F_PI_2      1.57079633f /* pi / 2*/
@@ -57,10 +53,9 @@ extern void* segmented_to_virtual(const void* addr);
 #define F_2PI       6.28318531f
 #define F_PI_18     0.17453293f
 #endif
+
 #define RAD_TO_DEG(radians) (M_RTOD*(radians))
-//(((radians) * 180.0f) / F_PI)
 #define DEG_TO_RAD(degrees) (M_DTOR*(degrees))
-//(((degrees) / 180.0f) * F_PI)
 
 #define SIN_DEG(angle) sinf((M_DTOR)*(angle))
 #define COS_DEG(angle) cosf((M_DTOR)*(angle))

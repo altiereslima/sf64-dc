@@ -434,18 +434,12 @@ void Game_SetScene(void) {
             break;
     }
 }
-extern volatile int doing_glare;
-//extern uint16_t vram_s[];
-
-
 
 void Game_Update(void) {
     s32 i;
     u8 partialFill;
     u8 soundMode;
-//printf("in game_update\n");
     Game_SetGameState();
-    doing_glare = 0;
     if (gGameStandby) {
         Game_InitStandbyDL(&gUnkDisp1);
         gGameStandby = 0;
@@ -456,15 +450,12 @@ void Game_Update(void) {
     Game_SetScene();
     s32 scene_changed = Game_ChangeScene();
     if (scene_changed != 1) {
-        //printf("scene change was %d\n", scene_changed);
         Lib_InitPerspective(&gUnkDisp1);
         Game_InitViewport(&gUnkDisp1, gCamCount, 0);
 
         if (gNextGameStateTimer != 0) {
             gNextGameStateTimer--;
         }
-
-//        printf("gGameState %d gNextGameStateTimer %d\n", gGameState, gNextGameStateTimer);
 
         switch (gGameState) {
             case GSTATE_BOOT:
@@ -677,10 +668,8 @@ void Game_Update(void) {
         partialFill = 0;
 
         if (gCamCount == 1) {
-            doing_glare = 1;
             Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, gPlayerGlareReds[0],
                                    gPlayerGlareGreens[0], gPlayerGlareBlues[0], gPlayerGlareAlphas[0]);
-            doing_glare = 0;
 
             if ((gDrawMode == DRAW_PLAY) || (gDrawMode == DRAW_ENDING)) {
                 Radio_Draw();
@@ -699,12 +688,9 @@ void Game_Update(void) {
                                            gFillScreenAlpha);
                     partialFill = 1;
                 } else {
-                    doing_glare = 1;
-
                     Graphics_FillRectangle(&gMasterDisp, sVsCameraULx[i], sVsCameraULy[i], sVsCameraLRx[i],
                                            sVsCameraLRy[i], gPlayerGlareReds[i], gPlayerGlareGreens[i],
                                            gPlayerGlareBlues[i], gPlayerGlareAlphas[i]);
-                    doing_glare = 0;
                 }
             }
         }
@@ -717,37 +703,11 @@ void Game_Update(void) {
             Versus_Draw();
         }
 
-//        Wipe_Draw(WIPE_CIRCULAR, gCircleWipeFrame);
-
         if (!partialFill) {
             if (gFillScreenAlpha)
                 Graphics_FillRectangle(&gMasterDisp, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, gFillScreenRed,
                                     gFillScreenGreen, gFillScreenBlue, gFillScreenAlpha);
         }
-        Audio_dummy_80016A50();
-#if 0
-        if(gBlurAlpha < 255) {
-            RCP_SetupDL(&gMasterDisp, SETUPDL_76);
-                        gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
-                        gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                                        TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-            gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, gBlurAlpha);
-            gSPTheBlur(gMasterDisp++);
-            Lib_TextureRect_RGBA16(&gMasterDisp, (u16 *)scaled2, 64, 64, 0, 0, 5.0f, 1.875f);
-            gSPTheBlur(gMasterDisp++);
-        }
-#endif
-#if 0
-#if MODS_RAM_MOD == 1
-        RamMod_Update();
-#endif
-#if MODS_FPS_COUNTER == 1
-        Play_RenderFps();
-#endif
-#if MODS_SPAWNER == 1
-        Spawner();
-#endif
-#endif
     }
 }
 

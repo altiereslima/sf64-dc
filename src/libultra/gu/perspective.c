@@ -16,6 +16,7 @@
 #include <math.h>
 #include <stdint.h>
 #include "sh4zam.h"
+
 void guPerspectiveF(float mf[4][4], u16* perspNorm, float fovy, float aspect, float near, float far, float scale) {
     float yscale;
     int row;
@@ -24,7 +25,8 @@ void guPerspectiveF(float mf[4][4], u16* perspNorm, float fovy, float aspect, fl
     f32 recip_nsubf = shz_fast_invf(near - far);
 
     guMtxIdentF(mf);
-    fovy *= 0.01745329f;// 3.1415926f / 180.0f;
+    // pi / 180
+    fovy *= 0.01745329f;
     f32 recipsinf = shz_fast_invf(sinf(fovy * 0.5f));
     yscale = cosf(fovy * 0.5f) * recipsinf;
     mf[0][0] = yscale * recip_aspect;
@@ -40,18 +42,6 @@ void guPerspectiveF(float mf[4][4], u16* perspNorm, float fovy, float aspect, fl
             }
         }
     }
-#if 0
-    if (perspNorm != NULL) {
-        if (near + far <= 2.0f) {
-            *perspNorm = 65535;
-        } else {
-            *perspNorm = (float) (1 << 17) / (near + far);
-            if (*perspNorm <= 0) {
-                *perspNorm = 1;
-            }
-        }
-    }
-#endif
 }
 
 void guPerspective(Mtx* m, u16* perspNorm, float fovy, float aspect, float near, float far, float scale) {

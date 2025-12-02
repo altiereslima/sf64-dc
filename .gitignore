@@ -2,6 +2,7 @@
 *.tgz
 *.cdi
 *.iso
+sf64.us.rev1.yaml
 music/
 .vscode/
 .DS_Store

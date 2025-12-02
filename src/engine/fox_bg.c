@@ -131,17 +131,17 @@ void Background_DrawStarfield(void) {
 
     starCount = gStarCount;
     if (starCount != 0) {
-        if (gStarfieldX >= 1.5f * SCREEN_WIDTH) {
-            gStarfieldX -= 1.5f * SCREEN_WIDTH;
+        if (gStarfieldX >= 480.0f) { //1.5f * SCREEN_WIDTH) {
+            gStarfieldX -= 480.0f; //1.5f * SCREEN_WIDTH;
         }
-        if (gStarfieldY >= 1.5f * SCREEN_HEIGHT) {
-            gStarfieldY -= 1.5f * SCREEN_HEIGHT;
+        if (gStarfieldY >= 360.0f) { // 1.5f * SCREEN_HEIGHT) {
+            gStarfieldY -= 360.0f; //1.5f * SCREEN_HEIGHT;
         }
         if (gStarfieldX < 0.0f) {
-            gStarfieldX += 1.5f * SCREEN_WIDTH;
+            gStarfieldX += 480.0f; // 1.5f * SCREEN_WIDTH;
         }
         if (gStarfieldY < 0.0f) {
-            gStarfieldY += 1.5f * SCREEN_HEIGHT;
+            gStarfieldY += 360.0f; // 1.5f * SCREEN_HEIGHT;
         }
         xField = gStarfieldX;
         yField = gStarfieldY;
@@ -161,18 +161,18 @@ void Background_DrawStarfield(void) {
         for (i = 0; i < starCount; i+=2, yStar+=2, xStar+=2, color+=2) {
             bx = *xStar + xField;
             by = *yStar + yField;
-            if (bx >= 1.25f * SCREEN_WIDTH) {
-                bx -= 1.5f * SCREEN_WIDTH;
+            if (bx >= 400.0f) { //1.25f * SCREEN_WIDTH) {
+                bx -= 480.0f;// 1.5f * SCREEN_WIDTH;
             }
-            bx -= SCREEN_WIDTH / 2.0f;
+            bx -= 160.0f;//SCREEN_WIDTH / 2.0f;
 
-            if (by >= 1.25f * SCREEN_HEIGHT) {
-                by -= 1.5f * SCREEN_HEIGHT;
+            if (by >= 300.0f) { //1.25f * SCREEN_HEIGHT) {
+                by -= 360.0f;//1.5f * SCREEN_HEIGHT;
             }
-            by -= SCREEN_HEIGHT / 2.0f;
+            by -= 120.0f;// SCREEN_HEIGHT / 2.0f;
 
-            vx = (zCos * bx) + (zSin * by) + SCREEN_WIDTH / 2.0f;
-            vy = (-zSin * bx) + (zCos * by) + SCREEN_HEIGHT / 2.0f;
+            vx = (zCos * bx) + (zSin * by) + 160.0f;//SCREEN_WIDTH / 2.0f;
+            vy = (-zSin * bx) + (zCos * by) + 120.0f;//SCREEN_HEIGHT / 2.0f;
             if ((vx >= 0) && (vx < SCREEN_WIDTH-1) && (vy > 0) && (vy < SCREEN_HEIGHT-1)) {
                 //gDPPipeSync(gMasterDisp++);
                 gDPSetFillColor(gMasterDisp++, *color);
@@ -210,6 +210,7 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) {
     gDPSetCombineMode(gMasterDisp++, G_CC_SHADE, G_CC_SHADE);
     gDPSetRenderMode(gMasterDisp++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
+#if 0
     if (gStarfieldX >= 1.5f * SCREEN_WIDTH) {
         gStarfieldX -= 1.5f * SCREEN_WIDTH;
     }
@@ -222,7 +223,19 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) {
     if (gStarfieldY < 0.0f) {
         gStarfieldY += 1.5f * SCREEN_HEIGHT;
     }
-
+#endif
+    if (gStarfieldX >= 480.0f) { // 1.5f * SCREEN_WIDTH) {
+        gStarfieldX -= 480.0f;   // 1.5f * SCREEN_WIDTH;
+    }
+    if (gStarfieldY >= 360.0f) { // 1.5f * SCREEN_HEIGHT) {
+        gStarfieldY -= 360.0f;   // 1.5f * SCREEN_HEIGHT;
+    }
+    if (gStarfieldX < 0.0f) {
+        gStarfieldX += 480.0f; // 1.5f * SCREEN_WIDTH;
+    }
+    if (gStarfieldY < 0.0f) {
+        gStarfieldY += 360.0f; // 1.5f * SCREEN_HEIGHT;
+    }
     spf68 = gStarfieldX;
     spf64 = gStarfieldY;
 
@@ -238,6 +251,7 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) {
     for (i = 0; i < var_s2; i+=2, sp5C+=2, sp60+=2, sp58+=2) {
         bx = *sp60 + spf68;
         by = *sp5C + spf64;
+#if 0
         if (bx >= 1.25f * SCREEN_WIDTH) {
              bx -= 1.5f * SCREEN_WIDTH;
         }
@@ -250,12 +264,24 @@ void Background_DrawPartialStarfield(s32 yMin, s32 yMax) {
 
         vx = (cos * bx) + (sin * by) + SCREEN_WIDTH / 2.0f;
         vy = (-sin * bx) + (cos * by) + SCREEN_HEIGHT / 2.0f;
-        if ((vx >= 0) && (vx < SCREEN_WIDTH-1) && (yMin < vy) && (vy < yMax-1)) {
-            //gDPPipeSync(gMasterDisp++);
+#endif
+        if (bx >= 400.0f) { // 1.25f * SCREEN_WIDTH) {
+            bx -= 480.0f;   // 1.5f * SCREEN_WIDTH;
+        }
+        bx -= 160.0f; // SCREEN_WIDTH / 2.0f;
+
+        if (by >= 300.0f) { // 1.25f * SCREEN_HEIGHT) {
+            by -= 360.0f;   // 1.5f * SCREEN_HEIGHT;
+        }
+        by -= 120.0f; // SCREEN_HEIGHT / 2.0f;
+
+        vx = (cos * bx) + (sin * by) + 160.0f;  // SCREEN_WIDTH / 2.0f;
+        vy = (-sin * bx) + (cos * by) + 120.0f; // SCREEN_HEIGHT / 2.0f;
+        if ((vx >= 0) && (vx < SCREEN_WIDTH - 1) && (yMin < vy) && (vy < yMax - 1)) {
+            // gDPPipeSync(gMasterDisp++);
             gDPSetFillColor(gMasterDisp++, *sp58);
             gDPFillRectangle(gMasterDisp++, vx, vy, vx, vy);
         }
-
     }
     //gDPPipeSync(gMasterDisp++);
     gDPSetColorDither(gMasterDisp++, G_CD_MAGICSQ);

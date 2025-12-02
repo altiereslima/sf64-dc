@@ -621,32 +621,7 @@ void Object_LoadLevelObjects(void) {
     }
 
     gLastPathChange = 0;
-#if 0
-    // jnmartin84 - TITANIA BOSS
-//if (gCurrentLevel == LEVEL_CORNERIA) {
-  //  static ObjectInit aCoLevelObjects_Boss[] =
-//{      { 100.0f,   -6820,   -1449,       0, {  0,  90,   0}, OBJ_BOSS_CO_GRANGA }};
 
-  //  gLevelObjects = aCoLevelObjects_Boss;
-//}
-/* 
-if (gCurrentLevel == LEVEL_TITANIA) {
-    static ObjectInit aTiLevelObjects_Boss[] = { { 300.0f, -1000, 0, 0, { 0, 0, 0 }, OBJ_BOSS_TI_GORAS } };
-    gLevelObjects = aTiLevelObjects_Boss;
-}
- */
-//if (gCurrentLevel == LEVEL_ZONESS) {
-  //static ObjectInit aZoLevelObjects_Boss[] = { { 100.0f,    3000,     -30,       0, {  0,   0,   0}, OBJ_BOSS_ZO_SARUMARINE }};
-    //gLevelObjects = aZoLevelObjects_Boss;
-//}
-#if 1
-// A6 boss
-if (gCurrentLevel == LEVEL_AREA_6) {
-  static ObjectInit aA6LevelObjects_Boss[] = { { /* 255100.0f,  -10000,       0,       0, {  0,   0,   0}, */100.0f,    3000,       0,       0, {  0, 180,   0}, OBJ_BOSS_A6_GORGON },};
-    gLevelObjects = aA6LevelObjects_Boss;
-}
-#endif
-#endif
     for (i = 0, objInit = &gLevelObjects[gObjectLoadIndex]; i < 10000; i++, gObjectLoadIndex++, objInit++) {
         if (objInit->id <= OBJ_INVALID) {
             break;
@@ -967,9 +942,9 @@ s32 Object_CheckCollision(s32 index, Vec3f* pos, Vec3f* vel, s32 mode) {
                             return 2;
                         }
                     } else if (boss->obj.id == OBJ_BOSS_BO_BASE_SHIELD) {
-                        temp.x = fabsf(boss->obj.pos.x - pos->x) * (5.0f / 6.0f);
-                        temp.y = fabsf(boss->obj.pos.y - pos->y) * 2;
-                        temp.z = fabsf(boss->obj.pos.z - pos->z) * (5.0f / 6.0f);
+                        temp.x = fabsf(boss->obj.pos.x - pos->x) * 0.83333333f; // (5.0f / 6.0f);
+                        temp.y = fabsf(boss->obj.pos.y - pos->y) * 2.0f;
+                        temp.z = fabsf(boss->obj.pos.z - pos->z) * 0.83333333f; // (5.0f / 6.0f);
                         if ((VEC3F_MAG(&temp)) < 1500.0f) {
                             boss->dmgType = DMG_BEAM;
                             return 2;

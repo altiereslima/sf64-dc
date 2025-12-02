@@ -506,7 +506,7 @@ void Corneria_CoGranga_DecideNextAction(CoGranga* this) {
         }
     }
 
-    if ((gBossFrameCount > 800) && ((gBossFrameCount % 512) == 0)) {
+    if ((gBossFrameCount > 800) && ((gBossFrameCount & 511) == 0)) {
         if (gCoUturnCount < 2) {
             Radio_PlayMessage(gMsg_ID_20237, RCID_PEPPY);
         } else if (D_edisplay_801615D0.z > 0.0f) {
@@ -2923,7 +2923,9 @@ void Corneria_CsTeamSetup(ActorCutscene* this, s32 teamIdx) {
     this->info.cullDistance = 200.0f;
     AUDIO_PLAY_SFX(NA_SE_ARWING_ENGINE_FG, this->sfxSource, 4);
 }
+
 extern void gfx_texture_cache_invalidate(void *addr);
+
 void Corneria_LevelStart(Player* player) {
     s32 i;
     ActorCutscene* falco = &gActors[0];

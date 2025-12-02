@@ -624,28 +624,22 @@ void Display_Arwing_Skel(ArwingInfo* arwing) {
         (gCurrentLevel == LEVEL_CORNERIA)) {
 
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 120);
-#if 1
         gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
         gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                         TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-#endif
         //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 120);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
 
         // Cloud reflexions in Corneria level intro cutscene.
-//        RCP_SetupDL_46();
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassCsDL);
     } else {
 //        RCP_SetupDL_46();
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 140);
-#if 1
         gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
         gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                         TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-#endif
-        //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
     }

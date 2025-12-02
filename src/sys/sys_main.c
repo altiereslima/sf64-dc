@@ -55,7 +55,6 @@ void _AudioInit(void) {
     }
 }
 
-
 s32 sGammaMode = 1;
 
 SPTask* gCurrentTask;
@@ -154,8 +153,6 @@ void *virtual_to_segmented(const void *addr) {
                 lowest_dist = (uip_addr - gSegments[i]);
                 lowest_index = i;
             }
-
-//            return (void*)((uip_addr - gSegments[i]) | (i << 24));
         }
     }
 
@@ -176,27 +173,8 @@ void* segmented_to_virtual(const void* addr) {
 
     unsigned int segment = (unsigned int) (uip_addr >> 24);// & 0x0f;
 
-    // investigate why this hits on Sherbet Land 4 player attract mode demo
-#if 0
-//DEBUG
-    if (segment > 0xf) {
-        printf("%08x converts to bad segment %02x %08x\n", (uintptr_t) addr, segment, (uintptr_t) uip_addr);
-        printf("\n");
-        stacktrace();
-        printf("\n");
-//        while (1) {}
-        exit(-1);
-    }
-#endif
-
     unsigned int offset = (unsigned int) uip_addr & 0x00FFFFFF;
     u32 translated_addr = gSegments[segment] + offset;
-#ifdef RANGECHECK
-    //    if (translated_addr > 0x8cffffff) {
-//        printf("serious problem seg2vir %08x -> %08x\n", uip_addr, translated_addr);
-//        exit(-1);
-//    }
-#endif
     return (void*)translated_addr;
 }
 
@@ -269,7 +247,6 @@ volatile int called = 0;
 extern void AudioLoad_LoadFiles(void);
 
 void Graphics_SetTask(void) {
-    called++;
     gGfxTask->mesgQueue = &gGfxTaskMesgQueue;
     gGfxTask->msg = (OSMesg) TASK_MESG_2;
     gGfxTask->task.t.type = M_GFXTASK;
@@ -288,9 +265,9 @@ void Graphics_SetTask(void) {
     gGfxTask->task.t.data_size = (gMasterDisp - gGfxPool->masterDL) * sizeof(Gfx);
     gGfxTask->task.t.yield_data_ptr = (u64*) &gOSYieldData;
     gGfxTask->task.t.yield_data_size = OS_YIELD_DATA_SIZE;
+    called++;
     if (called > 5) {
         gfx_run(gGfxPool->masterDL);
-
     }
 }
 
@@ -355,12 +332,14 @@ void Main_ThreadEntry(void* arg0) {
     u8 i;
     u8 visPerFrame;
     u8 validVIsPerFrame;
+
     maple_device_t* dev = NULL;
     if ((dev = maple_enum_type(0, MAPLE_FUNC_LCD))) {
         vmufb_paint_xbm(&vmubuf, 0, 0, 48, 32, james_bits);
         // only draw to first vmu
         vmufb_present(&vmubuf, dev);
     }
+
     printf("loading audio files\n");
     AudioLoad_LoadFiles();
     printf("\tdone.\n");
@@ -368,7 +347,6 @@ void Main_ThreadEntry(void* arg0) {
     if (ever_init_wav == 0) {
         ever_init_wav = 1;
         wav_init();
-        // dbglog_set_level(DBG_INFO);
     }
 
     gVIsPerFrame = 0;
@@ -465,15 +443,15 @@ run_game_loop:
         gSPSegment(gUnkDisp1++, 0, 0);
         gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
         Game_Update();
+
         gSPEndDisplayList(gUnkDisp1++);
         gSPEndDisplayList(gUnkDisp2++);
         gSPDisplayList(gMasterDisp++, gGfxPool->unkDL2);
         gDPFullSync(gMasterDisp++);
         gSPEndDisplayList(gMasterDisp++);
         Graphics_SetTask();
-
-        Audio_Update();
         gfx_end_frame();
+        Audio_Update();
         Controller_Rumble();
         thd_pass();
     }
@@ -518,9 +496,8 @@ void* AudioThread(UNUSED void* arg) {
         while (vblticker <= last_vbltick)
             genwait_wait((void*)&vblticker, NULL, 5, NULL);
 #endif
-        __builtin_prefetch(audio_buffer[0]);
+
         last_vbltick = vblticker;
-        __builtin_prefetch(audio_buffer[1]);
 
 #if USE_32KHZ
         int samplecount = gSysFrameCount & 1 ? SAMPLES_HIGH : SAMPLES_LOW;

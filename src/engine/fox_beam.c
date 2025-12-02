@@ -1241,14 +1241,6 @@ u8 D_800C9C00[4] = { 255, 255, 32, 32 };
 u8 D_800C9C04[4] = { 255, 32, 255, 32 };
 u8 D_800C9C08[4] = { 32, 32, 32, 255 };
 
-#define gSPFillrectBlend(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554380;                                           \
-    }
-
 void PlayerShot_DrawShot(PlayerShot* shot) {
     Vec3f sp11C = { 0.0f, 0.0f, 0.0f };
     s32 pad[4];
@@ -1309,7 +1301,7 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                     Matrix_RotateX(gGfxMatrix, gPlayer[gPlayerNum].camPitch, MTXF_APPLY);
                     Matrix_RotateZ(gGfxMatrix, gGameFrameCount * 40.0f * M_DTOR, MTXF_APPLY);
 
-                    if ((gGameFrameCount % 2) == 0) {
+                    if ((gGameFrameCount & 1) == 0) {
                         Matrix_Scale(gGfxMatrix, 1.7f, 1.7f, 1.7f, MTXF_APPLY);
                     } else {
                         Matrix_Scale(gGfxMatrix, 1.2f, 1.2f, 1.2f, MTXF_APPLY);
@@ -1372,7 +1364,6 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                 RCP_SetupDL_40();
 
                 if (gVersusMode) {
-//                    gSPFillrectBlend(gMasterDisp++);
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
                     gDPSetEnvColor(gMasterDisp++, D_800C9C00[shot->sourceId], D_800C9C04[shot->sourceId],
                                    D_800C9C08[shot->sourceId], 255);
@@ -1393,7 +1384,7 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                         Matrix_SetGfxMtx(&gMasterDisp);
                         gSPDisplayList(gMasterDisp++, D_versus_301AD60);
                     } else {
-                        if (((gGameFrameCount % 2) == 0)) {
+                        if (((gGameFrameCount & 1) == 0)) {
                             var_fv1 = F_PI;
                         } else {
                             var_fv1 = 0.0f;
@@ -1405,10 +1396,9 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                         Matrix_SetGfxMtx(&gMasterDisp);
                         gSPDisplayList(gMasterDisp++, D_versus_301AD60);
                     }
-    //                                    gSPFillrectBlend(gMasterDisp++);
 
                 } else {
-                    if ((gGameFrameCount % 2) == 0) {
+                    if ((gGameFrameCount & 1) == 0) {
                         var_fv1 = F_PI;
                     } else {
                         var_fv1 = 0.0f;
@@ -1420,14 +1410,11 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                     Matrix_SetGfxMtx(&gMasterDisp);
 //                    RCP_SetupDL_68();
                     RCP_SetupDL_49();
-//                                        gSPFillrectBlend(gMasterDisp++);
 
                     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
                     gDPSetEnvColor(gMasterDisp++, 0, 255, 0, 255);
                     gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
                     gSPDisplayList(gMasterDisp++, aLandmasterShotDL);
-  //                  gSPFillrectBlend(gMasterDisp++);
-
                 }
                 break;
 
@@ -1515,7 +1502,7 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                     gSPDisplayList(gMasterDisp++, aStarDL);
                     Matrix_Pop(&gGfxMatrix);
 
-                    if (((gGameFrameCount % 2) == 0)) {
+                    if (((gGameFrameCount & 1) == 0)) {
                         Matrix_Scale(gGfxMatrix, 1.7f, 1.7f, 1.7f, MTXF_APPLY);
                     } else {
                         Matrix_Scale(gGfxMatrix, 1.3f, 1.3f, 1.3f, MTXF_APPLY);
@@ -1532,7 +1519,7 @@ void PlayerShot_DrawShot(PlayerShot* shot) {
                     Matrix_RotateY(gGfxMatrix, -gPlayer[gPlayerNum].camYaw, MTXF_APPLY);
                     Matrix_RotateX(gGfxMatrix, gPlayer[gPlayerNum].camPitch, MTXF_APPLY);
 
-                    if (((gGameFrameCount % 2) == 0)) {
+                    if (((gGameFrameCount & 1) == 0)) {
                         Matrix_Scale(gGfxMatrix, 1.2f, 1.2f, 1.2f, MTXF_APPLY);
                     } else {
                         Matrix_Scale(gGfxMatrix, 1.5f, 1.5f, 1.5f, MTXF_APPLY);
@@ -1851,12 +1838,13 @@ void PlayerShot_CheckBossHitbox(PlayerShot* shot) {
     for (i = 0; i < ARRAY_COUNT(gBosses); i++, boss++) {
         if ((boss->obj.status == OBJ_ACTIVE) && (boss->timer_05A == 0)) {
             if (boss->obj.id == OBJ_BOSS_KA_SAUCERER) {
-                modFrames = gGameFrameCount % 8U;
+                modFrames = gGameFrameCount & 7U;//% 8U;
                 radius = shot->scale * 40.0f;
             } else {
-                modFrames = gGameFrameCount % 16U;
+                modFrames = gGameFrameCount & 15;//% 16U;
                 radius = shot->scale * 30.0f;
             }
+            radius *= radius;
             hitboxData = boss->info.hitbox;
             count = *hitboxData++;
             if (count != 0) {
@@ -1885,7 +1873,7 @@ void PlayerShot_CheckBossHitbox(PlayerShot* shot) {
                         if ((gLevelMode == LEVELMODE_ON_RAILS) && (test.z < 0.0f)) {
                             test.z *= 0.6f;
                         }
-                        if (VEC3F_MAG(&test) < radius) {
+                        if (shz_mag_sqr3f(test.x, test.y, test.z) < radius) {
                             boss->dmgPart = j;
                             boss->dmgType = DMG_BOMB;
                             boss->damage = 20;
@@ -1934,6 +1922,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
     Effect* effect;
     Player* player;
     f32 radius = shot->scale * 60.0f;
+    radius *= radius;
 
     scenery = &gScenery[0];
     for (i = 0; i < ARRAY_COUNT(gScenery); i++, scenery++) {
@@ -1941,8 +1930,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
             dx = scenery->obj.pos.x - shot->obj.pos.x;
             dy = scenery->obj.pos.y - shot->obj.pos.y;
             dz = scenery->obj.pos.z - shot->obj.pos.z;
-            if (shz_sqrtf_fsrra(shz_mag_sqr4f(dx,dy,dz,0)) 
-                /* SQ(dx) + SQ(dy) + SQ(dz) */ < radius) {
+            if (shz_mag_sqr3f(dx, dy, dz) < radius) {
                 scenery->dmgType = DMG_EXPLOSION;
             }
             scenery->dmgPart = 0;
@@ -1957,8 +1945,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
             dx = sprite->obj.pos.x - shot->obj.pos.x;
             dy = sprite->obj.pos.y - shot->obj.pos.y;
             dz = sprite->obj.pos.z - shot->obj.pos.z;
-            if (shz_sqrtf_fsrra(shz_mag_sqr4f(dx,dy,dz,0)) < radius) {
-                //SQ(dx) + SQ(dy) + SQ(dz)) < radius) {
+            if (shz_mag_sqr3f(dx, dy, dz) < radius) {
                 sprite->destroy = true;
             }
         }
@@ -1982,7 +1969,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
             actor->hitPos.y = shot->obj.pos.y;
             actor->hitPos.z = shot->obj.pos.z;
 
-            if (shz_sqrtf_fsrra(/* SQ(dx) + SQ(dy) + SQ(dz) */shz_mag_sqr4f(dx,dy,dz,0)) < radius) {
+            if (shz_mag_sqr3f(dx, dy, dz) < radius) {
                 if ((actor->obj.id == OBJ_ACTOR_CO_RADAR) || (actor->obj.id == OBJ_ACTOR_ME_LASER_CANNON_1) ||
                     (actor->obj.id == OBJ_ACTOR_MISSILE_SEEK_TEAM) || (actor->obj.id == OBJ_ACTOR_ME_HOPBOT) ||
                     (actor->obj.id == OBJ_ACTOR_ME_METEO_BALL) || (actor->obj.id == OBJ_ACTOR_ME_LASER_CANNON_2) ||
@@ -2037,7 +2024,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
             dx = effect->obj.pos.x - shot->obj.pos.x;
             dy = effect->obj.pos.y - shot->obj.pos.y;
             dz = effect->obj.pos.z - shot->obj.pos.z;
-            if (shz_sqrtf_fsrra(/* SQ(dx) + SQ(dy) + SQ(dz) */shz_mag_sqr4f(dx,dy,dz,0)) < radius) {
+            if (shz_mag_sqr3f(dx, dy, dz) < radius) {
                 if (effect->info.unk_16 == 0) {
                     Object_Kill(&effect->obj, effect->sfxSource);
                 }
@@ -2066,7 +2053,7 @@ void PlayerShot_ApplyExplosionDamage(PlayerShot* shot, s32 damage) {
                 dx = player->pos.x - shot->obj.pos.x;
                 dy = player->pos.y - shot->obj.pos.y;
                 dz = player->trueZpos - shot->obj.pos.z;
-                if (shz_sqrtf_fsrra(/* SQ(dx) + SQ(dy) + SQ(dz) */shz_mag_sqr4f(dx,dy,dz,0)) < radius) {
+                if (shz_mag_sqr3f(dx, dy, dz) < radius) {
                     player->attacker = shot->sourceId + 1;
                     switch (player->form) {
                         case FORM_ARWING:

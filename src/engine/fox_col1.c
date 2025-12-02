@@ -39,105 +39,7 @@ f32 __vtx3_z;
 #define TRINORM_Y(A, B, C) ((B##_z - A##_z) * (C##_x - B##_x) - (B##_x - A##_x) * (C##_z - B##_z))
 #define TRINORM_Z(A, B, C) ((B##_x - A##_x) * (C##_y - B##_y) - (B##_y - A##_y) * (C##_x - B##_x))
 
- f32 SHZ_NO_INLINE __attribute__((noinline)) triple_product_mul(Vec3s a, Vec3s b, Vec3s c) {
-    f32 dist = 
-       0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
-       return dist;
-}
 #include "sh4zam.h"
- f32 SHZ_NO_INLINE  __attribute__((noinline)) triple_product_fipr(Vec3s a, Vec3s b, Vec3s c) {
-    f32 px = (f32)(a.x * c.y);
-    f32 py = (f32)(a.y * b.x);
-    f32 pz = (f32)(a.z * b.y);
-
-    f32 rx = (f32)(a.x * b.y);
-    f32 ry = (f32)(b.x * c.y);
-    f32 rz = (f32)(c.x * a.y);
-
-    f32 dotPQ = shz_dot8f(px,py,pz,0,(f32)b.z,(f32)c.z,(f32)c.x,0);
-    f32 dotRS = shz_dot8f(rx,ry,rz,0,(f32)c.z,(f32)a.z,(f32)b.z,0);
-
-    return (dotPQ - dotRS);
-
-    //    f32 dist = 
-  //     0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
-    //   return dist;
-}
-
-// Calculate the directed plane that contains the ordered triangle tri, given as an array of Vec3s
-void func_col1_80097380(PlaneF* plane, Vec3s** tri) {
-    Vec3s a;
-    Vec3s b;
-    Vec3s c;
-//    s32 new_var;
-//    Vec3s* tri2 = *tri;
-
-    a.x = (*tri)->x;
-    a.y = (*tri)->y; //tri2->y; // fake
-    a.z = (*tri)->z;
-    tri++;
-    b.x = (*tri)->x;
-    b.y = (*tri)->y;
-    b.z = (*tri)->z;
-    tri++;
-    xz_vars.__dx1 = (f32)(b.x - a.x);
-    xz_vars.__dy1 = (f32)(b.y - a.y);
-    xz_vars.__dz1 = (f32)(b.z - a.z);
-
-    c.x = (*tri)->x;
-    c.y = (*tri)->y;
-    c.z = (*tri)->z;
-    tri++;
-//    do {
-    xz_vars.__dy2 = (f32)(c.y - b.y);
-    xz_vars.__dx2 = (f32)(c.x - b.x);
-    xz_vars.__dz2 = (f32)(c.z - b.z);
-//    } while (0); // wut
-
-    plane->normal.x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
-    plane->normal.y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
-    plane->normal.z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
-    plane->dist = triple_product_mul(a,b,c);
-      // 0.0f - (f32)((a.x * b.y * c.z) - (b.x * c.y * a.z) - (c.x * a.y * b.z) + (a.x * c.y * b.z) + (b.x * a.y * c.z) + (c.x * b.y * a.z));
-}
-
-// Calculate the directed plane that contains the ordered triangle tri, given as an array of Vec3s. Duplicate of
-// previous
-void func_col1_80097558(PlaneF* plane, Vec3s** tri) {
-    Vec3s a;
-    Vec3s b;
-    Vec3s c;
-//    s32 new_var;
-//    Vec3s* tri2 = *tri;
-
-    a.x = (*tri)->x;
-    a.y = (*tri)->y;//tri2->y; // fake
-    a.z = (*tri)->z;
-    tri++;
-    b.x = (*tri)->x;
-    b.y = (*tri)->y;
-    b.z = (*tri)->z;
-    tri++;
-    c.x = (*tri)->x;
-    c.y = (*tri)->y;
-    c.z = (*tri)->z;
-    tri++;
-
-    xz_vars.__dx1 = b.x - a.x;
-    xz_vars.__dx2 = c.x - b.x;
-    xz_vars.__dy1 = b.y - a.y;
-    do {
-        xz_vars.__dy2 = c.y - b.y;
-        xz_vars.__dz1 = b.z - a.z;
-        xz_vars.__dz2 = c.z - b.z;
-    } while (0); // wut
-
-    plane->normal.x = (xz_vars.__dy1 * xz_vars.__dz2) - (xz_vars.__dz1 * xz_vars.__dy2);
-    plane->normal.y = (xz_vars.__dz1 * xz_vars.__dx2) - (xz_vars.__dx1 * xz_vars.__dz2);
-    plane->normal.z = (xz_vars.__dx1 * xz_vars.__dy2) - (xz_vars.__dy1 * xz_vars.__dx2);
-    plane->dist =triple_product_fipr(a,b,c);
-        //-a.x * b.y * c.z - b.x * c.y * a.z - c.x * a.y * b.z + a.x * c.y * b.z + b.x * a.y * c.z + c.x * b.y * a.z;
-}
 
 // Calculate the normal vector of an ordered triangle, given as a Vec3f array
 void func_col1_80097730(Vec3f* norm, Vec3f* tri) {
@@ -350,20 +252,19 @@ s32 func_col1_8009808C(Vec3f* pos, Vtx_tn* quad, Vec3f* normOut) {
     }
 
     if (var_v1 != 0) {
-//        temp_fv0 = VEC3F_MAG(normOut);
-        temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){normOut->x,normOut->y,normOut->z});
+        temp_fv0 = 127.0f * shz_vec3_magnitude_inv((shz_vec3_t){normOut->x, normOut->y, normOut->z});
         if (temp_fv0 == 0) {
             return 0;
         }
-        normOut->x = (normOut->x * temp_fv0);// / temp_fv0) * 127.0f;
-        normOut->y = (normOut->y * temp_fv0);// / temp_fv0) * 127.0f;
-        normOut->z = (normOut->z * temp_fv0);// / temp_fv0) * 127.0f;
+        normOut->x = (normOut->x * temp_fv0);
+        normOut->y = (normOut->y * temp_fv0);
+        normOut->z = (normOut->z * temp_fv0);
     }
     return var_v1;
 }
 
 // check if vec lies within tri when projected to the xz-plane
-bool func_col1_800985CC(Vec3f* vec, Vtx_tn* tri) {
+s32 func_col1_800985CC(Vec3f* vec, Vtx_tn* tri) {
     f32 sp24;
     f32 sp20;
 
@@ -383,14 +284,14 @@ bool func_col1_800985CC(Vec3f* vec, Vtx_tn* tri) {
     sp20 = TRINORM_Y(__vtx1, __vtx0, __vtx2);
 
     if (SIGN_OF(sp24) != SIGN_OF(sp20)) {
-        return false;
+        return 0;
     }
     sp24 = TRINORM_Y(__vtx0, xz_vars.__pos, __vtx2);
 
     if (SIGN_OF(sp24) != SIGN_OF(sp20)) {
-        return false;
+        return 0;
     }
-    return true;
+    return 1;
 }
 
 // PlaneF from normal and point
@@ -398,26 +299,29 @@ void func_col1_80098860(PlaneF* plane, Vec3f* point, Vec3f* normal) {
     plane->normal.x = normal->x;
     plane->normal.y = normal->y;
     plane->normal.z = normal->z;
+    // if you use FIPR here it breaks the landmaster
     plane->dist = -normal->x * point->x - normal->y * point->y - normal->z * point->z;
-//    shz_dot8f(-normal.x, -normal.y, -normal.z, 0, point->x, point->y, point->z, 0);
+//    shz_dot6f(-normal.x, -normal.y, -normal.z, point->x, point->y, point->z);
 }
 
 // y dist to closest point on plane
-s32 func_col1_800988B4(Vec3f* vec, PlaneF* plane) {
+// was s32
+#define distfunctype f32
+distfunctype func_col1_800988B4(Vec3f* vec, PlaneF* plane) {
     f32 recY = shz_fast_invf(plane->normal.y);
-    return (-plane->normal.x * vec->x - plane->normal.z * vec->z - plane->dist) * recY; // / plane->normal.y;
+    return (distfunctype)(shz_dot6f(-plane->normal.x, -plane->normal.z, 1.0f, vec->x, vec->z, -plane->dist) * recY);
 }
 
 // z dist to closest point on plane
-s32 func_col1_800988F8(Vec3f* vec, PlaneF* plane) {
+distfunctype func_col1_800988F8(Vec3f* vec, PlaneF* plane) {
     f32 recZ = shz_fast_invf(plane->normal.z);
-    return (-plane->normal.x * vec->x - plane->normal.y * vec->y - plane->dist) * recZ; // / plane->normal.z;
+    return (distfunctype)(shz_dot6f(-plane->normal.x, -plane->normal.y, 1.0f, vec->x, vec->y, -plane->dist) * recZ);
 }
 
 // x dist to closest point on plane
-s32 func_col1_8009893C(Vec3f* vec, PlaneF* plane) {
+distfunctype func_col1_8009893C(Vec3f* vec, PlaneF* plane) {
     f32 recX = shz_fast_invf(plane->normal.x);
-    return (-plane->normal.y * vec->y - plane->normal.z * vec->z - plane->dist) * recX; // / plane->normal.x;
+    return (distfunctype)(shz_dot6f(-plane->normal.z, -plane->normal.y, 1.0f, vec->z, vec->y, -plane->dist) * recX);
 }
 
 #define INTSIGN_OF(x) ((((x) >= 1.0f) || ((x) <= -1.0f)) ? (f32) SIGN_OF(x) : 0.0f)
@@ -428,41 +332,11 @@ static inline Vec3f v3f_cross(Vec3f a, Vec3f b) {
     return (Vec3f){a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
 }
 static inline float v3f_dot(Vec3f a, Vec3f b) {
-    return a.x*b.x + a.y*b.y + a.z*b.z;
+    return shz_dot6f(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
 static inline Vec3f to_f(Vec3s *v) {
     return (Vec3f){ (float)v->x, (float)v->y, (float)v->z };
-}
-bool not_func_col1_80098980( Vec3f *p, Vec3s **tri,  Vec3f *n)
-{
-    Vec3f v0 = to_f(*tri++), v1 = to_f(*tri++), v2 = to_f(*tri++);
-
-    // choose dominant axis of the normal
-    float ax = fabsf(n->x), ay = fabsf(n->y), az = fabsf(n->z);
-    int axis = (ax > ay && ax > az) ? 0 : (ay > az ? 1 : 2);
-
-    // project to the plane orthogonal to 'axis'
-    float pA, pB, v0A, v0B, v1A, v1B, v2A, v2B;
-    if (axis == 0) {        // drop X -> use (y,z)
-        pA = p->y; pB = p->z;
-        v0A = v0.y; v0B = v0.z; v1A = v1.y; v1B = v1.z; v2A = v2.y; v2B = v2.z;
-    } else if (axis == 1) { // drop Y -> use (z,x)
-        pA = p->z; pB = p->x;
-        v0A = v0.z; v0B = v0.x; v1A = v1.z; v1B = v1.x; v2A = v2.z; v2B = v2.x;
-    } else {                // drop Z -> use (x,y)
-        pA = p->x; pB = p->y;
-        v0A = v0.x; v0B = v0.y; v1A = v1.x; v1B = v1.y; v2A = v2.x; v2B = v2.y;
-    }
-
-    // 2D edge “left of” tests; sign must match dominant normal component
-    float s = (axis == 0 ? n->x : (axis == 1 ? n->y : n->z));
-    float e0 = (pA - v0A)*(v1B - v0B) - (pB - v0B)*(v1A - v0A);
-    float e1 = (pA - v1A)*(v2B - v1B) - (pB - v1B)*(v2A - v1A);
-    float e2 = (pA - v2A)*(v0B - v2B) - (pB - v2B)*(v0A - v2A);
-
-    if (s >= 0.0f) return (e0 >= 0.0f && e1 >= 0.0f && e2 >= 0.0f);
-    else           return (e0 <= 0.0f && e1 <= 0.0f && e2 <= 0.0f);
 }
 
 // checks if the projection of pos onto the plane of tri lies within tri and it is on the same side as the normal.
@@ -496,7 +370,7 @@ bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
     f32 d12z;
     f32 d20z;
 
-    var_v1 = false;
+    var_v1 = 0;
 
     pad = *tri++;
     if (1) { // some sort of macro?
@@ -562,7 +436,7 @@ bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
                                     cross = ((yPos - t0y) * d20x) - (d20y * (xPos - t0x));
                                     signCross = INTSIGN_OF(cross);
                                     if ((normSignZ == 0) || (signCross == 0) || (signCross == normSignZ)) {
-                                        var_v1 = true;
+                                        var_v1 = 1;
                                     }
                                 }
                             }
@@ -576,12 +450,7 @@ bool func_col1_80098980(Vec3f* pos, Vec3s** tri, Vec3f* normal) {
     return var_v1;
 }
 
-#ifndef F_PI
-#define F_PI        3.1415926f   /* pi             */
-#endif
-float my_acosf (float a);
-
-bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHeader* colHeader, Vec3f* hitPosOut,
+s32 func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHeader* colHeader, Vec3f* hitPosOut,
                    f32* hitAnglesOut) {
     Vec3s* polyVtxPos[3];
     Vec3f objRel;
@@ -589,7 +458,7 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
     s32 pad118;
     PlaneF polyPlane;
     f32 tempf;
-    s32 didHit = false;
+    s32 didHit = 0;
     s32 swapBuff;
     CollisionPoly* colPoly;
     Vec3s* mesh;
@@ -627,7 +496,7 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
     // check if object is outside the collision's bounding box
     if ((objRel.x < min.x) || (objRel.y < min.y) || (objRel.z < min.z) || (max.x < objRel.x) || (max.y < objRel.y) ||
         ((max.z < objRel.z))) {
-        return false;
+        return 0;
     }
     if ((objVel->x == 0.0f) && (objVel->y == 0.0f) && (objVel->z == 0.0f)) {
         objVel->y = -5.0f;
@@ -688,10 +557,10 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
                 // check if the angle between the normal and velocity is > 90. That is, the object was moving toward the
                 // front of the polygon
                 f32 recipThing = shz_fast_invf((VEC3F_MAG(&polyPlane.normal) * speed));
-                if (/* Math_FAcosF */my_acosf(tempf * recipThing) > DEG_TO_RAD(90.0f)) {
+                if (shz_acosf(tempf * recipThing) > DEG_TO_RAD(90.0f)) {
                     // Calculate the time since the plane was crossed. Reusing the temp is required to match
                     f32 reciptemp = shz_fast_invf(tempf);
-                    tempf = (DOT_XYZ(&polyPlane.normal, &objRel) + polyPlane.dist) * reciptemp; // / tempf;
+                    tempf = (DOT_XYZ(&polyPlane.normal, &objRel) + polyPlane.dist) * reciptemp;
 
                     // find the point where the object crossed the plane of the polygon
                     hitPosRel.x = objRel.x - (objVel->x * tempf);
@@ -705,15 +574,15 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
                         hitPosOut->z = colliderPos->z + hitPosRel.z;
                         if (polyPlane.normal.x != 0.0) {
                             f32 recipN = shz_fast_invf(polyPlane.normal.x);
-                            polyPlane.normal.x = -polyPlane.dist * recipN; // / polyPlane.normal.x;
+                            polyPlane.normal.x = -polyPlane.dist * recipN;
                         }
                         if (polyPlane.normal.y != 0.0f) {
                             f32 recipN = shz_fast_invf(polyPlane.normal.y);
-                            polyPlane.normal.y = -polyPlane.dist * recipN; //  / polyPlane.normal.y;
+                            polyPlane.normal.y = -polyPlane.dist * recipN;
                         }
                         if (polyPlane.normal.z != 0.0f) {
                             f32 recipN = shz_fast_invf(polyPlane.normal.z);
-                            polyPlane.normal.z = -polyPlane.dist * recipN; // / polyPlane.normal.z;
+                            polyPlane.normal.z = -polyPlane.dist * recipN;
                         }
                         hitAnglesOut[0] = Math_Atan2F_XY(polyPlane.normal.y, polyPlane.normal.z);
                         if (polyPlane.normal.z != 0.0f) {
@@ -726,7 +595,7 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
                             hitAnglesOut[1] = -Math_Atan2F_XY(polyPlane.normal.y, polyPlane.normal.x);
                         }
 
-                        didHit = true;
+                        didHit = 1;
                         break;
                     }
                 }
@@ -736,7 +605,7 @@ bool func_80099254(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, CollisionHe
     return didHit;
 }
 
-bool func_col1_800998FC(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, s32 colId, Vec3f* hitPosOut,
+s32 func_col1_800998FC(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, s32 colId, Vec3f* hitPosOut,
                         f32* hitAnglesOut) {
     return func_80099254(objPos, colliderPos, objVel, SEGMENTED_TO_VIRTUAL(&D_800D2B38[colId]), hitPosOut,
                          hitAnglesOut);

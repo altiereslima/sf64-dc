@@ -2740,10 +2740,9 @@ void ActorCutscene_SyShip_Setup(ActorCutscene* this, s32 idx) {
         }
     }
 }
-#ifndef F_PI
-#define F_PI        3.1415926f   /* pi             */
-#endif
+
 #include "sh4zam.h"
+
 void ActorCutscene_Draw(ActorCutscene* this) {
     static f32 D_800CA210 = 0.0f;
     static f32 D_800CA214 = 0.0f;

@@ -296,7 +296,7 @@ void func_versus_800BDAA0(f32 xPos, f32 yPos, u32 arg2, u32 arg3, u32 arg4) {
                          aLargeText_5, aLargeText_6, aLargeText_7, aLargeText_8, aLargeText_9 };
     u32 i = 1000;
     u32 temp1;
-    u32 temp2;
+    /*     u32 temp2; */
     u32 temp3 = arg2;
     u32 y3 = arg3;
 
@@ -307,24 +307,22 @@ void func_versus_800BDAA0(f32 xPos, f32 yPos, u32 arg2, u32 arg3, u32 arg4) {
 
     for (i /= 10; i >= 1; i /= 10) {
         temp1 = arg2 / i;
-        temp2 = arg3 / i;
+        /*         temp2 = arg3 / i;
 
-//        if (temp1 == temp2) {
-            Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1], 16, 15, xPos, yPos, 0.7f, 0.7f);
-/*        } else {
-            if (temp3 > y3) {
-                Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp2] + (16 * arg4), 16, 15 - arg4, xPos, yPos, 0.7f,
-                                    0.7f);
-                Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1], 16, arg4, xPos, yPos + (15 - arg4) * 0.7f, 0.7f,
-                                    0.7f);
-            }
-            if (temp3 < y3) {
-                Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp2], 16, 15 - arg4, xPos, yPos + (arg4 * 0.7f), 0.7f,
-                                    0.7f);
-                Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1] + (16 * (15 - arg4)), 16, arg4, xPos, yPos, 0.7f,
-                                    0.7f);
-            }
-        }*/
+                if (temp1 == temp2) { */
+        Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1], 16, 15, xPos, yPos, 0.7f, 0.7f);
+        /*        } else {
+                    if (temp3 > y3) {
+                        Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp2] + (16 * arg4), 16, 15 - arg4, xPos, yPos,
+           0.7f, 0.7f); Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1], 16, arg4, xPos, yPos + (15 - arg4) * 0.7f,
+           0.7f, 0.7f);
+                    }
+                    if (temp3 < y3) {
+                        Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp2], 16, 15 - arg4, xPos, yPos + (arg4 * 0.7f),
+           0.7f, 0.7f); Lib_TextureRect_IA8(&gMasterDisp, D_800D4B48[temp1] + (16 * (15 - arg4)), 16, arg4, xPos, yPos,
+           0.7f, 0.7f);
+                    }
+                }*/
         xPos += 13.0f * 0.7f;
         arg2 %= i;
         arg3 %= i;
