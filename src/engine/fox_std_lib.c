@@ -20,7 +20,7 @@ s32 Graphics_Printf(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
     Graphics_ClearPrintBuffer(gGfxPrintBuffer, 0, 100);
-    /vsprintf(gGfxPrintBuffer, fmt, args);
+    vsprintf(gGfxPrintBuffer, fmt, args);
     va_end(args);
 
     return 0;
