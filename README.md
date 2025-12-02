@@ -142,7 +142,7 @@ make all
 
 Good luck.
 
-** Acknowledgments **
+**Acknowledgments**:
 - sonicdreamcaster
 - gyrovorbis
 - darc
