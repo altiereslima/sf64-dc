@@ -423,8 +423,6 @@ static inline uint32_t /* old_ */hash10_murmur(uint32_t addr) {
     return (x >> 22) & 0x3ff;
 }
 
-void *virtual_to_segmented(const void *addr);
-
 void gfx_texture_cache_invalidate(void* orig_addr) {
  	void* segaddr = segmented_to_virtual(orig_addr);
 	int dirtied = 0;
