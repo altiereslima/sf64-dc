@@ -67,9 +67,8 @@ int osSetTimer(OSTimer *timer, OSTime countdown, OSTime interval,
     nextTimer->mq = mq;
     nextTimer->value = countdown;
     nextTimer->interval = interval;
-//printf("made a timer\n");   
     nextTimer->timer = oneshot_timer_create(ostimer_fire, (void*)nextTimer, countdown);
-oneshot_timer_reset(nextTimer->timer);
+    oneshot_timer_reset(nextTimer->timer);
     return 0;
 }
 

@@ -676,7 +676,6 @@ Acmd* AudioSynth_Update(Acmd* aList, s32* cmdCount, s16* aiBufStartL, s16* aiBuf
     s32 chunkLen;
     s32 i;
     s32 j;
-//printf("%s(%08x, %08x, %08x, %d\n)", __func__,aList,cmdCount,aiBufStart,aiBufLen);
     aCmdPtr = aList;
     for (i = gAudioBufferParams.ticksPerUpdate; i > 0; i--) {
         AudioSeq_ProcessSequences(i - 1);

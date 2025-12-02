@@ -77,7 +77,6 @@ s32 Ground_801B49D0(Actor* actor) {
 
     for (i = 0; i < ARRAY_COUNT(D_i5_801C62E8); i++, var_v0++) {
         if (var_v0->unk_00 == 0) {
-            ////printf("setting found to 1 for %08x\n", var_v0->unk_00);
             found = 1;
             var_v0->unk_00 = 1;
             var_v0->unk_04 = actor->obj.pos.y;

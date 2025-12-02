@@ -406,7 +406,7 @@ static void gfx_opengl_select_texture(int tile, uint32_t texture_id) {
     glBindTexture(GL_TEXTURE_2D, texture_id);
 }
 
-void capture_framebuffer(int num) {
+void capture_framebuffer(void) {
 #if LOWRES
     for (int y=0;y<240;y+=2) {
         for (int x=0;x<320;x+=2) {
