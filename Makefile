@@ -12,6 +12,8 @@ find-command = $(shell which $(1) 2>/dev/null)
 
 # Enable testing mode
 TESTING_MODE ?= 0
+# Enable 32khz sample rate
+USE_32KHZ ?= 0
 # If COMPARE is 1, check the output md5sum after building
 COMPARE ?= 0
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building
@@ -71,6 +73,10 @@ CFLAGS += -DCOMPILER_GCC -DNON_MATCHING=1 -Wno-int-conversion -falign-functions=
 
 ifeq ($(TESTING_MODE),1)
   CFLAGS += -DTESTING_MODE
+endif
+
+ifeq ($(USE_32KHZ),1)
+  CFLAGS += -DUSE_32KHZ
 endif
 
 NON_MATCHING := 1
