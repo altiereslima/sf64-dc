@@ -74,13 +74,15 @@ make
 cd ..
 ```
 
+If you are on macOS, you should use `gmake` instead of `make` for this step. You may need to install this with `brew`.
+
 If you are on a system with a newer CMake and get this error:
 ```
 Compatibility with CMake < 3.5 has been removed from CMake.
 ```
 You may need to change the `make` command above to the following:
 
-`CMAKE_POLICY_VERSION_MINIMUM=3.5 gmake`
+`CMAKE_POLICY_VERSION_MINIMUM=3.5 make`
 
 ## 5. Prepare the Star Fox 64 ROM file
 
