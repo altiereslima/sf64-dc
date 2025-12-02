@@ -427,9 +427,12 @@ void HUD_Score_Draw(f32, f32);
 void Venom1_LevelStart2(Player* player);
 
 // fox_col1
+// was s32
+#define distfunctype f32
+
 void func_col1_80098860(PlaneF* plane, Vec3f* point, Vec3f* normal);
-s32 func_col1_800988B4(Vec3f* vec, PlaneF* plane);
-bool func_col1_800998FC(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, s32 colId, Vec3f* hitPosOut,
+distfunctype func_col1_800988B4(Vec3f* vec, PlaneF* plane);
+s32 func_col1_800998FC(Vec3f* objPos, Vec3f* colliderPos, Vec3f* objVel, s32 colId, Vec3f* hitPosOut,
                         f32* hitAnglesOut);
 
 // fox_col2

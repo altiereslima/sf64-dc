@@ -33,11 +33,9 @@ enum NewSceneId {
 };
 
 typedef struct NewScene_s {
-
     enum NewSceneId id;
     int snum;
     char segs[16][32];
-    
 } NewScene;
 
 NewScene ns_logo[1] = {
@@ -142,7 +140,6 @@ NewScene ns_title[1] = {
   }
 };
 
-
 NewScene ns_option[1] = {
   {sOvlmenu_Option,
   0,
@@ -179,7 +176,6 @@ NewScene ns_map[1] = {
   }
 };
 
-
 NewScene ns_gameover[1] = {
   {sOvlmenu_GameOver,
   0,
@@ -213,7 +209,6 @@ NewScene ns_corneria[1] = {
         /* 0xF */ "" } },
 };
 
-
 NewScene ns_meteo[2] = {
 {sOvli2_Meteo,0,
   {"",/* 0x1 */ "common",
@@ -234,7 +229,6 @@ NewScene ns_meteo[2] = {
 
 
 {sOvli2_Meteo,1,
-  
   { "",/* 0x1 */ "common",
         /* 0x2 */ "bgspace",
         /* 0x3 */ "arwing",
@@ -368,47 +362,38 @@ NewScene ns_titania[6]= {
   "",
 }
 },
-
 };
-
 
 NewScene ns_sectorx[2] = {
 {sOvli2_SectorX
 ,0,
 {
-    "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","sectorx","warpzone",
   "","","","",
   "","allies","","",
-
 }
 },
 
 {sOvli2_SectorX
 ,1,
 {
-   "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","sectorx","warpzone",
   "","","","",
   "","allies","greatfox","",
-
 }
-
-
-
 }
 };
-
 
 NewScene ns_sectorz[1] = {
 {sOvli4_SectorZ
 ,0,
 {
-    "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","sectorz","",
   "","","","",
   "","allies","greatfox","",
-
 }
 }
 };
@@ -417,171 +402,136 @@ NewScene ns_aquas[1] = {
 {sOvli3_Aquas
 ,0,
 {
-    "","common","bgplanet","blumarin",
+  "","common","bgplanet","blumarin",
   "enmyplnt","text","aquas","",
   "","","","",
   "","","greatfox","",
-
 }
 }
 };
-
-
-
 
 NewScene ns_area6[1] = {
 {sOvli3_Area6
 ,0,
 {
-    "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","area6","",
   "","","","",
   "","","greatfox","",
-
 }
 }
 };
-
-
-
 
 NewScene ns_fortuna[2] = {
 {sOvli4_Fortuna
 ,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","fortuna","",
   "","","","",
   "","","","starwolf",
-
 }
 },
 
 {sOvli4_Fortuna
 ,1,
 {
-   "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","fortuna","",
   "","","","",
   "","","greatfox","",
-
 }
-
-
-
 }
 };
-
-
-
-
 
 NewScene ns_unk4[1] = {
 {sOvli3_Unk4
 ,0,
 {
-    "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","area6","",
   "","","","",
   "","","greatfox","",
-
 }
 }
 };
-
-
 
 NewScene ns_sectory[1] = {
 {sOvli6_SectorY
 ,0,
 {
-    "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","sectory","",
   "","","","",
   "","","","",
-
 }
 }
 };
-
-
-
 
 NewScene ns_solar[1] = {
 {sOvli3_Solar
 ,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","solar","",
   "","","","",
   "","allies","","",
-
 }
 }
 };
-
-
 
 NewScene ns_zoness[1] = {
 {sOvli3_Zoness
 ,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","zoness","",
   "","","","",
   "","allies","","",
-
 }
 }
 };
-
 
 NewScene ns_venom1[1] = {
 {sOvli1_Venom1
 ,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","venom1","",
   "","ve1boss","","",
   "","allies","","",
-
 }
 }
 };
-
 
 NewScene ns_andross[1] = {
 {sOvli6_Andross
 ,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "","text","venom2","",
   "","","","",
   "andross","allies","","",
-
 }
 }
 };
 
-
 NewScene ns_venom2[2] = {
 {sOvli6_Venom2,0,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","venom2","",
   "","","","",
   "","","","starwolf",
-
 }
 },
 
 {sOvli6_Venom2,1,
 {
-    "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","venom2","",
   "","","","",
   "","","greatfox","",
-
 }
 },
 };
@@ -590,85 +540,62 @@ NewScene ns_setup20[1] = {
 {
 sOvli2_Setup20,0,
 {
-     "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","ve1boss","",
   "","","","",
   "","","","",
-
 }
-
 }
-
 };
-
-
 
 NewScene ns_bolse[1] = {
 {
 sOvli4_Bolse,0,
 {
-     "","common","bgspace","arwing",
+  "","common","bgspace","arwing",
   "enmyspce","text","bolse","",
   "","","","",
   "","","","starwolf",
-
 }
-
 }
-
 };
-
 
 NewScene ns_katina[1] = {
 {
 sOvli4_Katina,0,
 {
-     "","common","bgplanet","arwing",
+  "","common","bgplanet","arwing",
   "enmyplnt","text","katina","",
   "","","","",
   "","allies","","starwolf",
-
 }
-
 }
-
 };
-
-
 
 NewScene ns_macbeth[2] = {
 {sOvli5_Macbeth,0,
 {
-     "","common","bgplanet","landmstr",
+  "","common","bgplanet","landmstr",
   "enmyplnt","text","macbeth","",
   "","","","",
   "","allies","","",
-
 }
 },
 
 {sOvli5_Macbeth,1,
-
 {
-     "","common","bgplanet","landmstr",
+  "","common","bgplanet","landmstr",
   "enmyplnt","text","macbeth","",
   "","","","",
   "","","greatfox","",
-
 }
 }
-
-
-
 };
-
-
-
 
 NewScene ns_training[1] = {
 {
 sOvli1_Training,0,
-{"",
+{ "",
   "common",
   "bgplanet",
   "arwing",
@@ -684,19 +611,13 @@ sOvli1_Training,0,
   "",
   "",
   "starwolf",
-
 }
-
 }
-
 };
-
-
-
 
 NewScene ns_versus[2] = {
 {sOvli2_Versus,0,
-{"",
+{ "",
   "common",
   "bgplanet",
   "versus",
@@ -712,13 +633,11 @@ NewScene ns_versus[2] = {
   "",
   "",
   "",
-
 }
 },
 
 {sOvli2_Versus,1,
-
-{"",
+{ "",
   "common",
   "bgspace",
   "versus",
@@ -734,12 +653,8 @@ NewScene ns_versus[2] = {
   "",
   "",
   "",
-
 }
 }
-
-
-
 };
 
 
@@ -748,41 +663,10 @@ NewScene ns_unusedunk1[1] = {
 {
 sOvlUnused_Unk,0,
 {
-     "","","","",
-  "","","","",
-  "","","","",
-  "","","","",
-
+    "","","","",
+    "","","","",
+    "","","","",
+    "","","","",
 }
-
 }
-
 };
-
-
-
-#if 0
- 
-
-
-
-
-Scene sOvlUnused_Unk[1] = {
-    { OVERLAY_OFFSETS(ovl_unused),
-      { /* 0x1 */ NO_SEGMENT,
-        /* 0x2 */ NO_SEGMENT,
-        /* 0x3 */ NO_SEGMENT,
-        /* 0x4 */ NO_SEGMENT,
-        /* 0x5 */ NO_SEGMENT,
-        /* 0x6 */ NO_SEGMENT,
-        /* 0x7 */ NO_SEGMENT,
-        /* 0x8 */ NO_SEGMENT,
-        /* 0x9 */ NO_SEGMENT,
-        /* 0xA */ NO_SEGMENT,
-        /* 0xB */ NO_SEGMENT,
-        /* 0xC */ NO_SEGMENT,
-        /* 0xD */ NO_SEGMENT,
-        /* 0xE */ NO_SEGMENT,
-        /* 0xF */ NO_SEGMENT } },
-};
-#endif

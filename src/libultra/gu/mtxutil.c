@@ -65,25 +65,8 @@ void guMtxF2L(float mf[4][4], Mtx* m) {
 #endif
 
 void guMtxIdentF(float mf[4][4]) {
-#if 0
-    int r, c;
-    for (r = 0; r < 4; r++) {
-        for (c = 0; c < 4; c++) {
-            if (r == c) {
-                mf[r][c] = 1.0f;
-            } else {
-                mf[r][c] = 0.0f;
-            }
-        }
-    }
-#endif
-#if 0
-    memset(mf, 0, 64);
-    mf[0][0] = mf[1][1] = mf[2][2] = mf[3][3] = 1.0f;
-#else
     shz_xmtrx_init_identity();
     shz_xmtrx_store_4x4_unaligned(mf);
-#endif
 }
 
 void guMtxIdent(Mtx* m) {

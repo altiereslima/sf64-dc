@@ -84,7 +84,6 @@ uint8_t er,eg,eb,ea;
 uint8_t pr,pg,pb,pa;
 extern int do_radar_mark;
 extern int use_gorgon_alpha;
-extern int do_radar_depth;
 int do_andross = 0;
 
 // enough to submit the nintendo logo in one go
@@ -99,8 +98,6 @@ int alpha_noise = 0;
 int do_starfield = 0;
 
 int do_menucard = 0;
-//int print_ti = 0;
-
 
 struct ShaderProgram {
 	uint8_t enabled;
@@ -171,8 +168,6 @@ struct TextureHashmapNode {
 	// 15
 	uint8_t cmt;
 };
-
-//uint32_t last_palette = 0;
 
 struct TextureHashmapNode oops_node;
 
@@ -471,7 +466,6 @@ static  __attribute__((noinline)) uint8_t gfx_texture_cache_lookup(int tile, str
 			gfx_rapi->select_texture(tile, (*node)->texture_id);
 
 			if ((*node)->dirty) {
-//				printf("inval\n");
 				(*node)->dirty = 0;
 				// was it a bug not having this here previously?
 				*n = *node;
@@ -499,7 +493,6 @@ static  __attribute__((noinline)) uint8_t gfx_texture_cache_lookup(int tile, str
 	(*node)->linear_filter = 0;
 	(*node)->next = NULL;
 	*n = *node;
-//	printf("miss\n");
 	return 0;
 }
 
@@ -511,14 +504,12 @@ uint8_t __attribute__((aligned(32))) table256[256] = {
 0
 };
 
-
 uint8_t __attribute__((aligned(32))) table32[32] = {
     0, 6, 8, 10, 11, 12, 14, 15,
     16, 17, 18, 18, 19, 20, 21, 22,
     22, 23, 24, 24, 25, 26, 26, 27,
     27, 28, 28, 29, 29, 30, 30, 31
 };
-
 
 uint8_t __attribute__((aligned(32))) table16[16] = {
     0, 4, 5, 7, 8, 9, 9, 10,
@@ -533,7 +524,6 @@ static uint16_t brightit_argb1555(uint16_t c) {
 
 	return (a << 15) | (table32[r] << 10) | (table32[g] << 5) | (table32[b]);
 }
-extern float Rand_ZeroOne(void);
 
 typedef enum LevelId {
     /* -1 */ LEVEL_UNK_M1 = -1,
@@ -567,6 +557,8 @@ extern uint16_t scaled2[];
 int do_the_blur = 0;
 extern u16 aTiBackdropTex[];
 extern uint8_t *SEG_BUF[15];
+
+extern float Rand_ZeroOne(void);
 
 static void import_texture_rgba16_alphanoise(int tile) {
     uint32_t i;
@@ -723,18 +715,7 @@ static __attribute__((noinline)) void import_texture_ci8(int tile) {
 
 	gfx_rapi->upload_texture((uint8_t*) rgba16_buf, width, height, GL_UNSIGNED_SHORT_1_5_5_5_REV);
 }
-#define DEBUG_PROF 0
-#if DEBUG_PROF
 
-typedef struct debug_float_s {
-    float val;
-    float min;
-    float max;
-    float avg;
-} debug_float_t;
-void update_debug_float(debug_float_t *df);
-extern debug_float_t debug_millis_tex;
-#endif
 #include <kos.h>
 
 static void __attribute__((noinline)) import_texture(int tile) {
@@ -758,14 +739,6 @@ static void __attribute__((noinline)) import_texture(int tile) {
 		return;
 
 	shz_dcache_alloc_line(rgba16_buf);
-
-#if DEBUG_PROF
-
-	uint64_t dstart;
-	uint64_t dend;
-
-		dstart = perf_cntr_timer_ns();
-#endif
 	
 	if (fmt == G_IM_FMT_RGBA) {
 		if (siz == G_IM_SIZ_16b) {
@@ -796,12 +769,6 @@ static void __attribute__((noinline)) import_texture(int tile) {
 			import_texture_ci8(tile);
 		}
 	}
-#if DEBUG_PROF
-		dend = perf_cntr_timer_ns();
-		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
-        debug_millis_tex.val += last_delta * 1e-6f;
-		update_debug_float(&debug_millis_tex);
-#endif
 }
 
 static void gfx_normalize_vector(float v[3]) {
@@ -1205,20 +1172,13 @@ extern int path_priority_draw;
 
 extern float get_current_u_scale(void);
 extern float get_current_v_scale(void);
-#if DEBUG_PROF
-extern debug_float_t debug_count_tris;
-#endif
 
 static void __attribute__((noinline)) gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t vtx3_idx) {
-	/* if (print_ti) {
-		printf("sp_tri1 %d %d %d\n", vtx1_idx, vtx2_idx, vtx3_idx);
-	} */
     struct LoadedVertex* v1 = &rsp.loaded_vertices[vtx3_idx];
 	MEM_BARRIER_PREF(v1);
     struct LoadedVertex* v2 = &rsp.loaded_vertices[vtx2_idx];
     struct LoadedVertex* v3 = &rsp.loaded_vertices[vtx1_idx];
     uint8_t l_clip_rej[3] = { clip_rej[vtx3_idx], clip_rej[vtx2_idx], clip_rej[vtx1_idx] };
-//uint8_t l_vfog[3] = { vfog[vtx3_idx], vfog[vtx2_idx], vfog[vtx1_idx] };
 	MEM_BARRIER_PREF(v2);
     struct LoadedVertex* v_arr[3] = { v1, v2, v3 };
 
@@ -1257,10 +1217,6 @@ static void __attribute__((noinline)) gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2
                 break;
         }
     }
-
-#if DEBUG_PROF
-	debug_count_tris.val++;
-#endif
 
 	if (matrix_dirty) {
         gfx_flush();
@@ -2615,262 +2571,11 @@ int ever_did = 0;
 extern int ending_great_fox;
 extern Gfx aGreatFoxDamagedDL[];
 extern Gfx aGreatFoxIntactDL[];
-#if DEBUG_PROF
-extern debug_float_t debug_millis_gfx;
-#endif
-#if 0
-static void  __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
-	uint64_t dstart;
-	uint64_t dend;
-	ending_great_fox = 0;
 
-	cmd = seg_addr((uintptr_t) cmd);
-
-	if ((cmd == seg_addr(aGreatFoxDamagedDL)) || (cmd == seg_addr(aGreatFoxIntactDL))) {
-		if (gGameState == 8)
-			ending_great_fox = 1;
-	}
-
-	__builtin_prefetch(cmd);
-
-#if DEBUG_PROF
-		dstart = perf_cntr_timer_ns();
-#endif
-	for (;;) {
-		uint32_t opcode = cmd->words.w0 >> 24;
-
-		if (cmd == seg_addr(aAndBackdropDL))
-			do_andross = 1;
-		else 
-			do_andross = 0;
-
-		// custom f3d opcodes, sorry there are so many now
-		// they're all for toggling flags during DL processing
-		// to have an effect on commands that follow
-		if (cmd->words.w0 == 0x424C4E44) {
-			if((cmd->words.w1 & 0xffffff00) == 0x46437700) {
-				use_gorgon_alpha ^= 1;
-				gorgon_alpha = cmd->words.w1 & 0x000000ff;
-			} else {
-				if (cmd->words.w1 == 0x12345678) {
-					do_radar_mark ^= 1;
-				} else if (cmd->words.w1 == 0x46004400) {
-					path_priority_draw ^= 1;
-				} else if (cmd->words.w1 == 0x46554350) {
-					do_reticle ^= 1;
-				} else if(cmd->words.w1 == 0x46554360) {
-					do_the_blur ^= 1;
-				} else if (cmd->words.w1 == 0x46554369) {
-					do_rectdepfix ^= 1;
-				} else if (cmd->words.w1 == 0x46554370) {
-					do_starfield ^= 1;
-				} else if (cmd->words.w1 == 0x46554380) {
-					do_fillrect_blend ^= 1;
-				} else if (cmd->words.w1 == 0x465543DD) {
-					do_zfight ^= 1;
-					do_zflip = 0;
-				} else if (cmd->words.w1 == 0x465543DE) {
-					do_zfight ^= 1;
-					do_zflip = 1;
-				} else if (cmd->words.w1 == 0x465543DF) {
-					do_zfight ^= 1;
-					do_zflip = 2;
-				} else if (cmd->words.w1 == 0x465543EE) {
-					do_menucard ^= 1;
-				} else if (cmd->words.w1 == 0x465543F0) {
-					do_floorscroll ^= 1;
-				} else if (cmd->words.w1 == 0x46664369) {
-					do_space_bg ^= 1;	
-				} else if(cmd->words.w1 == 0xaaaabbbb) {
-					do_radar_depth ^= 1;	
-				} 
-			}
-			__builtin_prefetch((void*)(++cmd) + 32);
-			continue;
-		}
-
-		switch (opcode) {
-			case G_RDPPIPESYNC:
-				gfx_flush();
-				break;
-
-			// RSP commands:
-			case G_MTX:
-				gfx_sp_matrix(C0(16, 8), (const void*) seg_addr(cmd->words.w1));
-				break;
-			
-			case (uint8_t) G_POPMTX:
-				gfx_sp_pop_matrix();
-				break;
-			
-			case G_MOVEMEM:
-				gfx_sp_movemem(C0(16, 8), seg_addr(cmd->words.w1));
-				break;
-
-			case (uint8_t) G_MOVEWORD:
-				if (C0(0, 8) >= 2)
-					gfx_sp_moveword(C0(0, 8), cmd->words.w1);
-				break;
-			
-			case (uint8_t) G_TEXTURE:
-				gfx_sp_texture(C1(16, 16), C1(0, 16));
-				break;
-			
-			case G_VTX:
-				gfx_sp_vertex(C0(10, 6), C0(17, 7), seg_addr(cmd->words.w1));
-				break;
-			
-			case G_DL:
-				if (C0(16, 1) == 0) {
-					// Push return address
-					gfx_run_dl((Gfx*) seg_addr(cmd->words.w1));
-				} else {
-					__builtin_prefetch((Gfx*) seg_addr(cmd->words.w1));
-					cmd = (Gfx*) seg_addr(cmd->words.w1);
-					--cmd; // increase after break
-				}
-				break;
-			
-			case (uint8_t) G_ENDDL: {
-				ending_great_fox = 0;
-#if DEBUG_PROF
-				goto endfunc;
-#else
-				return;
-#endif
-			}
-			
-			case (uint8_t) G_SETGEOMETRYMODE:
-				gfx_sp_geometry_mode(0, cmd->words.w1);
-				break;
-			
-			case (uint8_t) G_CLEARGEOMETRYMODE:
-				gfx_sp_geometry_mode(cmd->words.w1, 0);
-				break;
-			
-			case (uint8_t) G_QUAD:
-				gfx_sp_tri1(C1(17, 7), C1(9, 7), C1(25, 7));
-				gfx_sp_tri1(C1(9, 7),  C1(1, 7), C1(25, 7));
-				break;
-			
-			case (uint8_t) G_TRI1:
-				gfx_sp_tri1(C1(17, 7), C1(9, 7), C1(1, 7));
-				break;
-			
-			case (uint8_t) G_TRI2:
-				gfx_sp_tri1(C0(17, 7), C0(9, 7), C0(1, 7));
-				gfx_sp_tri1(C1(17, 7), C1(9, 7), C1(1, 7));
-				break;
-			
-			case (uint8_t) G_SETOTHERMODE_L:
-				gfx_sp_set_other_mode(C0(8, 8), C0(0, 8), cmd->words.w1);
-				break;
-
-			case (uint8_t) G_SETOTHERMODE_H:
-				gfx_sp_set_other_mode(C0(8, 8) + 32, C0(0, 8), (uint64_t) cmd->words.w1 << 32);
-				break;
-
-			// RDP Commands:
-			case G_SETTIMG:
-				gfx_dp_set_texture_image(C0(19, 2), C0(0, 10), cmd->words.w1);
-				break;
-
-			case G_LOADBLOCK:
-				gfx_dp_load_block(C1(12, 12));
-				break;
-
-			case G_LOADTILE:
-				gfx_dp_load_tile(C0(12, 12), C0(0, 12), C1(12, 12), C1(0, 12));
-				break;
-
-			case G_SETTILE:
-				gfx_dp_set_tile2(cmd->words.w0, cmd->words.w1);
-				break;
-
-			case G_SETTILESIZE:
-				if (C1(24, 3) == G_TX_RENDERTILE)
-					gfx_dp_set_tile_size(C0(12, 12), C0(0, 12), C1(12, 12), C1(0, 12));
-				break;
-
-			case G_LOADTLUT:
-				gfx_dp_load_tlut(C1(14, 10));
-				break;
-
-			case G_SETENVCOLOR:
-				gfx_dp_set_env_color(C1(24, 8), C1(16, 8), C1(8, 8), C1(0, 8));
-				break;
-
-			case G_SETPRIMCOLOR:
-				gfx_dp_set_prim_color(C1(24, 8), C1(16, 8), C1(8, 8), C1(0, 8));
-				break;
-				
-			case G_SETFOGCOLOR:
-				gfx_dp_set_fog_color(C1(24, 8), C1(16, 8), C1(8, 8), C1(0, 8));
-				break;
-
-			case G_SETFILLCOLOR:
-				gfx_dp_set_fill_color(cmd->words.w1);
-				break;
-
-			case G_SETCOMBINE:
-				gfx_dp_set_combine_mode(color_comb(C0(20, 4), C1(28, 4), C0(15, 5), C1(15, 3)),
-										color_comb(C0(12, 3), C1(12, 3), C0(9, 3), C1(9, 3)));
-				break;
-
-			case G_TEXRECT:
-			case G_TEXRECTFLIP: {
-/* 				int32_t lrx, lry, tile, ulx, uly;
-				uint32_t uls, ult, dsdx, dtdy;
-				lrx = C0(12, 12);
-				lry = C0(0, 12);
-				ulx = C1(12, 12);
-				uly = C1(0, 12);
-				++cmd;
-				uls = C1(16, 16);
-				ult = C1(0, 16);
-				++cmd;
-				dsdx = C1(16, 16);
-				dtdy = C1(0, 16);
- */				// might as well just decode the command in the function
-				// except for the fact that it takes *3* Gfx to do a texrect -_-
-				// its not impossible though
-				// one pointer and a flag are all we need
-				Gfx *texrectCmd = cmd;
-				++cmd;
-				++cmd;
-				gfx_dp_texture_rectangle(texrectCmd, opcode == G_TEXRECTFLIP);
-				break;
-			}
-
-			case G_FILLRECT:
-				gfx_dp_fill_rectangle(C1(12, 12), C1(0, 12), C0(12, 12), C0(0, 12));
-				break;
-
-			case G_SETSCISSOR:
-				gfx_dp_set_scissor(C0(12, 12), C0(0, 12), C1(12, 12), C1(0, 12));
-				break;
-
-			case G_SETZIMG:
-				gfx_dp_set_z_image(seg_addr(cmd->words.w1));
-				break;
-
-			case G_SETCIMG:
-				gfx_dp_set_color_image(seg_addr(cmd->words.w1));
-				break;
-		}
-		__builtin_prefetch((void*)(++cmd) + 32);
-	}
-#if DEBUG_PROF
-endfunc:
-		dend = perf_cntr_timer_ns();
-		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
-        debug_millis_gfx.val = last_delta * 1e-6f;
-		update_debug_float(&debug_millis_gfx);
-#endif
-}
-#endif
 #define GFX_DL_STACK_MAX 4  /* tune this to whatever nesting you expect */
+
 static Gfx __attribute__((aligned(32))) *dl_stack[GFX_DL_STACK_MAX];
+
 static void __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
     int  dl_sp = 0;
 
@@ -2927,8 +2632,6 @@ static void __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
                     do_floorscroll ^= 1;
                 } else if (cmd->words.w1 == 0x46664369) {
                     do_space_bg ^= 1;
-                } else if (cmd->words.w1 == 0xaaaabbbb) {
-                    do_radar_depth ^= 1;
                 }
             }
             __builtin_prefetch((void*)(++cmd) + 32);
@@ -3117,7 +2820,6 @@ static void __attribute__((noinline)) gfx_run_dl(Gfx* cmd) {
     }
 }
 
-
 static void gfx_sp_reset() {
 	rsp.modelview_matrix_stack_size = 0;
 	//rsp.current_num_lights = 0;
@@ -3128,10 +2830,6 @@ static void gfx_sp_reset() {
 	rendering_state.textures[1]->cmt = 6;
 	//rendering_state.fog_change = 0;
 	alpha_noise = 0;
-#if DEBUG_PROF
-	debug_millis_tex.val = 0;
-	debug_count_tris.val = 0;
-#endif
 }
 
 void gfx_get_dimensions(uint32_t* width, uint32_t* height) {
@@ -3204,11 +2902,6 @@ void gfx_run(Gfx* commands) {
 	gfx_flush();
 	gfx_rapi->end_frame();
 	gfx_wapi->swap_buffers_begin();
-
-#if DEBUG_PROF
-	update_debug_float(&debug_count_tris);
-#endif
-
 }
 
 void gfx_end_frame(void) {

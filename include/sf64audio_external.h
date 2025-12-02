@@ -23,7 +23,6 @@ void Audio_SetAudioSpec(u8 unused, u16 specParam);
 
 // used by sys or related
 void AudioLoad_Init(void);
-void Audio_dummy_80016A50(void);
 void Audio_InitSounds(void);
 void Audio_Update(void);
 SPTask* AudioThread_CreateTask(void);

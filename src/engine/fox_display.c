@@ -561,29 +561,7 @@ s32 Display_ArwingOverrideLimbDraw(s32 limbIndex, Gfx** gfxPtr, Vec3f* pos, Vec3
     }
     return 0;
 }
-//extern u8 gLevelType;
-//void n64_memcpy(void* dst, const void* src, size_t size);
 
-#if 0
-extern u16 MyGlassTex[64*32];// = {0x8040};
-
-Gfx MyCockpitGlassCsDL[] = {
-    gsDPTileSync(),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 16, 0x0000, G_TX_RENDERTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, 5, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, 6, G_TX_NOLOD),
-    gsDPSetTileSize(G_TX_RENDERTILE, 0, 0, 0x00FC, 0x007C),
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, MyGlassTex),
-    gsDPTileSync(),
-    gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0x0000, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD),
-    gsDPLoadSync(),
-    gsDPLoadBlock(G_TX_LOADTILE, 0, 0, 2047, 128),
-    gsSPVertex(ast_arwing_seg3_vtx_18438, 10, 0),
-    gsSP1Triangle(0, 1, 2, 0),
-    gsSP2Triangles(4, 5, 6, 0, 4, 6, 3, 0),
-    gsSP1Triangle(7, 8, 9, 0),
-    gsSPEndDisplayList(),
-};
-#endif
-//extern u16 aCoBackdropTex[];
 void Display_Arwing_Skel(ArwingInfo* arwing) {
     Vec3f frameTable[30];
     s32 drawFace;
@@ -642,35 +620,26 @@ void Display_Arwing_Skel(ArwingInfo* arwing) {
     Matrix_SetGfxMtx(&gMasterDisp);
     RCP_SetupDL_64_2();
 
-    if (/* (gLevelType == 0)) { */ (gGameState == GSTATE_PLAY) && (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO) &&
+    if ((gGameState == GSTATE_PLAY) && (gPlayer[0].state == PLAYERSTATE_LEVEL_INTRO) &&
         (gCurrentLevel == LEVEL_CORNERIA)) {
 
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 120);
-#if 1
         gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
         gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                         TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-#endif
         //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 120);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
 
         // Cloud reflexions in Corneria level intro cutscene.
-//        RCP_SetupDL_46();
-//    gSPSetGeometryMode(gMasterDisp++, G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
-//aAwCockpitGlassClouldReflextionTex, aKaBackdropTex, 64*32*2);
-gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
+        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassCsDL);
-//    gSPClearGeometryMode(gMasterDisp++, G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
     } else {
 //        RCP_SetupDL_46();
         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, 140);
-#if 1
         gDPSetEnvColor(gMasterDisp++, 0,0,0, 0xFF);
         gDPSetCombineLERP(gMasterDisp++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
                         TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-#endif
-        //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
         gSPDisplayList(gMasterDisp++, aAwCockpitGlassDL);
     }

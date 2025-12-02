@@ -268,11 +268,9 @@ void Animation_DrawSkeleton(s32 mode, Limb** skeletonSegment, Vec3f* jointTable,
     }
 }
 
-//#include <stdio.h>
-//#include <stdlib.h>
 // 360/65536
 #define FRAMEDATA_SCALE 0.00549316f
-extern Animation D_TI_A0002BC;
+
 s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameTable) {
 
     Animation* animation = SEGMENTED_TO_VIRTUAL(animationSegment);
@@ -291,21 +289,12 @@ s16 Animation_GetFrameData(Animation* animationSegment, s32 frame, Vec3f* frameT
 
     frameTable++, key++;
     for (i = 1; i <= limbCount; i++, key++, frameTable++) {
-#if 1
         temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
         frameTable->x = temp * FRAMEDATA_SCALE;
         temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
         frameTable->y = temp * FRAMEDATA_SCALE;
         temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
         frameTable->z = temp * FRAMEDATA_SCALE;
-#else
-        temp = (frame < key->xLen) ? frameData[key->x + frame] : frameData[key->x];
-        frameTable->x = temp * 360.0f / 65536.0f;
-        temp = (frame < key->yLen) ? frameData[key->y + frame] : frameData[key->y];
-        frameTable->y = temp * 360.0f / 65536.0f;
-        temp = (frame < key->zLen) ? frameData[key->z + frame] : frameData[key->z];
-        frameTable->z = temp * 360.0f / 65536.0f;
-#endif
     }
     return limbCount + 1;
 }
@@ -597,52 +586,6 @@ void Lib_TextureRect_IA8_MirY(Gfx** gfxPtr, u8* texture, u32 width, u32 height, 
                         (s32) (1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
 }
 
-#if 0
-void Lib_TextureRect_IA16(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                          f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_NOMIRROR | G_TX_WRAP,
-                        G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, 0, 0, (s32) (1.0f / xScale * 1024.0f),
-                        (s32) (1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirX(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                               f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, (width - 1) * 32, 0,
-                        (u16) (s32) (-1.0f / xScale * 1024.0f), (s32) (1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirY(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                               f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, 0, (height - 1) * 32,
-                        (s32) (1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
-}
-
-void Lib_TextureRect_IA16_MirXY(Gfx** gfxPtr, u16* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
-                                f32 yScale) {
-    if (height == 1)
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-    gDPLoadTextureBlock((*gfxPtr)++, texture, G_IM_FMT_IA, G_IM_SIZ_16b, width, height, 0, G_TX_MIRROR | G_TX_WRAP,
-                        G_TX_MIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-    gSPTextureRectangle((*gfxPtr)++, (s32) (xPos * 4.0f), (s32) (yPos * 4.0f), (s32) ((xPos + width * xScale) * 4.0f),
-                        (s32) ((yPos + height * yScale) * 4.0f), G_TX_RENDERTILE, (width - 1) * 32, (height - 1) * 32,
-                        (u16) (s32) (-1.0f / xScale * 1024.0f), (u16) (s32) (-1.0f / yScale * 1024.0f));
-}
-#endif
-
 void Lib_TextureRect_RGBA32(Gfx** gfxPtr, u32* texture, u32 width, u32 height, f32 xPos, f32 yPos, f32 xScale,
                             f32 yScale) {
     if (height == 1)
@@ -654,27 +597,14 @@ void Lib_TextureRect_RGBA32(Gfx** gfxPtr, u32* texture, u32 width, u32 height, f
                         (s32) (1.0f / yScale * 1024.0f));
 }
 
-
-#define gSPFillrectBlend(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
-        _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554380;                                           \
-    }
-
-volatile int doing_glare = 0;
-
 void Graphics_FillRectangle(Gfx** gfxPtr, s32 ulx, s32 uly, s32 lrx, s32 lry, u8 r, u8 g, u8 b, u8 a) {
     if (a != 0) {
         gDPPipeSync((*gfxPtr)++);
         gDPSetPrimColor((*gfxPtr)++, 0x00, 0x00, r, g, b, a);
-        gDPSetRenderMode((*gfxPtr)++,G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
-//        if (!doing_glare) {
-            gDPSetEnvColor((*gfxPtr)++, 255-r, 255-g, 255-b, 255);
-            gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
-                      TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
-  //      }
+        gDPSetRenderMode((*gfxPtr)++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+        gDPSetEnvColor((*gfxPtr)++, 255 - r, 255 - g, 255 - b, 255);
+        gDPSetCombineLERP((*gfxPtr)++, 1, ENVIRONMENT, TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0, 1, ENVIRONMENT,
+                          TEXEL0, PRIMITIVE, PRIMITIVE, 0, TEXEL0, 0);
         gDPFillRectangle((*gfxPtr)++, ulx, uly, lrx, lry);
     }
 }
@@ -705,7 +635,7 @@ void Graphics_DisplayHUDNumber(s32 xPos, s32 yPos, s32 number) {
                             D_1010830, D_1010880, D_10108D0, D_1010920, D_1010970 };
     s32 place;
     s32 startNumber = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     number %= 10000000;
     place = 1000000;
@@ -728,7 +658,7 @@ u8* sSmallNumberTex[] = { aSmallText_0, aSmallText_1, aSmallText_2, aSmallText_3
 void Graphics_DisplaySmallNumber(s32 xPos, s32 yPos, s32 number) {
     s32 place;
     s32 startNumber = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     number %= 10000000;
     place = 1000000;
@@ -775,7 +705,7 @@ void Graphics_DisplayLargeText(s32 xPos, s32 yPos, f32 xScale, f32 yScale, char*
     s32 pad4C;
     s32 width;
     s32 startPrint = 0;
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     while (text[0] != 0) {
         charIndex = 0;

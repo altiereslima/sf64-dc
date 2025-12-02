@@ -324,65 +324,14 @@ int ever_init_wav = 0;
 #include "james2.xbm"
 
 vmufb_t vmubuf;
-#define DEBUG_PROF 0
 
-#if DEBUG_PROF
-typedef struct debug_float_s {
-    float val;
-    float min;
-    float max;
-    float avg;
-} debug_float_t;
-
-debug_float_t debug_millis_main;
-debug_float_t debug_millis_gfx;
-debug_float_t debug_millis_sfx;
-debug_float_t debug_millis_tex;
-
-debug_float_t debug_count_tris;
-debug_float_t debug_count_quads;
-void update_debug_float(debug_float_t *df) {
-    int polys = (df == &debug_count_tris) || (df == &debug_count_quads);
-    // maybe if ((df->val > (2.0f * df->avg)) return
-//    if (df->avg != 0.0f && (df->val > (4.0f * df->avg))) { //((df->val > 90.0f)/*  && df->min == 0.0f && df->max == 0.0f && df->avg == 0.0f */) {
-//        return;
-//    }
-    if (!polys) {
-    if ((df->val > 50.0f) && (df->val > (df->avg * 2.0f))) return;
-    }
-    if ((df->min == 0.0f) || (df->val < df->min))
-        df->min = df->val;
-    if (df->val > df->max)
-        df->max = df->val;
-    if (df->avg == 0.0f)
-        df->avg = df->val;
-    else
-        df->avg = (df->val + df->avg) * 0.5f;
-}
-
-void debug_msg(char *msg, int x, int y, int r, int g, int b) ;
-char dbgmsg[256];
-#endif
 void Main_ThreadEntry(void* arg0) {
-#if DEBUG_PROF
-	// high resolution frame timing
-	uint64_t dstart = 0;
-	uint64_t dend = 0;
-    memset(&debug_millis_gfx, 0, sizeof(debug_float_t));
-    memset(&debug_millis_main, 0, sizeof(debug_float_t));
-    memset(&debug_millis_sfx, 0, sizeof(debug_float_t));
-    memset(&debug_millis_tex, 0, sizeof(debug_float_t));
-    memset(&debug_count_tris, 0, sizeof(debug_float_t));
-    memset(&debug_count_quads, 0, sizeof(debug_float_t));
-#endif
-
     OSMesg osMesg;
     u8 mesg;
     void* sp24;
     u8 i;
     u8 visPerFrame;
     u8 validVIsPerFrame;
-
 
     maple_device_t* dev = NULL;
     if ((dev = maple_enum_type(0, MAPLE_FUNC_LCD))) {
@@ -391,10 +340,6 @@ void Main_ThreadEntry(void* arg0) {
         vmufb_present(&vmubuf, dev);
     }
 
-/*     maple_device_t *puru = maple_enum_type(0, MAPLE_FUNC_PURUPURU);
-printf("Product Name: %s\n", puru->info.product_name);
-printf("Product License: %s\n", puru->info.product_license); */
-
     printf("loading audio files\n");
     AudioLoad_LoadFiles();
     printf("\tdone.\n");
@@ -402,7 +347,6 @@ printf("Product License: %s\n", puru->info.product_license); */
     if (ever_init_wav == 0) {
         ever_init_wav = 1;
         wav_init();
-        // dbglog_set_level(DBG_INFO);
     }
 
     gVIsPerFrame = 0;
@@ -488,13 +432,6 @@ run_game_loop:
     Graphics_SetTask();
 
     while (true) {
-#if DEBUG_PROF
-		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
-        debug_millis_main.val = last_delta * 1e-6f;
-        update_debug_float(&debug_millis_main);
-
-		dstart = perf_cntr_timer_ns();
-#endif        
         if (MQ_GET_MESG(&gTimerTaskMesgQueue, &sp24)) {
             Timer_CompleteTask(sp24);
         }
@@ -506,33 +443,6 @@ run_game_loop:
         gSPSegment(gUnkDisp1++, 0, 0);
         gSPDisplayList(gMasterDisp++, gGfxPool->unkDL1);
         Game_Update();
-#if DEBUG_PROF
-        int r,g,b=0;
-        sprintf(dbgmsg, "TRIS %d   %d - %d - %d", (int)debug_count_tris.val, (int)debug_count_tris.min, (int)debug_count_tris.max, (int)debug_count_tris.avg);
-        debug_msg(dbgmsg, 40, 100-24, 0, 255, 255);
-//        sprintf(dbgmsg, "QUADS %d   %d - %d - %d", (int)debug_count_quads.val, (int)debug_count_quads.min, (int)debug_count_quads.max, (int)debug_count_quads.avg);
-  //      debug_msg(dbgmsg, 40, 100-24, 0, 255, 255);
-        if (debug_millis_main.val >= 33 && debug_millis_gfx.val < 33) {
-            r = 255; g = 255;
-        } else if (debug_millis_main.val >= 33 && debug_millis_gfx.val >= 33) {
-            r = 255; g = 0;
-        } else {
-            r = 0; g = 255;
-        }
-        sprintf(dbgmsg, "FRAME %.1f   %.1f - %.1f - %.1f", debug_millis_main.val, debug_millis_main.min, debug_millis_main.max, debug_millis_main.avg);
-        debug_msg(dbgmsg, 40, 100, r, g, b);
-        sprintf(dbgmsg, "GFX %.1f   %.1f - %.1f - %.1f", debug_millis_gfx.val, debug_millis_gfx.min, debug_millis_gfx.max, debug_millis_gfx.avg);
-        debug_msg(dbgmsg, 40, 124, r,g,b);
-        if (debug_millis_sfx.val > 8) {
-            r = 255; g = 0;
-        } else {
-            r = 0; g = 255;
-        }
-        sprintf(dbgmsg, "SFX %.1f   %.1f - %.1f - %.1f", debug_millis_sfx.val, debug_millis_sfx.min, debug_millis_sfx.max, debug_millis_sfx.avg);
-        debug_msg(dbgmsg, 40, 148, r,g,b);
-        sprintf(dbgmsg, "TEX %.1f   %.1f - %.1f - %.1f", debug_millis_tex.val, debug_millis_tex.min, debug_millis_tex.max, debug_millis_tex.avg);
-        debug_msg(dbgmsg, 40, 172, 255,0,255);
-#endif
 
         gSPEndDisplayList(gUnkDisp1++);
         gSPEndDisplayList(gUnkDisp2++);
@@ -544,9 +454,6 @@ run_game_loop:
         Audio_Update();
         Controller_Rumble();
         thd_pass();
-#if DEBUG_PROF
-		dend = perf_cntr_timer_ns();
-#endif
     }
 }
 
@@ -579,11 +486,6 @@ int main(int argc, char **argv) {
 #endif
 
 void* AudioThread(UNUSED void* arg) {
-#if DEBUG_PROF
-    // high resolution frame timing
-	uint64_t dstart = 0;
-	uint64_t dend = 0;
-#endif
     uint64_t last_vbltick = vblticker;
 
     while (1) {
@@ -597,13 +499,6 @@ void* AudioThread(UNUSED void* arg) {
 
         last_vbltick = vblticker;
 
-#if DEBUG_PROF
-		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
-        debug_millis_sfx.val = last_delta * 1e-6f;
-		update_debug_float(&debug_millis_sfx);
-		dstart = perf_cntr_timer_ns();
-#endif
-
 #if USE_32KHZ
         int samplecount = gSysFrameCount & 1 ? SAMPLES_HIGH : SAMPLES_LOW;
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], samplecount);
@@ -614,10 +509,6 @@ void* AudioThread(UNUSED void* arg) {
 #else
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], 448);
         audio_api->play((u8 *)audio_buffer[0], (u8*)audio_buffer[1], 1792);
-#endif
-
-#if DEBUG_PROF
-		dend = perf_cntr_timer_ns();
 #endif
     }
 

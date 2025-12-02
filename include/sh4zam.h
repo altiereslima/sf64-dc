@@ -6,46 +6,47 @@
 #define true 1
 #define false 0
 #define SHZ_NOEXCEPT
-#define SHZ_ALIGNAS(n)          __attribute__((aligned(n)))
-#define SHZ_INLINE              inline static
-#define SHZ_FORCE_INLINE        __attribute__((always_inline)) SHZ_INLINE
-#define SHZ_NO_INLINE           __attribute__((noinline))
-#define SHZ_ALIASING            __attribute__((__may_alias__))
+#define SHZ_ALIGNAS(n) __attribute__((aligned(n)))
+#define SHZ_INLINE inline static
+#define SHZ_FORCE_INLINE __attribute__((always_inline)) SHZ_INLINE
+#define SHZ_NO_INLINE __attribute__((noinline))
+#define SHZ_ALIASING __attribute__((__may_alias__))
 #ifdef __cplusplus
-#define SHZ_RESTRICT            __restrict__
+#define SHZ_RESTRICT __restrict__
 #else
-#define SHZ_RESTRICT            restrict
+#define SHZ_RESTRICT restrict
 #endif
 
-#define SHZ_FSCA_RAD_FACTOR     10430.37835f
+#define SHZ_FSCA_RAD_FACTOR 10430.37835f
 
-#define SHZ_F_PI                3.1415926f
+#define SHZ_F_PI 3.1415926f
 #define TRIG_ARG_SCALE 0.00009587f
-#define SHZ_ANGLE(a) (((float)((uint16_t)a)) * TRIG_ARG_SCALE)
+#define SHZ_ANGLE(a) (((float) ((uint16_t) a)) * TRIG_ARG_SCALE)
 
-#define SHZ_FSCHG(pairwise_mode) do { \
-        asm volatile("fschg"); \
-    } while(false)
-#define SHZ_LIKELY(e)            __builtin_expect(!!(e), 1)
-#define SHZ_UNLIKELY(e)          __builtin_expect(!!(e), 0)
-#define SHZ_PREFETCH(a)          __builtin_prefetch(a)
+#define SHZ_FSCHG(pairwise_mode) \
+    do {                         \
+        asm volatile("fschg");   \
+    } while (false)
+#define SHZ_LIKELY(e) __builtin_expect(!!(e), 1)
+#define SHZ_UNLIKELY(e) __builtin_expect(!!(e), 0)
+#define SHZ_PREFETCH(a) __builtin_prefetch(a)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef SHZ_ALIASING int16_t  shz_alias_int16_t;
+typedef SHZ_ALIASING int16_t shz_alias_int16_t;
 typedef SHZ_ALIASING uint16_t shz_alias_uint16_t;
-typedef SHZ_ALIASING int32_t  shz_alias_int32_t;
+typedef SHZ_ALIASING int32_t shz_alias_int32_t;
 typedef SHZ_ALIASING uint32_t shz_alias_uint32_t;
-typedef SHZ_ALIASING float    shz_alias_float_t;
-typedef SHZ_ALIASING int64_t  shz_alias_int64_t;
+typedef SHZ_ALIASING float shz_alias_float_t;
+typedef SHZ_ALIASING int64_t shz_alias_int64_t;
 typedef SHZ_ALIASING uint64_t shz_alias_uint64_t;
-typedef SHZ_ALIASING double   shz_alias_double_t;
+typedef SHZ_ALIASING double shz_alias_double_t;
 
 typedef struct shz_sincos {
-    float sin;  
-    float cos; 
+    float sin;
+    float cos;
 } shz_sincos_t;
 
 /*! 2D Vector type
@@ -56,7 +57,7 @@ typedef struct shz_sincos {
  */
 typedef struct shz_vec2 {
     union {
-        float e[2];  //!< <X, Y> coordinates as an array
+        float e[2]; //!< <X, Y> coordinates as an array
         struct {
             float x; //!< X coordinate
             float y; //!< Y coordinate
@@ -72,16 +73,16 @@ typedef struct shz_vec2 {
  */
 typedef struct shz_vec3 {
     union {
-        float e[3];              //!< <X, Y, Z> coordinates as an array
+        float e[3]; //!< <X, Y, Z> coordinates as an array
         struct {
             union {
                 struct {
-                    float x;     //!< X coordinate
-                    float y;     //!< Y coordinate
+                    float x; //!< X coordinate
+                    float y; //!< Y coordinate
                 };
-                shz_vec2_t xy;   //!< Inner 2D vector containing <X, Y> coords
+                shz_vec2_t xy; //!< Inner 2D vector containing <X, Y> coords
             };
-            float z;             //!< Z coordinate
+            float z; //!< Z coordinate
         };
     };
 } shz_vec3_t;
@@ -94,34 +95,34 @@ typedef struct shz_vec3 {
  */
 typedef struct shz_vec4 {
     union {
-        float e[4];                 //!< <X, Y, Z, W> coordinates as an array.
+        float e[4]; //!< <X, Y, Z, W> coordinates as an array.
         struct {
             union {
                 struct {
-                    float x;        //!< X coordinate
-                    float y;        //!< Y coordinate
-                    float z;        //!< Z coordinate
+                    float x; //!< X coordinate
+                    float y; //!< Y coordinate
+                    float z; //!< Z coordinate
                 };
-                shz_vec3_t xyz;     //!< <X, Y, Z> coordinates as a 3D vector
+                shz_vec3_t xyz; //!< <X, Y, Z> coordinates as a 3D vector
             };
-            float w;                //!< W coordinate
+            float w; //!< W coordinate
         };
         struct {
-            shz_vec2_t xy;          //!< <X, Y> coordinates as a 2D vector
-            shz_vec2_t zw;          //!< <Z, W> coordinates as a 2D vector
+            shz_vec2_t xy; //!< <X, Y> coordinates as a 2D vector
+            shz_vec2_t zw; //!< <Z, W> coordinates as a 2D vector
         };
     };
 } shz_vec4_t;
 
 typedef SHZ_ALIGNAS(8) union shz_matrix_2x2 {
-    float       elem[4];
-    float       elem2D[2][2];
-    shz_vec2_t  col[2];
+    float elem[4];
+    float elem2D[2][2];
+    shz_vec2_t col[2];
 } shz_matrix_2x2_t;
 
 typedef union shz_matrix_3x3 {
-    float      elem[9];
-    float      elem2D[3][3];
+    float elem[9];
+    float elem2D[3][3];
     shz_vec3_t col[3];
     struct {
         shz_vec3_t left;
@@ -131,8 +132,8 @@ typedef union shz_matrix_3x3 {
 } shz_matrix_3x3_t;
 
 typedef union shz_matrix_3x4 {
-    float      elem[12];
-    float      elem2D[3][4];
+    float elem[12];
+    float elem2D[3][4];
     shz_vec3_t col[4];
     struct {
         shz_vec3_t left;
@@ -143,8 +144,8 @@ typedef union shz_matrix_3x4 {
 } shz_matrix_3x4_t;
 
 typedef SHZ_ALIGNAS(8) union shz_matrix_4x4 {
-    float      elem[16];
-    float      elem2D[4][4];
+    float elem[16];
+    float elem2D[4][4];
     shz_vec4_t col[4];
     struct {
         shz_vec4_t left;
@@ -160,12 +161,11 @@ SHZ_FORCE_INLINE float shz_fmaf(float a, float b, float c) SHZ_NOEXCEPT {
 
 SHZ_FORCE_INLINE float shz_copysignf(float x, float y) SHZ_NOEXCEPT {
     x = fabsf(x);
-    return (y < 0.0f)? -x : x;
+    return (y < 0.0f) ? -x : x;
 }
 
-
 SHZ_FORCE_INLINE float shz_inv_sqrtf(float x) SHZ_NOEXCEPT {
-    asm volatile("fsrra %0" : "+f" (x));
+    asm volatile("fsrra %0" : "+f"(x));
     return x;
 }
 
@@ -176,27 +176,22 @@ SHZ_FORCE_INLINE float shz_invf_fsrra(float x) SHZ_NOEXCEPT {
 #include <math.h>
 SHZ_FORCE_INLINE float shz_sqrtf_fsrra(float x) {
 #if 1
-//    if (__builtin_constant_p(x))
-//        return sqrtf(x);
-    
+    //    if (__builtin_constant_p(x))
+    //        return sqrtf(x);
 
     return x == 0.0f ? 0.0f : shz_inv_sqrtf(x) * x;
 #else
     return sqrtf(x);
 #endif
-    }
-
+}
 
 SHZ_FORCE_INLINE float shz_mag_sqr3f(float x, float y, float z) SHZ_NOEXCEPT {
-    register float rx asm("fr8")  = x;
-    register float ry asm("fr9")  = y;
+    register float rx asm("fr8") = x;
+    register float ry asm("fr9") = y;
     register float rz asm("fr10") = z;
     register float rw asm("fr11") = 0.0f;
 
-
-    asm("fipr fv8, fv8"
-        : "+f" (rw)
-        : "f" (rx), "f" (ry), "f" (rz));
+    asm("fipr fv8, fv8" : "+f"(rw) : "f"(rx), "f"(ry), "f"(rz));
 
     return rw;
 }
@@ -207,17 +202,14 @@ SHZ_FORCE_INLINE float shz_mag_sqr4f(float x, float y, float z, float w) {
     register float rz asm("fr10") = z;
     register float rw asm("fr11") = w;
 
-    asm("fipr fv8, fv8"
-        : "+f" (rw)
-        : "f" (rx), "f" (ry), "f" (rz));
+    asm("fipr fv8, fv8" : "+f"(rw) : "f"(rx), "f"(ry), "f"(rz));
 
     return rw;
 }
 
-SHZ_FORCE_INLINE float shz_dot6f(float x1, float y1, float z1,
-                                 float x2, float y2, float z2) {
-    register float rx1 asm("fr8")  = x1;
-    register float ry1 asm("fr9")  = y1;
+SHZ_FORCE_INLINE float shz_dot6f(float x1, float y1, float z1, float x2, float y2, float z2) {
+    register float rx1 asm("fr8") = x1;
+    register float ry1 asm("fr9") = y1;
     register float rz1 asm("fr10") = z1;
     register float rw1 asm("fr11") = 0.0f;
     register float rx2 asm("fr12") = x2;
@@ -225,18 +217,14 @@ SHZ_FORCE_INLINE float shz_dot6f(float x1, float y1, float z1,
     register float rz2 asm("fr14") = z2;
     register float rw2 asm("fr15");
 
-    asm("fipr fv8, fv12"
-        : "=f" (rw2)
-        : "f" (rx1), "f" (ry1), "f" (rz1), "f" (rw1),
-          "f" (rx2), "f" (ry2), "f" (rz2));
+    asm("fipr fv8, fv12" : "=f"(rw2) : "f"(rx1), "f"(ry1), "f"(rz1), "f"(rw1), "f"(rx2), "f"(ry2), "f"(rz2));
 
     return rw2;
 }
 
-SHZ_FORCE_INLINE float shz_dot8f(float x1, float y1, float z1, float w1,
-                                 float x2, float y2, float z2, float w2) {
-    register float rx1 asm("fr8")  = x1;
-    register float ry1 asm("fr9")  = y1;
+SHZ_FORCE_INLINE float shz_dot8f(float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2) {
+    register float rx1 asm("fr8") = x1;
+    register float ry1 asm("fr9") = y1;
     register float rz1 asm("fr10") = z1;
     register float rw1 asm("fr11") = w1;
     register float rx2 asm("fr12") = x2;
@@ -244,18 +232,16 @@ SHZ_FORCE_INLINE float shz_dot8f(float x1, float y1, float z1, float w1,
     register float rz2 asm("fr14") = z2;
     register float rw2 asm("fr15") = w2;
 
-    asm("fipr fv8, fv12"
-        : "+f" (rw2)
-        : "f" (rx1), "f" (ry1), "f" (rz1), "f" (rw1),
-          "f" (rx2), "f" (ry2), "f" (rz2));
+    asm("fipr fv8, fv12" : "+f"(rw2) : "f"(rx1), "f"(ry1), "f"(rz1), "f"(rw1), "f"(rx2), "f"(ry2), "f"(rz2));
 
     return rw2;
 }
 
 //! Calculates 1.0f/sqrtf( \p x ), using a fast approximation.
 SHZ_FORCE_INLINE float shz_inverse_sqrtf(float x) {
-    if (x == 0.0f) return 0.0f;
-    asm("fsrra %0" : "+f" (x));
+    if (x == 0.0f)
+        return 0.0f;
+    asm("fsrra %0" : "+f"(x));
     return x;
 }
 
@@ -305,9 +291,9 @@ SHZ_INLINE float shz_atanf_q1(float x) SHZ_NOEXCEPT {
 }
 
 SHZ_INLINE float shz_atanf(float x) SHZ_NOEXCEPT {
-    if(x > 1.0f)
-	    return shz_atanf_q1(x);
-    else if(x < -1.0f)
+    if (x > 1.0f)
+        return shz_atanf_q1(x);
+    else if (x < -1.0f)
         return -shz_atanf_q1(x);
     else
         return shz_atanf_unit(x);
@@ -325,17 +311,16 @@ SHZ_FORCE_INLINE shz_vec3_t shz_vec3_scale(shz_vec3_t vec, float factor) SHZ_NOE
     return (shz_vec3_t) { vec.x * factor, vec.y * factor, vec.z * factor };
 }
 
-
 SHZ_FORCE_INLINE shz_vec2_t shz_vec2_init(float x, float y) SHZ_NOEXCEPT {
-    return (shz_vec2_t){ .x = x, .y = y };
+    return (shz_vec2_t) { .x = x, .y = y };
 }
 
 SHZ_FORCE_INLINE shz_vec3_t shz_vec3_init(float x, float y, float z) SHZ_NOEXCEPT {
-    return (shz_vec3_t){ .x = x, .y = y, .z = z };
+    return (shz_vec3_t) { .x = x, .y = y, .z = z };
 }
 
 SHZ_FORCE_INLINE shz_vec4_t shz_vec4_init(float x, float y, float z, float w) SHZ_NOEXCEPT {
-    return (shz_vec4_t){ .x = x, .y = y, .z = z, .w = w };
+    return (shz_vec4_t) { .x = x, .y = y, .z = z, .w = w };
 }
 
 SHZ_FORCE_INLINE shz_vec2_t shz_vec2_fill(float v) SHZ_NOEXCEPT {
@@ -355,24 +340,24 @@ SHZ_FORCE_INLINE shz_vec3_t shz_vec3_normalize(shz_vec3_t vec) SHZ_NOEXCEPT {
 }
 
 //! Dereferences the given pointer to a sequence of 2 floats as a shz_vec2_t.
-#   define shz_vec2_deref(ptr) (*((shz_vec2_t*)(ptr)))
+#define shz_vec2_deref(ptr) (*((shz_vec2_t*) (ptr)))
 
 //! Dereferences the given pointer to a sequence of 3 floats as a shz_vec3_t.
-#   define shz_vec3_deref(ptr) (*((shz_vec3_t*)(ptr)))
+#define shz_vec3_deref(ptr) (*((shz_vec3_t*) (ptr)))
 
 //! Dereferences the given pointer to a sequence of 4 floats as a shz_vec4_t.
-#   define shz_vec4_deref(ptr) (*((shz_vec4_t*)(ptr)))
+#define shz_vec4_deref(ptr) (*((shz_vec4_t*) (ptr)))
 
 SHZ_FORCE_INLINE shz_vec3_t shz_vec2_vec3(shz_vec2_t vec, float z) SHZ_NOEXCEPT {
-    return (shz_vec3_t){ .xy = vec, .z = z };
+    return (shz_vec3_t) { .xy = vec, .z = z };
 }
 
 SHZ_FORCE_INLINE shz_vec4_t shz_vec2_vec4(shz_vec2_t vec, float z, float w) SHZ_NOEXCEPT {
-    return (shz_vec4_t){ .x = vec.x, .y = vec.y, .z = z, .w = w };
+    return (shz_vec4_t) { .x = vec.x, .y = vec.y, .z = z, .w = w };
 }
 
 SHZ_FORCE_INLINE shz_vec4_t shz_vec3_vec4(shz_vec3_t vec, float w) SHZ_NOEXCEPT {
-    return (shz_vec4_t){ .xyz = vec, .w = w };
+    return (shz_vec4_t) { .xyz = vec, .w = w };
 }
 
 SHZ_FORCE_INLINE shz_vec4_t shz_xmtrx_trans_vec4(shz_vec4_t vec) {
@@ -381,8 +366,7 @@ SHZ_FORCE_INLINE shz_vec4_t shz_xmtrx_trans_vec4(shz_vec4_t vec) {
     register float rz asm("fr10") = vec.z;
     register float rw asm("fr11") = vec.w;
 
-    asm volatile("ftrv xmtrx, fv8"
-                 : "+f" (rx), "+f" (ry), "+f" (rz), "+f" (rw));
+    asm volatile("ftrv xmtrx, fv8" : "+f"(rx), "+f"(ry), "+f"(rz), "+f"(rw));
 
     return (shz_vec4_t) { .x = rx, .y = ry, .z = rz, .w = rw };
 }
@@ -399,11 +383,9 @@ SHZ_FORCE_INLINE shz_sincos_t shz_sincosu16(uint16_t radians16) {
     register float rsin asm("fr0");
     register float rcos asm("fr1");
 
-    asm("fsca fpul, dr0"
-        : "=f" (rsin), "=f" (rcos)
-        : "y" (radians16));
+    asm("fsca fpul, dr0" : "=f"(rsin), "=f"(rcos) : "y"(radians16));
 
-    return (shz_sincos_t){ rsin, rcos };
+    return (shz_sincos_t) { rsin, rcos };
 }
 
 SHZ_FORCE_INLINE shz_sincos_t shz_sincosf(float radians) {
@@ -426,28 +408,20 @@ SHZ_FORCE_INLINE float shz_tanf(float radians) {
     return shz_sincos_tanf(shz_sincosf(radians));
 }
 
-SHZ_FORCE_INLINE void shz_dcache_alloc_line(void *src) {
-    SHZ_ALIASING uint32_t *src32 = (SHZ_ALIASING uint32_t *)src;
+SHZ_FORCE_INLINE void shz_dcache_alloc_line(void* src) {
+    SHZ_ALIASING uint32_t* src32 = (SHZ_ALIASING uint32_t*) src;
 
     asm volatile("movca.l r0, @%8"
-     : "=m"(src32[0]),
-       "=m"(src32[1]),
-       "=m"(src32[2]),
-       "=m"(src32[3]),
-       "=m"(src32[4]),
-       "=m"(src32[5]),
-       "=m"(src32[6]),
-       "=m"(src32[7])
-     : "r" (src32));
+                 : "=m"(src32[0]), "=m"(src32[1]), "=m"(src32[2]), "=m"(src32[3]), "=m"(src32[4]), "=m"(src32[5]),
+                   "=m"(src32[6]), "=m"(src32[7])
+                 : "r"(src32));
 }
 
-
-SHZ_INLINE void shz_xmtrx_load_apply_store_4x4(shz_matrix_4x4_t* out,
-                                               const shz_matrix_4x4_t* matrix1,
+SHZ_INLINE void shz_xmtrx_load_apply_store_4x4(shz_matrix_4x4_t* out, const shz_matrix_4x4_t* matrix1,
                                                const shz_matrix_4x4_t* matrix2) SHZ_NOEXCEPT {
     unsigned int prefetch_scratch;
 
-    asm volatile (R"(
+    asm volatile(R"(
         mov     %[m1], %[prefscr]
         add     #32, %[prefscr]
         fschg
@@ -500,15 +474,14 @@ SHZ_INLINE void shz_xmtrx_load_apply_store_4x4(shz_matrix_4x4_t* out,
 
         fschg
     )"
-    : [m1] "+&r" (matrix1), [m2] "+r" (matrix2), [out] "+&r" (out), "=m" (*out),
-      [prefscr] "=&r" (prefetch_scratch)
-    : "m" (*matrix1), "m" (*matrix2)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [m1] "+&r"(matrix1), [m2] "+r"(matrix2), [out] "+&r"(out),
+                   "=m"(*out), [prefscr] "=&r"(prefetch_scratch)
+                 : "m"(*matrix1), "m"(*matrix2)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
-
-SHZ_INLINE void shz_xmtrx_store_4x4(shz_matrix_4x4_t *matrix) {
+SHZ_INLINE void shz_xmtrx_store_4x4(shz_matrix_4x4_t* matrix) {
     asm volatile(R"(
         fschg
         add     #64, %[mtx]
@@ -525,7 +498,7 @@ SHZ_INLINE void shz_xmtrx_store_4x4(shz_matrix_4x4_t *matrix) {
         fmov.d	xd0, @-%[mtx]
         fschg
     )"
-    : [mtx] "+&r" (matrix), "=m" (*matrix));
+                 : [mtx] "+&r"(matrix), "=m"(*matrix));
 }
 
 SHZ_INLINE void shz_xmtrx_store_4x4_unaligned(float matrix[16]) {
@@ -553,12 +526,11 @@ SHZ_INLINE void shz_xmtrx_store_4x4_unaligned(float matrix[16]) {
         fmov.s	fr0, @-%[mtx]        
         frchg
     )"
-    : "=m" (*matrix)
-    : [mtx] "r" (matrix));
+                 : "=m"(*matrix)
+                 : [mtx] "r"(matrix));
 }
 
-
-SHZ_INLINE void shz_xmtrx_store_4x4_transpose(shz_matrix_4x4_t *matrix) {
+SHZ_INLINE void shz_xmtrx_store_4x4_transpose(shz_matrix_4x4_t* matrix) {
     asm volatile(R"(
         frchg
         add     #64-8, %[mtx]
@@ -583,10 +555,10 @@ SHZ_INLINE void shz_xmtrx_store_4x4_transpose(shz_matrix_4x4_t *matrix) {
         fmov.s  fr0, @-%[mtx]
         frchg
     )"
-    : [mtx] "+&r" (matrix), "=m" (*matrix));
+                 : [mtx] "+&r"(matrix), "=m"(*matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_load_4x4(const shz_matrix_4x4_t *matrix) {
+SHZ_INLINE void shz_xmtrx_load_4x4(const shz_matrix_4x4_t* matrix) {
     asm volatile(R"(
         fschg
         fmov.d	@%[mtx], xd0
@@ -602,8 +574,8 @@ SHZ_INLINE void shz_xmtrx_load_4x4(const shz_matrix_4x4_t *matrix) {
         fmov.d	@%[mtx]+, xd14
         fschg
     )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix));
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix));
 }
 
 SHZ_INLINE void shz_xmtrx_load_4x4_unaligned(const float matrix[16]) {
@@ -630,11 +602,11 @@ SHZ_INLINE void shz_xmtrx_load_4x4_unaligned(const float matrix[16]) {
         fmov.s	@%[mtx]+, fr15
         frchg
     )"
-    : [mtx] "+r" (matrix)
-    :  "m" (*matrix));
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_load_4x4_transpose(const shz_matrix_4x4_t *matrix) {
+SHZ_INLINE void shz_xmtrx_load_4x4_transpose(const shz_matrix_4x4_t* matrix) {
     asm volatile(R"(
         frchg
 
@@ -665,15 +637,13 @@ SHZ_INLINE void shz_xmtrx_load_4x4_transpose(const shz_matrix_4x4_t *matrix) {
 
         frchg
     )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix));
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_load_4x4_rows(const shz_vec4_t *r1,
-                                        const shz_vec4_t *r2,
-                                        const shz_vec4_t *r3,
-                                        const shz_vec4_t *r4) {
-    asm volatile (R"(
+SHZ_INLINE void shz_xmtrx_load_4x4_rows(const shz_vec4_t* r1, const shz_vec4_t* r2, const shz_vec4_t* r3,
+                                        const shz_vec4_t* r4) {
+    asm volatile(R"(
         frchg
 
         pref    @%1
@@ -701,15 +671,13 @@ SHZ_INLINE void shz_xmtrx_load_4x4_rows(const shz_vec4_t *r1,
 
         frchg
     )"
-    : "+&r" (r1), "+&r" (r2), "+&r" (r3), "+&r" (r4)
-    : "m" (*r1), "m" (*r2), "m" (*r3), "m" (*r4));    
+                 : "+&r"(r1), "+&r"(r2), "+&r"(r3), "+&r"(r4)
+                 : "m"(*r1), "m"(*r2), "m"(*r3), "m"(*r4));
 }
 
-SHZ_INLINE void shz_xmtrx_load_4x4_cols(const shz_vec4_t *c1,
-                                        const shz_vec4_t *c2,
-                                        const shz_vec4_t *c3,
-                                        const shz_vec4_t *c4) {
-    asm volatile (R"(
+SHZ_INLINE void shz_xmtrx_load_4x4_cols(const shz_vec4_t* c1, const shz_vec4_t* c2, const shz_vec4_t* c3,
+                                        const shz_vec4_t* c4) {
+    asm volatile(R"(
         frchg
 
         pref    @%1
@@ -737,16 +705,14 @@ SHZ_INLINE void shz_xmtrx_load_4x4_cols(const shz_vec4_t *c1,
 
         frchg
     )"
-    : "+&r" (c1), "+&r" (c2), "+&r" (c3), "+&r" (c4)
-    : "m" (*c1), "m" (*c2), "m" (*c3), "m" (*c4));
+                 : "+&r"(c1), "+&r"(c2), "+&r"(c3), "+&r"(c4)
+                 : "m"(*c1), "m"(*c2), "m"(*c3), "m"(*c4));
 }
 
-SHZ_INLINE void shz_xmtrx_load_4x4_apply(const shz_matrix_4x4_t *matrix1,
-                                         const shz_matrix_4x4_t *matrix2)
-{
+SHZ_INLINE void shz_xmtrx_load_4x4_apply(const shz_matrix_4x4_t* matrix1, const shz_matrix_4x4_t* matrix2) {
     unsigned int prefetch_scratch;
 
-    asm volatile (R"(
+    asm volatile(R"(
         mov     %[m1], %[prefscr]
         add     #32, %[prefscr]
         fschg
@@ -783,21 +749,17 @@ SHZ_INLINE void shz_xmtrx_load_4x4_apply(const shz_matrix_4x4_t *matrix1,
         ftrv    xmtrx, fv12
         frchg
     )"
-    : [m1] "+&r" (matrix1), [m2] "+r" (matrix2),
-      [prefscr] "=&r" (prefetch_scratch)
-    : "m" (*matrix1), "m" (*matrix2)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [m1] "+&r"(matrix1), [m2] "+r"(matrix2), [prefscr] "=&r"(prefetch_scratch)
+                 : "m"(*matrix1), "m"(*matrix2)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
-
-SHZ_INLINE void shz_xmtrx_load_4x4_apply_store(shz_matrix_4x4_t *out,
-                                               const shz_matrix_4x4_t *matrix1,
-                                               const shz_matrix_4x4_t *matrix2)
-{
+SHZ_INLINE void shz_xmtrx_load_4x4_apply_store(shz_matrix_4x4_t* out, const shz_matrix_4x4_t* matrix1,
+                                               const shz_matrix_4x4_t* matrix2) {
     unsigned int prefetch_scratch;
 
-    asm volatile (R"(
+    asm volatile(R"(
         mov     %[m1], %[prefscr]
         add     #32, %[prefscr]
         fschg
@@ -850,14 +812,13 @@ SHZ_INLINE void shz_xmtrx_load_4x4_apply_store(shz_matrix_4x4_t *out,
 
         fschg
     )"
-    : [m1] "+&r" (matrix1), [m2] "+r" (matrix2), "=m" (*out),
-      [prefscr] "=&r" (prefetch_scratch)
-    : [out] "r" (out), "m" (*matrix1), "m" (*matrix2)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [m1] "+&r"(matrix1), [m2] "+r"(matrix2), "=m"(*out), [prefscr] "=&r"(prefetch_scratch)
+                 : [out] "r"(out), "m"(*matrix1), "m"(*matrix2)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
-SHZ_INLINE void shz_matrix_4x4_copy(shz_matrix_4x4_t *dst, const shz_matrix_4x4_t *src) {
+SHZ_INLINE void shz_matrix_4x4_copy(shz_matrix_4x4_t* dst, const shz_matrix_4x4_t* src) {
     asm volatile(R"(
         fschg
 
@@ -891,11 +852,11 @@ SHZ_INLINE void shz_matrix_4x4_copy(shz_matrix_4x4_t *dst, const shz_matrix_4x4_
 
         fschg
     )"
-    : [dst] "+&r" (dst), [src] "+&r" (src), "=m" (*dst)
-    : "m" (*src));
+                 : [dst] "+&r"(dst), [src] "+&r"(src), "=m"(*dst)
+                 : "m"(*src));
 }
 
-SHZ_INLINE void shz_xmtrx_load_3x3(const shz_matrix_3x3_t *matrix) {
+SHZ_INLINE void shz_xmtrx_load_3x3(const shz_matrix_3x3_t* matrix) {
     asm volatile(R"(
         frchg
 
@@ -920,11 +881,11 @@ SHZ_INLINE void shz_xmtrx_load_3x3(const shz_matrix_3x3_t *matrix) {
 
         frchg
     )"
-    : [mat] "+r" (matrix)
-    : "m" (*matrix));
+                 : [mat] "+r"(matrix)
+                 : "m"(*matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_load_3x3_transpose(const float *matrix) {
+SHZ_INLINE void shz_xmtrx_load_3x3_transpose(const float* matrix) {
     asm volatile(R"(
         frchg
 
@@ -949,13 +910,12 @@ SHZ_INLINE void shz_xmtrx_load_3x3_transpose(const float *matrix) {
 
         frchg
     )"
-    : [mat] "+r" (matrix)
-    : "m" (matrix[0]), "m" (matrix[1]), "m" (matrix[2]),
-      "m" (matrix[3]), "m" (matrix[4]), "m" (matrix[5]),
-      "m" (matrix[6]), "m" (matrix[7]), "m" (matrix[8]));
+                 : [mat] "+r"(matrix)
+                 : "m"(matrix[0]), "m"(matrix[1]), "m"(matrix[2]), "m"(matrix[3]), "m"(matrix[4]), "m"(matrix[5]),
+                   "m"(matrix[6]), "m"(matrix[7]), "m"(matrix[8]));
 }
 
-SHZ_INLINE void shz_xmtrx_store_3x3(shz_matrix_3x3_t *matrix) {
+SHZ_INLINE void shz_xmtrx_store_3x3(shz_matrix_3x3_t* matrix) {
     asm volatile(R"(
         frchg
         add     #36, %[mtx]
@@ -974,11 +934,11 @@ SHZ_INLINE void shz_xmtrx_store_3x3(shz_matrix_3x3_t *matrix) {
 
         frchg
     )"
-    : "=m" (*matrix)
-    : [mtx] "r" (matrix));
+                 : "=m"(*matrix)
+                 : [mtx] "r"(matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_store_3x3_transpose(shz_matrix_3x3_t *matrix) {
+SHZ_INLINE void shz_xmtrx_store_3x3_transpose(shz_matrix_3x3_t* matrix) {
     asm volatile(R"(
         frchg
         add     #36, %[mtx]
@@ -997,11 +957,11 @@ SHZ_INLINE void shz_xmtrx_store_3x3_transpose(shz_matrix_3x3_t *matrix) {
 
         frchg
     )"
-    : "=m" (*matrix)
-    : [mtx] "r" (matrix));
+                 : "=m"(*matrix)
+                 : [mtx] "r"(matrix));
 }
 
-SHZ_INLINE void shz_xmtrx_apply_3x3(const shz_matrix_3x3_t *matrix) {
+SHZ_INLINE void shz_xmtrx_apply_3x3(const shz_matrix_3x3_t* matrix) {
     asm volatile(R"(
         fmov.s  @%[mtx], fr0
         add     #32, %[mtx]
@@ -1034,13 +994,13 @@ SHZ_INLINE void shz_xmtrx_apply_3x3(const shz_matrix_3x3_t *matrix) {
 
         frchg
     )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
-SHZ_INLINE void shz_xmtrx_apply_3x3_transpose(const shz_matrix_3x3_t *matrix) {
+SHZ_INLINE void shz_xmtrx_apply_3x3_transpose(const shz_matrix_3x3_t* matrix) {
     asm volatile(R"(
         fmov.s  @%[mtx]+, fr0
         add     #32, %[mtx]
@@ -1073,10 +1033,10 @@ SHZ_INLINE void shz_xmtrx_apply_3x3_transpose(const shz_matrix_3x3_t *matrix) {
 
         frchg
     )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
 SHZ_INLINE void shz_xmtrx_apply_4x4(const shz_matrix_4x4_t* matrix) SHZ_NOEXCEPT {
@@ -1120,10 +1080,10 @@ SHZ_INLINE void shz_xmtrx_apply_4x4(const shz_matrix_4x4_t* matrix) SHZ_NOEXCEPT
         mov     r7, r15
         fschg
     )"
-    : [mtx] "+r" (matrix)
-    : "m" (*matrix)
-    : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6",
-      "fr7", "fr8", "fr9", "fr10", "fr11", "fr12");
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix)
+                 : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11",
+                   "fr12");
 }
 
 SHZ_INLINE void shz_xmtrx_apply_4x4_unaligned(const float matrix[16]) {
@@ -1179,10 +1139,10 @@ SHZ_INLINE void shz_xmtrx_apply_4x4_unaligned(const float matrix[16]) {
         mov     r7, r15
         fschg
     )"
-    : [mtx] "+r" (matrix)
-    :  "m" (*matrix)
-    : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6",
-      "fr7", "fr8", "fr9", "fr10", "fr11", "fr12");
+                 : [mtx] "+r"(matrix)
+                 : "m"(*matrix)
+                 : "r0", "r7", "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11",
+                   "fr12");
 }
 
 SHZ_INLINE void shz_xmtrx_init_identity_safe(void) {
@@ -1250,11 +1210,9 @@ SHZ_INLINE void shz_xmtrx_init_translation(float x, float y, float z) {
         fldi1   fr15
         frchg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z));
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z));
 }
-
 
 SHZ_INLINE void shz_xmtrx_init_diagonal(float x, float y, float z, float w) {
     asm volatile(R"(
@@ -1276,9 +1234,8 @@ SHZ_INLINE void shz_xmtrx_init_diagonal(float x, float y, float z, float w) {
         fmov.s  @%[w], fr15
         frchg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z), [w] "r" (&w),
-      "m" (x), "m" (y), "m" (z), "m" (w));
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), [w] "r"(&w), "m"(x), "m"(y), "m"(z), "m"(w));
 }
 
 SHZ_FORCE_INLINE void shz_xmtrx_init_scale(float x, float y, float z) {
@@ -1310,9 +1267,9 @@ SHZ_INLINE void shz_xmtrx_init_rotation_x(float x) {
         fldi0   fr1
         frchg
     )"
-    :
-    : "f" (x)
-    : "fpul");
+                 :
+                 : "f"(x)
+                 : "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_rotate_x(float x) {
@@ -1348,11 +1305,10 @@ SHZ_INLINE void shz_xmtrx_rotate_x(float x) {
 
         frchg
     )"
-    : "+f" (x_) 
-    :
-    : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15", 
-      "fpul");
+                 : "+f"(x_)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15", "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_init_rotation_y(float y) {
@@ -1380,13 +1336,13 @@ SHZ_INLINE void shz_xmtrx_init_rotation_y(float y) {
         fldi0   fr1
         frchg
     )"
-    :
-    : "f" (y)
-    : "fpul");
+                 :
+                 : "f"(y)
+                 : "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_rotate_y(float y) {
-    float register y_ asm ("fr4") = y * SHZ_FSCA_RAD_FACTOR;
+    float register y_ asm("fr4") = y * SHZ_FSCA_RAD_FACTOR;
     asm volatile(R"(
         ftrc    %0, fpul
         fsca	fpul, dr0
@@ -1418,11 +1374,10 @@ SHZ_INLINE void shz_xmtrx_rotate_y(float y) {
 
         frchg
     )"
-    : "+f" (y_) 
-    :
-    : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15", 
-      "fpul");
+                 : "+f"(y_)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15", "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_init_rotation_z(float z) {
@@ -1447,9 +1402,9 @@ SHZ_INLINE void shz_xmtrx_init_rotation_z(float z) {
         fschg
         frchg
     )"
-    :
-    : "f" (z)
-    : "fpul");
+                 :
+                 : "f"(z)
+                 : "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_rotate_z(float z) {
@@ -1483,11 +1438,10 @@ SHZ_INLINE void shz_xmtrx_rotate_z(float z) {
 
         frchg
     )"
-    : "+f" (z_) 
-    :
-    : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15", 
-      "fpul");
+                 : "+f"(z_)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15", "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_apply_rotation_x(float x) {
@@ -1515,11 +1469,10 @@ SHZ_INLINE void shz_xmtrx_apply_rotation_x(float x) {
         fmov	dr6, xd6
         fschg
     )"
-    :
-    : "f" (x)
-    : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
+                 :
+                 : "f"(x)
+                 : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
 }
-
 
 SHZ_INLINE void shz_xmtrx_apply_rotation_y(float y) {
     y *= SHZ_FSCA_RAD_FACTOR;
@@ -1546,9 +1499,9 @@ SHZ_INLINE void shz_xmtrx_apply_rotation_y(float y) {
         fmov	dr6, xd2
         fschg
     )"
-    :
-    : "f" (y)
-    : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
+                 :
+                 : "f"(y)
+                 : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
 }
 
 SHZ_INLINE void shz_xmtrx_apply_rotation_z(float z) {
@@ -1574,18 +1527,17 @@ SHZ_INLINE void shz_xmtrx_apply_rotation_z(float z) {
         fmov	dr6, xd2
         fschg
     )"
-    :
-    : "f" (z)
-    : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
+                 :
+                 : "f"(z)
+                 : "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fpul");
 }
-
 
 SHZ_INLINE void shz_xmtrx_apply_rotation_axis(float angle, float x, float y, float z) {
     register float x_ asm("fr4") = x;
     register float y_ asm("fr5") = y;
     register float z_ asm("fr6") = z;
     register float a_ asm("fr7") = angle * SHZ_FSCA_RAD_FACTOR;
-	
+
     asm volatile(R"(
         ftrc	fr7, fpul
         fsca	fpul, dr2
@@ -1644,19 +1596,17 @@ SHZ_INLINE void shz_xmtrx_apply_rotation_axis(float angle, float x, float y, flo
 
         frchg
     )"
-    : "+f"(x_), "+f"(y_), "+f"(z_), "+f"(a_)
-    :
-    : "fr0", "fr1", "fr2", "fr3", "fr8", "fr9", "fr10", "fr11",
-      "fr12", "fr13", "fr14", "fr15", "fpul");
+                 : "+f"(x_), "+f"(y_), "+f"(z_), "+f"(a_)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15", "fpul");
 }
-
 
 SHZ_INLINE void shz_xmtrx_init_rotation_axis(float angle, float x, float y, float z) {
     register float x_ asm("fr4") = x;
     register float y_ asm("fr5") = y;
     register float z_ asm("fr6") = z;
     register float a_ asm("fr7") = angle * SHZ_FSCA_RAD_FACTOR;
-	
+
     asm volatile(R"(
         ftrc	fr7, fpul
         fsca	fpul, dr2
@@ -1717,17 +1667,14 @@ SHZ_INLINE void shz_xmtrx_init_rotation_axis(float angle, float x, float y, floa
 
         frchg
     )"
-    : "+f"(x_), "+f"(y_), "+f"(z_), "+f"(a_)
-    :
-    : "fr0", "fr1", "fr2", "fr3", "fr8", "fr9", "fr10", "fr11",
-      "fr12", "fr13", "fr14", "fr15", "fpul");
+                 : "+f"(x_), "+f"(y_), "+f"(z_), "+f"(a_)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15", "fpul");
 }
 
-
-SHZ_INLINE void shz_xmtrx_apply_lookat(const float* position_3f,
-                                       const float* target_3f,
+SHZ_INLINE void shz_xmtrx_apply_lookat(const float* position_3f, const float* target_3f,
                                        const float* up_3f) SHZ_NOEXCEPT {
-	asm volatile(R"(
+    asm volatile(R"(
         fmov.s  @%[t]+, fr8
         fmov.s  @%[t]+, fr9
         fmov.s  @%[t]+, fr10
@@ -1835,10 +1782,10 @@ SHZ_INLINE void shz_xmtrx_apply_lookat(const float* position_3f,
 
         frchg
     )"
-	: [p] "+&r"(position_3f), [t] "+&r"(target_3f), [u] "+&r"(up_3f)
-	:
-	: "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [p] "+&r"(position_3f), [t] "+&r"(target_3f), [u] "+&r"(up_3f)
+                 :
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
 SHZ_FORCE_INLINE void shz_xmtrx_set_translation(float x, float y, float z) {
@@ -1851,10 +1798,8 @@ SHZ_FORCE_INLINE void shz_xmtrx_set_translation(float x, float y, float z) {
 
         frchg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z)
-    );
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z));
 }
 
 SHZ_INLINE void shz_xmtrx_apply_translation(float x, float y, float z) {
@@ -1879,10 +1824,9 @@ SHZ_INLINE void shz_xmtrx_apply_translation(float x, float y, float z) {
         fmov	dr6, xd2
         fschg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z)
-    : "fr4", "fr5", "fr6", "fr7");
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z)
+                 : "fr4", "fr5", "fr6", "fr7");
 }
 
 SHZ_INLINE void shz_xmtrx_translate(float x, float y, float z) {
@@ -1913,15 +1857,14 @@ SHZ_INLINE void shz_xmtrx_translate(float x, float y, float z) {
 
         frchg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
 SHZ_INLINE void shz_xmtrx_apply_scale(float x, float y, float z) {
-        asm volatile(R"(
+    asm volatile(R"(
         fschg
         fmov	xd12, dr4
         fmov	xd14, dr6
@@ -1950,10 +1893,9 @@ SHZ_INLINE void shz_xmtrx_apply_scale(float x, float y, float z) {
         fmov	dr6, xd14
         fschg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z)
-    : "fr4", "fr5", "fr6", "fr7");
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z)
+                 : "fr4", "fr5", "fr6", "fr7");
 }
 
 SHZ_INLINE void shz_xmtrx_scale(float x, float y, float z) {
@@ -1984,11 +1926,10 @@ SHZ_INLINE void shz_xmtrx_scale(float x, float y, float z) {
 
         frchg
     )"
-    :
-    : [x] "r" (&x), [y] "r" (&y), [z] "r" (&z),
-      "m" (x), "m" (y), "m" (z)
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 :
+                 : [x] "r"(&x), [y] "r"(&y), [z] "r"(&z), "m"(x), "m"(y), "m"(z)
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 }
 
 SHZ_INLINE void shz_xmtrx_init_rotation(float roll, float pitch, float yaw) {
@@ -2004,7 +1945,7 @@ SHZ_INLINE void shz_xmtrx_apply_rotation(float roll, float pitch, float yaw) {
 }
 
 SHZ_INLINE void shz_xmtrx_transpose(void) {
-    asm volatile (R"(
+    asm volatile(R"(
         frchg
 
         flds    fr1, fpul
@@ -2033,11 +1974,10 @@ SHZ_INLINE void shz_xmtrx_transpose(void) {
 
         frchg
     )"
-    :
-    :
-    : "fpul");
+                 :
+                 :
+                 : "fpul");
 }
-
 
 SHZ_INLINE shz_vec3_t shz_mat4x4_trans_vec3(const shz_matrix_4x4_t* m, shz_vec3_t v) SHZ_NOEXCEPT {
     shz_vec3_t out;
@@ -2052,22 +1992,16 @@ SHZ_INLINE shz_vec3_t shz_mat4x4_trans_vec3(const shz_matrix_4x4_t* m, shz_vec3_
     register float fr6 asm("fr6") = m->elem2D[2][0];
     register float fr7 asm("fr7");
 
-    asm volatile("fipr fv0, fv4"
-        : "=f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "=f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
     __atomic_thread_fence(1);
 
-    register float fr8  asm("fr8")  = m->elem2D[0][1];
-    register float fr9  asm("fr9")  = m->elem2D[1][1];
+    register float fr8 asm("fr8") = m->elem2D[0][1];
+    register float fr9 asm("fr9") = m->elem2D[1][1];
     register float fr10 asm("fr10") = m->elem2D[2][1];
     register float fr11 asm("fr11");
 
-    asm volatile("fipr fv0, fv8"
-        : "=f" (fr11)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr8), "f" (fr9), "f" (fr10));
+    asm volatile("fipr fv0, fv8" : "=f"(fr11) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr8), "f"(fr9), "f"(fr10));
 
     __atomic_thread_fence(1);
 
@@ -2079,10 +2013,7 @@ SHZ_INLINE shz_vec3_t shz_mat4x4_trans_vec3(const shz_matrix_4x4_t* m, shz_vec3_
     fr5 = m->elem2D[1][2];
     fr6 = m->elem2D[2][2];
 
-    asm volatile("fipr fv0, fv4"
-        : "=f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "=f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
     __atomic_thread_fence(1);
 
@@ -2096,9 +2027,7 @@ SHZ_INLINE shz_vec4_t shz_mat4x4_trans_vec4(const shz_matrix_4x4_t* mat, shz_vec
     SHZ_PREFETCH(mat);
 
     shz_vec4_t* v = &in;
-    const shz_vec4_t* c[4] = {
-        &mat->col[0], &mat->col[1], &mat->col[2], &mat->col[3]
-    };
+    const shz_vec4_t* c[4] = { &mat->col[0], &mat->col[1], &mat->col[2], &mat->col[3] };
 
     asm volatile(R"(
         ! Load input vector into FV12
@@ -2161,17 +2090,15 @@ SHZ_INLINE shz_vec4_t shz_mat4x4_trans_vec4(const shz_matrix_4x4_t* mat, shz_vec
         add     #4, %[v]        ! Advance output vector pointer
         fmov.s  fr3, @%[v]      ! FUCKING STALL - previous FIPR still in pipeline!
     )"
-    : [v] "+r" (v), "=m" (in),
-      [c0] "+r" (c[0]), [c1] "+r" (c[1]), [c2] "+r" (c[2]), [c3] "+r" (c[3])
-    : "m" (in), "m" (*c[0]), "m" (*c[1]), "m" (*c[2]), "m" (*c[3])
-    : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7",
-      "fr8", "fr9", "fr10", "fr11", "fr12", "fr13", "fr14", "fr15");
+                 : [v] "+r"(v), "=m"(in), [c0] "+r"(c[0]), [c1] "+r"(c[1]), [c2] "+r"(c[2]), [c3] "+r"(c[3])
+                 : "m"(in), "m"(*c[0]), "m"(*c[1]), "m"(*c[2]), "m"(*c[3])
+                 : "fr0", "fr1", "fr2", "fr3", "fr4", "fr5", "fr6", "fr7", "fr8", "fr9", "fr10", "fr11", "fr12", "fr13",
+                   "fr14", "fr15");
 
     return in;
 }
 
-
-SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3(const shz_matrix_3x3_t *m, shz_vec3_t v) {
+SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3(const shz_matrix_3x3_t* m, shz_vec3_t v) {
     shz_vec3_t out;
 
     register float fr0 asm("fr0") = v.x;
@@ -2184,23 +2111,16 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3(const shz_matrix_3x3_t *m, shz_ve
     register float fr6 asm("fr6") = m->elem2D[2][0];
     register float fr7 asm("fr7") = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
     __atomic_thread_fence(1);
 
-    register float fr8  asm("fr8")  = m->elem2D[0][1];
-    register float fr9  asm("fr9")  = m->elem2D[1][1];
+    register float fr8 asm("fr8") = m->elem2D[0][1];
+    register float fr9 asm("fr9") = m->elem2D[1][1];
     register float fr10 asm("fr10") = m->elem2D[2][1];
     register float fr11 asm("fr11") = 0.0f;
 
-    asm volatile("fipr fv0, fv8" 
-        : "+f" (fr11)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr8), "f" (fr9), "f" (fr10));
-
+    asm volatile("fipr fv0, fv8" : "+f"(fr11) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr8), "f"(fr9), "f"(fr10));
 
     __atomic_thread_fence(1);
 
@@ -2213,12 +2133,9 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3(const shz_matrix_3x3_t *m, shz_ve
     fr6 = m->elem2D[2][2];
     fr7 = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
-    __atomic_thread_fence(1);      
+    __atomic_thread_fence(1);
 
     out.y = fr11;
     out.z = fr7;
@@ -2226,7 +2143,7 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3(const shz_matrix_3x3_t *m, shz_ve
     return out;
 }
 
-SHZ_INLINE shz_vec3_t shz_matrix4x4_trans_vec3_transpose(const shz_matrix_4x4_t *m, shz_vec3_t v) {
+SHZ_INLINE shz_vec3_t shz_matrix4x4_trans_vec3_transpose(const shz_matrix_4x4_t* m, shz_vec3_t v) {
     shz_vec3_t out;
 
     register float fr0 asm("fr0") = v.x;
@@ -2239,22 +2156,16 @@ SHZ_INLINE shz_vec3_t shz_matrix4x4_trans_vec3_transpose(const shz_matrix_4x4_t 
     register float fr6 asm("fr6") = m->elem2D[0][2];
     register float fr7 asm("fr7") = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
     __atomic_thread_fence(1);
 
-    register float fr8  asm("fr8")  = m->elem2D[1][0];
-    register float fr9  asm("fr9")  = m->elem2D[1][1];
+    register float fr8 asm("fr8") = m->elem2D[1][0];
+    register float fr9 asm("fr9") = m->elem2D[1][1];
     register float fr10 asm("fr10") = m->elem2D[1][2];
     register float fr11 asm("fr11") = 0.0f;
 
-    asm volatile("fipr fv0, fv8" 
-        : "+f" (fr11)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr8), "f" (fr9), "f" (fr10));
+    asm volatile("fipr fv0, fv8" : "+f"(fr11) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr8), "f"(fr9), "f"(fr10));
 
     __atomic_thread_fence(1);
 
@@ -2267,12 +2178,9 @@ SHZ_INLINE shz_vec3_t shz_matrix4x4_trans_vec3_transpose(const shz_matrix_4x4_t 
     fr6 = m->elem2D[2][2];
     fr7 = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
-    __atomic_thread_fence(1);      
+    __atomic_thread_fence(1);
 
     out.y = fr11;
     out.z = fr7;
@@ -2280,7 +2188,7 @@ SHZ_INLINE shz_vec3_t shz_matrix4x4_trans_vec3_transpose(const shz_matrix_4x4_t 
     return out;
 }
 
-SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3_transpose(const shz_matrix_3x3_t *m, shz_vec3_t v) {
+SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3_transpose(const shz_matrix_3x3_t* m, shz_vec3_t v) {
     shz_vec3_t out;
 
     register float fr0 asm("fr0") = v.x;
@@ -2293,23 +2201,16 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3_transpose(const shz_matrix_3x3_t 
     register float fr6 asm("fr6") = m->elem2D[0][2];
     register float fr7 asm("fr7") = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
     __atomic_thread_fence(1);
 
-    register float fr8  asm("fr8")  = m->elem2D[1][0];
-    register float fr9  asm("fr9")  = m->elem2D[1][1];
+    register float fr8 asm("fr8") = m->elem2D[1][0];
+    register float fr9 asm("fr9") = m->elem2D[1][1];
     register float fr10 asm("fr10") = m->elem2D[1][2];
     register float fr11 asm("fr11") = 0.0f;
 
-    asm volatile("fipr fv0, fv8" 
-        : "+f" (fr11)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr8), "f" (fr9), "f" (fr10));
-
+    asm volatile("fipr fv0, fv8" : "+f"(fr11) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr8), "f"(fr9), "f"(fr10));
 
     __atomic_thread_fence(1);
 
@@ -2322,12 +2223,9 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3_transpose(const shz_matrix_3x3_t 
     fr6 = m->elem2D[2][2];
     fr7 = 0.0f;
 
-    asm volatile("fipr fv0, fv4" 
-        : "+f" (fr7)
-        : "f" (fr0), "f" (fr1), "f" (fr2), "f" (fr3),
-          "f" (fr4), "f" (fr5), "f" (fr6));
+    asm volatile("fipr fv0, fv4" : "+f"(fr7) : "f"(fr0), "f"(fr1), "f"(fr2), "f"(fr3), "f"(fr4), "f"(fr5), "f"(fr6));
 
-    __atomic_thread_fence(1);      
+    __atomic_thread_fence(1);
 
     out.y = fr11;
     out.z = fr7;
@@ -2335,38 +2233,20 @@ SHZ_INLINE shz_vec3_t shz_matrix3x3_trans_vec3_transpose(const shz_matrix_3x3_t 
     return out;
 }
 
-SHZ_INLINE void* shz_memcpy(      void* SHZ_RESTRICT dst,
-                            const void* SHZ_RESTRICT src,
-                                 size_t              bytes) SHZ_NOEXCEPT;
-SHZ_FORCE_INLINE void* shz_memcpy1(      void* SHZ_RESTRICT dst,
-                                   const void* SHZ_RESTRICT src,
-                                        size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_memcpy2(      void* SHZ_RESTRICT dst,
-                             const void* SHZ_RESTRICT src,
-                                  size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_memcpy4(      void* SHZ_RESTRICT dst,
-                             const void* SHZ_RESTRICT src,
-                                  size_t              bytes) SHZ_NOEXCEPT;
-extern void* shz_memcpy8(      void* SHZ_RESTRICT dst,
-                         const void* SHZ_RESTRICT src,
-                              size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_memcpy32(      void* SHZ_RESTRICT dst,
-                              const void* SHZ_RESTRICT src,
-                                   size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_sq_memcpy32(      void* SHZ_RESTRICT dst,
-                                 const void* SHZ_RESTRICT src,
-                                      size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_memcpy64(      void* SHZ_RESTRICT dst,
-                              const void* SHZ_RESTRICT src,
-                                   size_t              bytes) SHZ_NOEXCEPT;
-SHZ_INLINE void* shz_memcpy128(      void* SHZ_RESTRICT dst,
-                               const void* SHZ_RESTRICT src,
-                                    size_t              bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_FORCE_INLINE void* shz_memcpy1(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy2(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy4(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+extern void* shz_memcpy8(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy32(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_sq_memcpy32(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy64(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
+SHZ_INLINE void* shz_memcpy128(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
 extern void shz_memcpy128_(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT;
 
-SHZ_INLINE void shz_memcpy4_16(void *dst, const void *src) {
-    SHZ_ALIASING const uint32_t (*d)[16] = (SHZ_ALIASING const uint32_t (*)[16])dst;
-    SHZ_ALIASING       uint32_t (*s)[16] = (SHZ_ALIASING       uint32_t (*)[16])src;
+SHZ_INLINE void shz_memcpy4_16(void* dst, const void* src) {
+    SHZ_ALIASING const uint32_t (*d)[16] = (SHZ_ALIASING const uint32_t (*)[16]) dst;
+    SHZ_ALIASING uint32_t (*s)[16] = (SHZ_ALIASING uint32_t (*)[16]) src;
     asm(R"(        
         mov.l   @%[s]+, r0
         mov.l   @%[s]+, r1
@@ -2402,11 +2282,10 @@ SHZ_INLINE void shz_memcpy4_16(void *dst, const void *src) {
         mov.l   r3, @(60, %[d])
         add     #-64, %[s]
     )"
-    : "=m" (*d)
-    : [s] "r" (s), [d] "r" (d), "m" (*s)
-    : "r0", "r1", "r2", "r3");
+        : "=m"(*d)
+        : [s] "r"(s), [d] "r"(d), "m"(*s)
+        : "r0", "r1", "r2", "r3");
 }
-
 
 SHZ_FORCE_INLINE void shz_memcpy32_store_(uint64_t* SHZ_RESTRICT* dst) SHZ_NOEXCEPT {
     asm volatile(R"(
@@ -2416,8 +2295,8 @@ SHZ_FORCE_INLINE void shz_memcpy32_store_(uint64_t* SHZ_RESTRICT* dst) SHZ_NOEXC
         fmov.d    dr6,  @-%[dst]
         fmov.d    dr4,  @-%[dst]
     )"
-    : "=m" ((*dst)[0]), "=m" ((*dst)[1]), "=m" ((*dst)[2]), "=m" ((*dst)[3])
-    : [dst] "r" (*dst));
+                 : "=m"((*dst)[0]), "=m"((*dst)[1]), "=m"((*dst)[2]), "=m"((*dst)[3])
+                 : [dst] "r"(*dst));
 }
 
 SHZ_FORCE_INLINE void shz_memcpy32_load_(const uint64_t* SHZ_RESTRICT* src) SHZ_NOEXCEPT {
@@ -2427,8 +2306,8 @@ SHZ_FORCE_INLINE void shz_memcpy32_load_(const uint64_t* SHZ_RESTRICT* src) SHZ_
         fmov.d    @%[src]+, dr8
         fmov.d    @%[src]+, dr10
     )"
-    : [src] "+r" (*src)
-    : "m" (src[0]), "m" (src[1]), "m" (src[2]), "m" (src[3]));
+                 : [src] "+r"(*src)
+                 : "m"(src[0]), "m"(src[1]), "m"(src[2]), "m"(src[3]));
 }
 
 SHZ_FORCE_INLINE void shz_memcpy64_load_(const uint64_t* SHZ_RESTRICT* src) SHZ_NOEXCEPT {
@@ -2442,9 +2321,9 @@ SHZ_FORCE_INLINE void shz_memcpy64_load_(const uint64_t* SHZ_RESTRICT* src) SHZ_
         fmov.d    @%[src]+, dr12
         fmov.d    @%[src]+, dr14
     )"
-    : [src] "+r" (*src)
-    : "m" ((*src)[0]), "m" ((*src)[1]), "m" ((*src)[2]), "m" ((*src)[3]),
-      "m" ((*src)[4]), "m" ((*src)[5]), "m" ((*src)[6]), "m" ((*src)[7]));
+                 : [src] "+r"(*src)
+                 : "m"((*src)[0]), "m"((*src)[1]), "m"((*src)[2]), "m"((*src)[3]), "m"((*src)[4]), "m"((*src)[5]),
+                   "m"((*src)[6]), "m"((*src)[7]));
 }
 
 SHZ_FORCE_INLINE void shz_memcpy64_store_(uint64_t* SHZ_RESTRICT* dst) SHZ_NOEXCEPT {
@@ -2467,20 +2346,17 @@ SHZ_FORCE_INLINE void shz_memcpy64_store_(uint64_t* SHZ_RESTRICT* dst) SHZ_NOEXC
         fmov.d    dr2,  @-%[dst]
         fmov.d    dr0,  @-%[dst]
     )"
-    : [dst] "+r" (*dst),
-      "=m" ((*dst)[0]), "=m" ((*dst)[1]), "=m" ((*dst)[2]), "=m" ((*dst)[3]),
-      "=m" ((*dst)[4]), "=m" ((*dst)[5]), "=m" ((*dst)[6]), "=m" ((*dst)[7]));
+                 : [dst] "+r"(*dst), "=m"((*dst)[0]), "=m"((*dst)[1]), "=m"((*dst)[2]), "=m"((*dst)[3]),
+                   "=m"((*dst)[4]), "=m"((*dst)[5]), "=m"((*dst)[6]), "=m"((*dst)[7]));
 }
 
-SHZ_FORCE_INLINE void* shz_memcpy1(      void* SHZ_RESTRICT dst,
-                                   const void* SHZ_RESTRICT src,
-                                        size_t              bytes) SHZ_NOEXCEPT {
-    void *ret = dst;
+SHZ_FORCE_INLINE void* shz_memcpy1(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    void* ret = dst;
     uint32_t scratch;
 
     SHZ_PREFETCH(src);
 
-    if(bytes) {
+    if (bytes) {
         asm volatile(R"(
         1:
             mov.b   @%[src]+, %[tmp]
@@ -2489,26 +2365,23 @@ SHZ_FORCE_INLINE void* shz_memcpy1(      void* SHZ_RESTRICT dst,
             bf/s    1b;
             add     #1, %[dst]
         )"
-        : [src] "+&r" (src), [dst] "+&r" (dst),
-          [cnt] "+&r" (bytes), [tmp] "=r" (scratch)
-        : "m" (*((uint8_t (*)[])src))
-        : "t", "memory");
+                     : [src] "+&r"(src), [dst] "+&r"(dst), [cnt] "+&r"(bytes), [tmp] "=r"(scratch)
+                     : "m"(*((uint8_t (*)[]) src))
+                     : "t", "memory");
     }
 
     return ret;
 }
 
-SHZ_INLINE void* shz_memcpy2(void*       SHZ_RESTRICT dst,
-                             const void* SHZ_RESTRICT src,
-                                  size_t              bytes) SHZ_NOEXCEPT {
-    const shz_alias_uint16_t* s = (const shz_alias_uint16_t*)src;
-          shz_alias_uint16_t* d = (      shz_alias_uint16_t*)dst;
+SHZ_INLINE void* shz_memcpy2(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    const shz_alias_uint16_t* s = (const shz_alias_uint16_t*) src;
+    shz_alias_uint16_t* d = (shz_alias_uint16_t*) dst;
 
     bytes >>= 1;
 
     size_t blocks = bytes >> 3; // Block size of 16 bytes
 
-    if(blocks) {
+    if (blocks) {
         do {
             s += 8;
             SHZ_PREFETCH(s); // Prefetch 16 bytes for next iteration
@@ -2522,25 +2395,23 @@ SHZ_INLINE void* shz_memcpy2(void*       SHZ_RESTRICT dst,
             d[0] = *(--s);
             d += 8;
             s += 8;
-        } while(SHZ_LIKELY(--blocks));
+        } while (SHZ_LIKELY(--blocks));
         bytes &= 0xf;
     }
 
-    while(SHZ_LIKELY(bytes--))
+    while (SHZ_LIKELY(bytes--))
         d[bytes] = s[bytes];
 
     return dst;
 }
 
-SHZ_INLINE void* shz_memcpy4(void*       SHZ_RESTRICT dst,
-                             const void* SHZ_RESTRICT src,
-                             size_t                   bytes) SHZ_NOEXCEPT {
-    const shz_alias_uint32_t* s = (const shz_alias_uint32_t*)src;
-          shz_alias_uint32_t* d = (      shz_alias_uint32_t*)dst;
+SHZ_INLINE void* shz_memcpy4(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    const shz_alias_uint32_t* s = (const shz_alias_uint32_t*) src;
+    shz_alias_uint32_t* d = (shz_alias_uint32_t*) dst;
     bytes >>= 2;
     size_t blocks = bytes >> 5; // Block size of 32 bytes
 
-    if(blocks) {
+    if (blocks) {
         do {
             s += 8;
             SHZ_PREFETCH(s); // Prefetch 32 bytes for next iteration
@@ -2554,27 +2425,25 @@ SHZ_INLINE void* shz_memcpy4(void*       SHZ_RESTRICT dst,
             d[0] = *(--s);
             d += 8;
             s += 8;
-        } while(SHZ_LIKELY(--blocks));
+        } while (SHZ_LIKELY(--blocks));
         bytes &= 0x1f;
     }
 
-    while(SHZ_LIKELY(bytes--))
+    while (SHZ_LIKELY(bytes--))
         d[bytes] = s[bytes];
 
     return dst;
 }
 
-SHZ_INLINE void* shz_memcpy32(      void* SHZ_RESTRICT dst,
-                              const void* SHZ_RESTRICT src,
-                              size_t                   bytes) SHZ_NOEXCEPT {
-          shz_alias_uint64_t* d = (      shz_alias_uint64_t*)dst;
-    const shz_alias_uint64_t* s = (const shz_alias_uint64_t*)src;
+SHZ_INLINE void* shz_memcpy32(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    shz_alias_uint64_t* d = (shz_alias_uint64_t*) dst;
+    const shz_alias_uint64_t* s = (const shz_alias_uint64_t*) src;
 
     size_t cnt = (bytes >> 5);
 
     SHZ_FSCHG(true);
 
-    if(SHZ_LIKELY(cnt >= 8)) {
+    if (SHZ_LIKELY(cnt >= 8)) {
         shz_memcpy128_(d, s, bytes);
         size_t copied = bytes / 128 * 128;
         cnt -= copied / 32;
@@ -2582,7 +2451,7 @@ SHZ_INLINE void* shz_memcpy32(      void* SHZ_RESTRICT dst,
         s += copied / sizeof(uint64_t);
     }
 
-    while(SHZ_LIKELY(cnt--)) {
+    while (SHZ_LIKELY(cnt--)) {
         shz_memcpy32_load_(&s);
         shz_dcache_alloc_line(d);
         shz_memcpy32_store_(&d);
@@ -2595,9 +2464,7 @@ SHZ_INLINE void* shz_memcpy32(      void* SHZ_RESTRICT dst,
     return dst;
 }
 
-SHZ_INLINE void* shz_sq_memcpy32(     void* SHZ_RESTRICT dst,
-                                const void* SHZ_RESTRICT src,
-                                size_t                   bytes) SHZ_NOEXCEPT {
+SHZ_INLINE void* shz_sq_memcpy32(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
     void* ret = dst;
 
     bytes >>= 5;
@@ -2621,27 +2488,24 @@ SHZ_INLINE void* shz_sq_memcpy32(     void* SHZ_RESTRICT dst,
         bf.s   1b
         pref   @%[dst]          ! Fire off store queue
     )"
-    : [dst] "+r" (dst), [src] "+&r" (src), [blks] "+r" (bytes)
-    : "m" ((const char (*)[])src)
-    : "memory");
+                 : [dst] "+r"(dst), [src] "+&r"(src), [blks] "+r"(bytes)
+                 : "m"((const char (*)[]) src)
+                 : "memory");
 
     SHZ_FSCHG(false);
 
     return ret;
 }
 
-SHZ_INLINE void* shz_memcpy64(      void* SHZ_RESTRICT dst,
-                              const void* SHZ_RESTRICT src,
-                                   size_t              bytes) SHZ_NOEXCEPT {
-    const shz_alias_uint64_t* s = (const shz_alias_uint64_t*)src;
-          shz_alias_uint64_t* d = (      shz_alias_uint64_t*)dst;
-
+SHZ_INLINE void* shz_memcpy64(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    const shz_alias_uint64_t* s = (const shz_alias_uint64_t*) src;
+    shz_alias_uint64_t* d = (shz_alias_uint64_t*) dst;
 
     SHZ_FSCHG(true);
 
     size_t cnt = (bytes >> 6);
 
-    if(SHZ_LIKELY(cnt >= 4)) {
+    if (SHZ_LIKELY(cnt >= 4)) {
         shz_memcpy128_(d, s, bytes);
         size_t copied = bytes / 128 * 128;
         cnt -= copied / 64;
@@ -2649,7 +2513,7 @@ SHZ_INLINE void* shz_memcpy64(      void* SHZ_RESTRICT dst,
         s += copied / sizeof(uint64_t);
     }
 
-    while(SHZ_LIKELY(cnt--)) {
+    while (SHZ_LIKELY(cnt--)) {
         SHZ_PREFETCH(s + 4);
         shz_memcpy64_load_(&s);
         shz_memcpy64_store_(&d);
@@ -2662,11 +2526,9 @@ SHZ_INLINE void* shz_memcpy64(      void* SHZ_RESTRICT dst,
     return dst;
 }
 
-SHZ_INLINE void* shz_memcpy128(      void* SHZ_RESTRICT dst,
-                               const void* SHZ_RESTRICT src,
-                                   size_t               bytes) SHZ_NOEXCEPT {
+SHZ_INLINE void* shz_memcpy128(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
 
-    if(bytes & ~0x7f) {
+    if (bytes & ~0x7f) {
         SHZ_FSCHG(true);
         shz_memcpy128_(dst, src, bytes);
         SHZ_FSCHG(false);
@@ -2675,43 +2537,41 @@ SHZ_INLINE void* shz_memcpy128(      void* SHZ_RESTRICT dst,
     return dst;
 }
 
-SHZ_INLINE void* shz_memcpy(      void* SHZ_RESTRICT dst,
-                            const void* SHZ_RESTRICT src,
-                                size_t               bytes) SHZ_NOEXCEPT {
-    const uint8_t *s = (const uint8_t *)src;
-          uint8_t *d = (      uint8_t *)dst;
+SHZ_INLINE void* shz_memcpy(void* SHZ_RESTRICT dst, const void* SHZ_RESTRICT src, size_t bytes) SHZ_NOEXCEPT {
+    const uint8_t* s = (const uint8_t*) src;
+    uint8_t* d = (uint8_t*) dst;
     size_t copied;
 
-    if(SHZ_UNLIKELY(!bytes))
+    if (SHZ_UNLIKELY(!bytes))
         return dst;
-    else if(SHZ_LIKELY(bytes < 64)) {
+    else if (SHZ_LIKELY(bytes < 64)) {
         shz_memcpy1(d, s, bytes);
     } else {
-        if((uintptr_t)d & 0x1f) {
-            copied = (((uintptr_t)d + 31) & ~0x1f) - (uintptr_t)d;
+        if ((uintptr_t) d & 0x1f) {
+            copied = (((uintptr_t) d + 31) & ~0x1f) - (uintptr_t) d;
             shz_memcpy1(d, s, copied);
             bytes -= copied;
-            d     += copied;
-            s     += copied;
+            d += copied;
+            s += copied;
         }
 
-        if(SHZ_LIKELY(bytes >= 32)) {
+        if (SHZ_LIKELY(bytes >= 32)) {
             copied = 0;
 
-            if(!(((uintptr_t)s) & 0x7)) {
+            if (!(((uintptr_t) s) & 0x7)) {
                 copied = bytes - (bytes & ~7);
                 shz_memcpy8(d, s, copied);
-            } else if(!(((uintptr_t)s) & 0x3)) {
+            } else if (!(((uintptr_t) s) & 0x3)) {
                 copied = bytes - (bytes & ~3);
                 shz_memcpy4(d, s, copied);
-            } else if(!(((uintptr_t)s) & 0x1)) {
+            } else if (!(((uintptr_t) s) & 0x1)) {
                 copied = bytes - (bytes & ~1);
                 shz_memcpy2(d, s, copied);
             }
 
             bytes -= copied;
-            d     += copied;
-            s     += copied;
+            d += copied;
+            s += copied;
         }
 
         shz_memcpy1(d, s, bytes);

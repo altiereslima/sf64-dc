@@ -23,7 +23,6 @@ typedef enum OverlayCalls {
     /* 110 */ OVLCALL_UNKMAP_DRAW,
 } OverlayCalls;
 
-
 #include "sf64audio_external.h"
 #include "functions.h"
 #include "variables.h"
@@ -48,9 +47,10 @@ typedef enum OverlayCalls {
 #include <stddef.h>
 #include <stdarg.h>
 
+// pi / 180
 #define M_DTOR 0.01745329f
-//(F_PI / 180.0f)
+
+// 180 / pi
 #define M_RTOD 57.29577951f
-//(180.0f / F_PI)
 
 #endif // GLOBAL_H

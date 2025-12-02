@@ -82,7 +82,7 @@ void Ending_80187520(s32 arg0) {
     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
 
     force_screen_fill_colors = 1;
-            gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     switch (arg0) {
         // first 2d background
@@ -432,42 +432,33 @@ s32 Ending_80188634(void) {
     return 0;
 }
 
-
 static inline uint16_t rgba5551_to_gray_clamped(uint16_t c) {
-    // Extract 5-bit components
     int r = (c >> 11) & 0x1F;
-    int g = (c >> 6)  & 0x1F;
-   int b = (c >> 1)  & 0x1F;
-    int a =  c        & 0x01;
+    int g = (c >> 6) & 0x1F;
+    int b = (c >> 1) & 0x1F;
+    int a = c & 0x01;
 
-    // Convert to 0–255 range for grayscale calculation
     int r8 = (r * 255) / 31;
     int g8 = (g * 255) / 31;
     int b8 = (b * 255) / 31;
 
-    // Standard luminance formula
     int gray = (r8 * 299 + g8 * 587 + b8 * 114) / 1000;
 
-    // Convert grayscale back to 5-bit 0–31
-    int g5 = (gray >> 2) & 0x1f;//(gray * 31 /* + 127 */) / 255;  // rounded
-    
-    // Repack into RGBA5551
-    return (uint16_t)((g5 << 11) | (g5 << 6) | (g5 << 1) | a);
+    int g5 = (gray >> 2) & 0x1f;
+
+    return (uint16_t) ((g5 << 11) | (g5 << 6) | (g5 << 1) | a);
 }
 
 void convert_end_palette_rgba5551_to_gray(void) {
-u16 *tluts[] = {   aEndIncomingMsgTex1TLUT,
-    aEndIncomingMsgTex2TLUT,
-aEndIncomingMsgTex3TLUT,
-aEndIncomingMsgTex4TLUT};
-for(int j=0;j<4;j++) {
-    uint16_t *pal = segmented_to_virtual(tluts[j]);
-    for (int i = 0; i < 16; i++) {
-        pal[i] = rgba5551_to_gray_clamped(pal[i]);
+    u16* tluts[] = { aEndIncomingMsgTex1TLUT, aEndIncomingMsgTex2TLUT, aEndIncomingMsgTex3TLUT,
+                     aEndIncomingMsgTex4TLUT };
+    for (int j = 0; j < 4; j++) {
+        uint16_t* pal = segmented_to_virtual(tluts[j]);
+        for (int i = 0; i < 16; i++) {
+            pal[i] = rgba5551_to_gray_clamped(pal[i]);
+        }
     }
 }
-}
-
 
 void Ending_IncomingMsg_Draw(void) {
     static int buttoned = 0;
@@ -483,7 +474,7 @@ void Ending_IncomingMsg_Draw(void) {
 
     RCP_SetupDL(&gMasterDisp, SETUPDL_78);
     gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 255);
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+    gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
 
     switch ((D_ending_80196F90 % 8) / 2) {
         case 3:

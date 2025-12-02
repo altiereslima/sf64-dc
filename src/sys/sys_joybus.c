@@ -17,7 +17,7 @@
 #define N64_CONT_F 0x0001
 
 /* Nintendo's official button names */
-#undef A_BUTTON 
+#undef A_BUTTON
 #undef B_BUTTON
 #undef L_TRIG
 #undef R_TRIG
@@ -64,42 +64,39 @@
 #undef CONT_DPAD2_LEFT
 #undef CONT_DPAD2_RIGHT
 
+#define CONT_C (1 << 0)            /**< \brief C button Mask. */
+#define CONT_B (1 << 1)            /**< \brief B button Mask. */
+#define CONT_A (1 << 2)            /**< \brief A button Mask. */
+#define CONT_START (1 << 3)        /**< \brief Start button Mask. */
+#define CONT_DPAD_UP (1 << 4)      /**< \brief Main Dpad Up button Mask. */
+#define CONT_DPAD_DOWN (1 << 5)    /**< \brief Main Dpad Down button Mask. */
+#define CONT_DPAD_LEFT (1 << 6)    /**< \brief Main Dpad Left button Mask. */
+#define CONT_DPAD_RIGHT (1 << 7)   /**< \brief Main Dpad right button Mask. */
+#define CONT_Z (1 << 8)            /**< \brief Z button Mask. */
+#define CONT_Y (1 << 9)            /**< \brief Y button Mask. */
+#define CONT_X (1 << 10)           /**< \brief X button Mask. */
+#define CONT_D (1 << 11)           /**< \brief D button Mask. */
+#define CONT_DPAD2_UP (1 << 12)    /**< \brief Secondary Dpad Up button Mask. */
+#define CONT_DPAD2_DOWN (1 << 13)  /**< \brief Secondary Dpad Down button Mask. */
+#define CONT_DPAD2_LEFT (1 << 14)  /**< \brief Secondary Dpad Left button Mask. */
+#define CONT_DPAD2_RIGHT (1 << 15) /**< \brief Secondary Dpad Right button Mask. */
 
-#define CONT_C              (1<<0)      /**< \brief C button Mask. */
-#define CONT_B              (1<<1)      /**< \brief B button Mask. */
-#define CONT_A              (1<<2)      /**< \brief A button Mask. */
-#define CONT_START          (1<<3)      /**< \brief Start button Mask. */
-#define CONT_DPAD_UP        (1<<4)      /**< \brief Main Dpad Up button Mask. */
-#define CONT_DPAD_DOWN      (1<<5)      /**< \brief Main Dpad Down button Mask. */
-#define CONT_DPAD_LEFT      (1<<6)      /**< \brief Main Dpad Left button Mask. */
-#define CONT_DPAD_RIGHT     (1<<7)      /**< \brief Main Dpad right button Mask. */
-#define CONT_Z              (1<<8)      /**< \brief Z button Mask. */
-#define CONT_Y              (1<<9)      /**< \brief Y button Mask. */
-#define CONT_X              (1<<10)     /**< \brief X button Mask. */
-#define CONT_D              (1<<11)     /**< \brief D button Mask. */
-#define CONT_DPAD2_UP       (1<<12)     /**< \brief Secondary Dpad Up button Mask. */
-#define CONT_DPAD2_DOWN     (1<<13)     /**< \brief Secondary Dpad Down button Mask. */
-#define CONT_DPAD2_LEFT     (1<<14)     /**< \brief Secondary Dpad Left button Mask. */
-#define CONT_DPAD2_RIGHT    (1<<15)     /**< \brief Secondary Dpad Right button Mask. */
+OSContPad gControllerHold[4] = { 0 };
+OSContPad gControllerPress[4] = { 0 };
+u8 gControllerPlugged[4] = { 0 };
+u32 gControllerLock = 0;
+u8 gControllerRumbleEnabled[4] = { 0 };
+OSContPad sNextController[4] = { 0 };
+OSContPad sPrevController[4] = { 0 };
+OSContStatus sControllerStatus[4] = { 1 };
+OSPfs sControllerMotor[4] = { 0 };
 
-OSContPad gControllerHold[4]={0};
-OSContPad gControllerPress[4]={0};
-u8 gControllerPlugged[4]={0};
-u32 gControllerLock=0;
-u8 gControllerRumbleEnabled[4]={0};
-OSContPad sNextController[4]={0};
-OSContPad sPrevController[4]={0};
-OSContStatus sControllerStatus[4]={1};
-OSPfs sControllerMotor[4]={0};
-
-
-void I_RumbleThread(void *param);
+void Controller_RumbleThread(void* param);
 #include <stdio.h>
 #include <kos/thread.h>
 #include <kos/worker_thread.h>
 
-
-kthread_worker_t *rumble_worker_thread;
+kthread_worker_t* rumble_worker_thread;
 kthread_attr_t rumble_worker_attr;
 
 void Controller_AddDeadZone(s32 contrNum) {
@@ -148,7 +145,7 @@ void Controller_AddDeadZone(s32 contrNum) {
 #include <dc/maple/keyboard.h>
 #include <dc/maple/purupuru.h>
 
-static maple_device_t *ControllerDevice[4] = {0};
+static maple_device_t* ControllerDevice[4] = { 0 };
 
 void Controller_Scan(void) {
     /* Clear existing controller status */
@@ -162,8 +159,8 @@ void Controller_Scan(void) {
        and assign them to the proper ports */
     int i = 0;
     int port = 0;
-    maple_device_t *cont;
-    while((cont = maple_enum_type(i, MAPLE_FUNC_CONTROLLER))) {
+    maple_device_t* cont;
+    while ((cont = maple_enum_type(i, MAPLE_FUNC_CONTROLLER))) {
         port = cont->port;
 
         gControllerPlugged[port] = 1;
@@ -174,7 +171,7 @@ void Controller_Scan(void) {
     }
 }
 
-static maple_device_t *RumbleDevice[4] = {0};
+static maple_device_t* RumbleDevice[4] = { 0 };
 
 void Rumble_Scan(void) {
     /* Clear existing rumble info */
@@ -188,8 +185,8 @@ void Rumble_Scan(void) {
        and assign them to the proper ports  */
     int i = 0;
     int port = 0;
-    maple_device_t *purupuru;
-    while((purupuru = maple_enum_type(i, MAPLE_FUNC_PURUPURU))) {
+    maple_device_t* purupuru;
+    while ((purupuru = maple_enum_type(i, MAPLE_FUNC_PURUPURU))) {
         port = purupuru->port;
 
         gControllerRumbleEnabled[port] = 1;
@@ -215,20 +212,20 @@ void Controller_Init(void) {
 
 #if 1
     rumble_worker_attr.create_detached = 1;
-	rumble_worker_attr.stack_size = 4096;
-	rumble_worker_attr.stack_ptr = NULL;
-	rumble_worker_attr.prio = PRIO_DEFAULT;
-	rumble_worker_attr.label = "I_RumbleThread";
-	rumble_worker_thread = thd_worker_create_ex(&rumble_worker_attr, I_RumbleThread, NULL);
+    rumble_worker_attr.stack_size = 4096;
+    rumble_worker_attr.stack_ptr = NULL;
+    rumble_worker_attr.prio = PRIO_DEFAULT;
+    rumble_worker_attr.label = "Controller_RumbleThread";
+    rumble_worker_thread = thd_worker_create_ex(&rumble_worker_attr, Controller_RumbleThread, NULL);
 #endif
 }
 
 u16 ucheld;
-extern char *fnpre;
+extern char* fnpre;
 int shader_debug_toggle = 0;
 int cc_debug_toggle = 0;
 #include <string.h>
-//#include "../dcprofiler.h"
+// #include "../dcprofiler.h"
 void Map_Main(void);
 
 void Controller_UpdateInput(void) {
@@ -236,12 +233,12 @@ void Controller_UpdateInput(void) {
         cont_state_t* state;
         ucheld = 0;
 
-        if(!ControllerDevice[i]) {
+        if (!ControllerDevice[i]) {
             gControllerPlugged[i] = 0;
             continue;
         }
 
-        if(!(state = maple_dev_status(ControllerDevice[i])))
+        if (!(state = maple_dev_status(ControllerDevice[i])))
             continue;
 
         gControllerPlugged[i] = 1;
@@ -331,43 +328,41 @@ int last_write = SI_SAVE_SUCCESS;
 void Save_ReadData(void) {
 #if 1
     if ((gStartNMI == 0) && (Save_ReadEeprom(&gSaveIOBuffer) == 0)) {
-        //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_SUCCESS, OS_MESG_NOBLOCK);
+        // osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_SUCCESS, OS_MESG_NOBLOCK);
         last_read = SI_SAVE_SUCCESS;
         return;
     }
 #endif
     last_read = SI_SAVE_FAILED;
-    //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
+    // osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
 }
 
 void Save_WriteData(void) {
 #if 1
     if ((gStartNMI == 0) && (Save_WriteEeprom(&gSaveIOBuffer) == 0)) {
-        //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_SUCCESS, OS_MESG_NOBLOCK);
+        // osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_SUCCESS, OS_MESG_NOBLOCK);
         last_write = SI_SAVE_SUCCESS;
         return;
     }
 #endif
     last_write = SI_SAVE_FAILED;
-    //osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
+    // osSendMesg(&gSaveMesgQueue, (OSMesg) SI_SAVE_FAILED, OS_MESG_NOBLOCK);
 }
 
 struct rumble_data_s {
-    maple_device_t *dev;
+    maple_device_t* dev;
     uint32_t packet;
 };
 struct rumble_data_s datas[4];
 
+void Controller_RumbleThread(void* param) {
+    (void) param;
+    kthread_job_t* next_job = thd_worker_dequeue_job(rumble_worker_thread);
 
-void I_RumbleThread(void *param)
-{
-	(void)param;
-	kthread_job_t *next_job = thd_worker_dequeue_job(rumble_worker_thread);
-
-	if (next_job) {
-        uint32_t i = (uint32_t)next_job->data;
-		purupuru_rumble_raw(datas[i].dev, datas[i].packet);
-	}
+    if (next_job) {
+        uint32_t i = (uint32_t) next_job->data;
+        purupuru_rumble_raw(datas[i].dev, datas[i].packet);
+    }
 }
 
 kthread_job_t jobs[4];
@@ -385,7 +380,7 @@ void Controller_Rumble(void) {
             continue;
         }
 
-        if(!RumbleDevice[i]) {
+        if (!RumbleDevice[i]) {
             gControllerRumbleEnabled[i] = 0;
             continue;
         }
@@ -396,13 +391,14 @@ void Controller_Rumble(void) {
             continue;
 
         purupuru_effect_t rumble = {
-            .cont  = false,                        /* Do not run continuously */
-            .motor = 1,                            /* Standard motor */
-            .fpow  = 6,                            /* Forward motion, intensity 6/7 */
-            .conv  = 1,                            /* Convergent curve to vibration */
-            .freq  = 26,                           /* Frequency 26/59 */
-            .inc   = gControllerRumbleTimers[i] ?  /* Duration */
-                     gControllerRumbleTimers[i] : 1,
+            .cont = false,                      /* Do not run continuously */
+            .motor = 1,                         /* Standard motor */
+            .fpow = 6,                          /* Forward motion, intensity 6/7 */
+            .conv = 1,                          /* Convergent curve to vibration */
+            .freq = 26,                         /* Frequency 26/59 */
+            .inc = gControllerRumbleTimers[i] ? /* Duration */
+                       gControllerRumbleTimers[i]
+                                              : 1,
         };
 
         datas[i].dev = RumbleDevice[i];
@@ -411,8 +407,6 @@ void Controller_Rumble(void) {
 
         thd_worker_add_job(rumble_worker_thread, &jobs[i]);
         thd_worker_wakeup(rumble_worker_thread);
-
-//        purupuru_rumble_raw(RumbleDevice[i], rumble.raw);
 
         gControllerRumbleFlags[i] = 0;
     }

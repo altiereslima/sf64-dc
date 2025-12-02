@@ -353,10 +353,7 @@ void Katina_StartCutsceneUpdate(void) {
         }
     }
 }
-//void n64_memcpy(void* dst, const void* src, size_t size);
 
-//extern void gfx_texture_cache_invalidate(void *addr);
-//extern u16 MyGlassTex[];
 void Katina_LevelStart(Player* player) {
     s32 j;
     s32 i;
@@ -385,9 +382,6 @@ void Katina_LevelStart(Player* player) {
 
         case 0:
             gCsFrameCount = 0;
-//                    n64_memcpy(MyGlassTex, aKaBackdropTex, 64*32*2);
-  //      gfx_texture_cache_invalidate(MyGlassTex);
-
 
             Katina_StartCutsceneUpdate();
 

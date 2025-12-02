@@ -444,28 +444,11 @@ void Macbeth_Texture_RotateZ(u8* destTex, u8* srcTex, f32 angle) {
 }
 
 void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-#if 1
     u8* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     s32 i;
     s32 j;
     u8 a;
     u8 b;
-
-#if 0
-
-    for (i = 0; i < 8; i++) {
-        b = texPtr[i];
-        a = texPtr[i+16];
-    
-        for (j = 1; j < 16; j+= 2) {
-            texPtr[(16 * (j - 1)) + i] = texPtr[(16 * (j + 1)) + i];
-        }
-        texPtr[((16 - 2) * 16) + i] = b;
-        texPtr[((16 - 1) * 16) + i] = a;
-    }
-
-
-#endif
 
     for (i = arg3; i < arg3 + arg4; i++) {
         b = texPtr[i];
@@ -479,26 +462,13 @@ void Macbeth_Texture_Scroll(u8* tex, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         texPtr[((arg2 - 2) * arg1) + i] = b;
         texPtr[((arg2 - 1) * arg1) + i] = a;
     }
-#endif
 }
 
-void Macbeth_Texture_Scroll2(u16* tex, UNUSED s32 arg1, UNUSED s32 arg2) {
-#if 1
+void Macbeth_Texture_Scroll2(u16* tex, s32 arg1, s32 arg2) {
     u16* texPtr = SEGMENTED_TO_VIRTUAL(tex);
     u16 a;
     s32 i;
     s32 j;
-#if 0
-    for (i = 0; i < 4; i++) {
-        a = texPtr[(8 - 1) * 4 + i];
-
-        for (j = 8; j > 0; j--) {
-            texPtr[(j * 4) + i] = texPtr[((j - 1) * 4) + i];
-        }
-
-        texPtr[i] = a;
-    }
-#else
     for (i = 0; i < arg1; i++) {
         a = texPtr[(arg2 - 1) * arg1 + i];
 
@@ -508,8 +478,6 @@ void Macbeth_Texture_Scroll2(u16* tex, UNUSED s32 arg1, UNUSED s32 arg2) {
 
         texPtr[i] = a;
     }
-#endif
-#endif
 }
 
 void Macbeth_Train_Init(Actor* this) {
@@ -5940,7 +5908,6 @@ void Macbeth_CheckTrainHitbox(PlayerShot* shot) {
                             test.z *= 0.6f;
                         }
 
-                        //if (VEC3F_MAG(&test) < radius) {
                         if (shz_mag_sqr3f(test.x, test.y, test.z) < radius)  {
                             actor->dmgPart = j;
                             actor->dmgType = -1;

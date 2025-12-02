@@ -100,7 +100,6 @@ extern uint8_t gLevelType;
 extern uint8_t gorgon_alpha;
 
 extern int use_gorgon_alpha;
-extern int do_radar_depth;
 extern int do_the_blur;
 extern int do_reticle;
 extern int do_rectdepfix;
@@ -142,15 +141,7 @@ extern int path_priority_draw;
 extern uint8_t add_r, add_g, add_b, add_a;
 extern int gGameState;
 
-
-// save original vertex colors for multi-pass tricks
-// this is more than enough for the circumstances where that code runs
-uint32_t backups[64];
-
 extern u16 aAqWaterTex[];
-
-uint32_t shaderlist[64];
-uint8_t shaderidx;
 
 static struct ShaderProgram shader_program_pool[64];
 static uint8_t shader_program_pool_size;
@@ -169,40 +160,14 @@ int fog_dirty = 0;
 extern int shader_debug_toggle;
 
 #include <kos.h>
+
 void n64_memcpy(void* dst, const void* src, size_t size);
+
 static void resample_tex(const uint16_t* in, int inwidth, int inheight, uint16_t* out, int outwidth, int outheight) {
-#if 0
-    int i, j;
-    __builtin_prefetch(in);
-    float scale = (float) inheight / (float) outheight;
-    uint32_t* out32 = (uint32_t*) out;
-    int fracstep = (inwidth << 16) / outwidth;
-    int outwidth32 = outwidth >> 1; // two pixels per 32-bit write
-
-    for (i = 0; i < outheight; i++, out32 += outwidth32) {
-        const uint16_t* inrow = in + inwidth * (int) ((float) i * scale);
-        int frac = fracstep >> 1;
-
-        for (j = 0; j < outwidth32; j++) {
-
-            uint16_t p1 = inrow[frac >> 16];
-            frac += fracstep;
-            uint16_t p2 = inrow[frac >> 16];
-            frac += fracstep;
-
-            out32[j] = ((uint32_t) p2 << 16) | p1;
-        }
-        __builtin_prefetch(inrow + 32);
-    }
-#endif
-//    memset(out, 0, outwidth*outheight*2);
     for (int y=0; y < inheight;y++) {
         n64_memcpy(out + (y*outwidth), in + (y*inwidth), inwidth * 2);
         uint16_t *ptr = out + (y*outwidth) + inwidth;
         ptr[0] = 0;
-//        ptr[1] = 0;
-//        ptr[2] = 0;
-//        ptr[3] = 0;
     }
 }
 
@@ -292,21 +257,6 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
     glVertexPointer(3, GL_FLOAT, sizeof(dc_fast_t), &cur_buf[0].vert);
     glTexCoordPointer(2, GL_FLOAT, sizeof(dc_fast_t), &cur_buf[0].texture);
     glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, sizeof(dc_fast_t), &cur_buf[0].color);
-
-#if 0
-    if (shader_debug_toggle) {
-        int shaderfound = 0;
-        for (int i = 0; i < shaderidx; i++) {
-            if (shaderlist[i] == prg->shader_id) {
-                shaderfound = 1;
-                break;
-            }
-        }
-        if (!shaderfound) {
-            shaderlist[shaderidx++] = prg->shader_id;
-        }
-    }
-#endif
 
     // have texture(s), specify same texcoords for every active texture
     if (prg->texture_used[0] || prg->texture_used[1]) {
@@ -420,21 +370,6 @@ static void gfx_opengl_shader_get_info(struct ShaderProgram* prg, uint8_t* num_i
     *num_inputs = prg->num_inputs;
     used_textures[0] = prg->texture_used[0];
     used_textures[1] = prg->texture_used[1];
-
-#if 0
-    if (shader_debug_toggle) {
-        int shaderfound = 0;
-        for (int i = 0; i < shaderidx; i++) {
-            if (shaderlist[i] == prg->shader_id) {
-                shaderfound = 1;
-                break;
-            }
-        }
-        if (!shaderfound) {
-            shaderlist[shaderidx++] = prg->shader_id;
-        }
-    }
-#endif
 }
 
 GLuint newest_texture = 0;
@@ -1000,10 +935,7 @@ static inline uint8_t gl_get_version(int* major, int* minor, uint8_t* is_es) {
 
 static void gfx_opengl_init(void) {
     newest_texture = 0;
-#if 0
-    shaderidx = 0;
-    memset(shaderlist, 0, sizeof(shaderlist));
-#endif
+
     GLdcConfig config;
     glKosInitConfig(&config);
     config.autosort_enabled = GL_TRUE;
@@ -1109,28 +1041,17 @@ static void gfx_opengl_start_frame(void) {
     do_starfield = 0;
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
-#if 0
-    memset(shaderlist,0,sizeof(shaderlist));
-    shaderidx = 0;
-#endif
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
 }
 
 static void gfx_opengl_end_frame(void) {
-#if 0
-    if(shader_debug_toggle) {
-    printf("shaders in frame:\n");
-    for(int i=0;i<shaderidx;i++)
-        printf("\t 0x%08x\n", shaderlist[i]);
-}
-#endif
-    return;
+    ;
 }
 
 static void gfx_opengl_finish_render(void) {
-    return;
+    ;
 }
 
 struct GfxRenderingAPI gfx_opengl_api = { gfx_opengl_z_is_from_0_to_1, gfx_opengl_unload_shader,
