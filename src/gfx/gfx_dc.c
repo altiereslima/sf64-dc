@@ -94,31 +94,30 @@ typedef enum LevelId {
 } LevelId;
 extern LevelId gCurrentLevel;
 
+uint32_t __attribute__((aligned(32))) frametimes[6] = {0, 16, 33, 50, 67, 83};
+
 static uint8_t gfx_dc_start_frame(void) {
-#if 0
     const unsigned int cur_time = GetSystemTimeLow();
     const unsigned int elapsed = cur_time - last_time;
     if (skip_debounce) {
         skip_debounce--;
         return 1;
     }
-    const float OneFrameTime = 16.666667f;
-    uint32_t ActualFrameTime = (uint32_t)(gVIsPerFrame * OneFrameTime);
+    uint32_t ActualFrameTime = frametimes[gVIsPerFrame];
 
     // skip if frame took longer than (gVIsPerFrame * 16.666667) ms
     if (elapsed > ActualFrameTime) {
-        skip_debounce = 1;// skip every other 3; // skip a max of once every 4 (1+3) frames
+        skip_debounce = 1;// skip every other
+        // = 3; // skip a max of once every 4 (1+3) frames
         last_time = cur_time;
         return 0;
     }
-#endif
     return 1;
 }
 
 static void gfx_dc_swap_buffers_begin(void) {
 }
 
-uint32_t __attribute__((aligned(32))) frametimes[6] = {0, 16, 33, 50, 67, 83};
 
 static void gfx_dc_swap_buffers_end(void) {
     // Number of microseconds a frame should take (anywhere between 2 and 5 VIs per frame)
