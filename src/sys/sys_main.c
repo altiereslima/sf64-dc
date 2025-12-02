@@ -546,7 +546,6 @@ run_game_loop:
         gfx_end_frame();
         Controller_Rumble();
         thd_pass();
-        gfx_end_frame();
 #if DEBUG_PROF
 		dend = perf_cntr_timer_ns();
 #endif
