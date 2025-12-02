@@ -2,20 +2,47 @@
 # It is also possible to override the settings in Defaults in a file called .make_options as 'SETTING=value'.
 
 -include .make_options
-
 MAKEFLAGS += --no-builtin-rules --no-print-directory
 
-# Returns the path to the command $(1) if exists. Otherwise returns an empty string.
-find-command = $(shell which $(1) 2>/dev/null)
+####################################################
+#### Begin User Configurable Options and Cheats ####
+####################################################
 
-#### Defaults ####
-
-# Enable 320x240 resolution
+### Enable 320x240 resolution
 LOWRES ?= 0
-# Enable testing mode
-TESTING_MODE ?= 0
-# Enable 32khz sample rate
+
+### Enable 32KHz sample rate
 USE_32KHZ ?= 0
+
+### Enable testing mode
+# Turns on no damage, extra everything, and level select
+TESTING_MODE ?= 0
+
+### Take no damage
+I_DONT_WANT_TO_DIE ?= 0
+
+### Get laser upgrades, extra lives, extra bombs
+EXTRA_EVERYTHING ?= 0
+
+### Level select
+# At the map screen, use the analog stick to select a level.
+# Press D-Pad Up to select an advanced level phase (warp zone or Andross fight).
+# Useful for debugging and speedrunning training.
+MODS_LEVEL_SELECT ?= 0
+
+### MR logo
+# Set a custom IP.BIN boot logo when building CDI files
+MR_LOGO ?= assets/dreamcast/mrlogo.mr
+
+### Music URL
+# Set the URL for downloading music files
+MUSIC_ARCHIVE_URL ?= https://archive.org/download/sf64_ost_seqid/sf64_ost_seqid.tgz
+
+##################################################
+#### End User Configurable Options and Cheats ####
+##################################################
+# Only change things below here if you know what you are doing!
+
 # If COMPARE is 1, check the output md5sum after building
 COMPARE ?= 0
 # If NON_MATCHING is 1, define the NON_MATCHING C flag when building
@@ -39,10 +66,6 @@ COLOR ?= 1
 VERBOSE ?= 1
 # Command for printing messages during the make.
 PRINT ?= printf
-
-MR_LOGO ?= assets/dreamcast/mrlogo.mr
-
-MUSIC_ARCHIVE_URL ?= https://archive.org/download/sf64_ost_seqid/sf64_ost_seqid.tgz
 
 VERSION ?= us
 REV ?= rev1
@@ -77,12 +100,24 @@ ifeq ($(LOWRES),1)
   CFLAGS += -DLOWRES
 endif
 
+ifeq ($(USE_32KHZ),1)
+  CFLAGS += -DUSE_32KHZ
+endif
+
 ifeq ($(TESTING_MODE),1)
   CFLAGS += -DTESTING_MODE
 endif
 
-ifeq ($(USE_32KHZ),1)
-  CFLAGS += -DUSE_32KHZ
+ifneq (,$(filter 1,$(TESTING_MODE) $(I_DONT_WANT_TO_DIE)))
+  CFLAGS += -DI_DONT_WANT_TO_DIE
+endif
+
+ifneq (,$(filter 1,$(TESTING_MODE) $(EXTRA_EVERYTHING)))
+  CFLAGS += -DEXTRA_EVERYTHING
+endif
+
+ifneq (,$(filter 1,$(TESTING_MODE) $(MODS_LEVEL_SELECT)))
+  CFLAGS += -DMODS_LEVEL_SELECT
 endif
 
 NON_MATCHING := 1
@@ -181,6 +216,9 @@ ICONV		:= iconv
 ASM_PROC        := $(PYTHON) $(TOOLS)/asm-processor/build.py
 CAT             := cat
 TORCH           := $(TOOLS)/Torch/cmake-build-release/torch
+
+# Returns the path to the command $(1) if exists. Otherwise returns an empty string.
+find-command = $(shell which $(1) 2>/dev/null)
 
 # Prefer clang as C preprocessor if installed on the system
 ifneq (,$(call find-command,clang))

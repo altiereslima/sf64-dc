@@ -17,9 +17,7 @@
  * an advanced level phase (warp zone or Andross fight).
  * Useful for debugging and speedrunning training.
  */
-#ifdef TESTING_MODE
-#define MODS_LEVEL_SELECT 1
-#else
+#ifndef MODS_LEVEL_SELECT
 #define MODS_LEVEL_SELECT 0
 #endif
 
