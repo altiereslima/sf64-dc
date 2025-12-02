@@ -55,8 +55,6 @@ void _AudioInit(void) {
     }
 }
 
-s32 sGammaMode = 1;
-
 SPTask* gCurrentTask;
 SPTask* sAudioTasks[1];
 SPTask* sGfxTasks[2];
