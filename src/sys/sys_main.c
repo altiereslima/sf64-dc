@@ -651,6 +651,7 @@ void* AudioThread(UNUSED void* arg) {
 #else
         while (vblticker <= last_vbltick)
             genwait_wait((void*)&vblticker, NULL, 5, NULL);
+#endif
 
 #if DEBUG_PROF
 		uint32_t last_delta = (uint32_t)((uint64_t)(dend - dstart));
