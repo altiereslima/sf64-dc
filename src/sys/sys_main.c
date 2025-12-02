@@ -18,6 +18,7 @@
 #define SAMPLES_LOW 432
 #endif
 
+// force top of memory to be the same on 16 mb and 32 mb Dreamcasts
 uintptr_t arch_stack_32m = 0x8d000000;
 
 extern struct GfxWindowManagerAPI gfx_glx;
