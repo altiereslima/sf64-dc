@@ -33,17 +33,19 @@ void Ending_8018CE20(u32 arg0) {
 
                 if ((D_ending_80192E74[i].unk_11 == 0) || (gVenomHardClear == 1)) {
                     if (D_ending_80192E74[i].unk_10 == 1) {
-                        xPos = (SCREEN_WIDTH - Graphics_GetLargeTextWidth((char *)D_ending_80192E74[i].unk_00)) / 2;
-                        RCP_SetupDL(&gMasterDisp, SETUPDL_83);
-//                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-                        gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
-                        Graphics_DisplayLargeText(xPos, D_ending_80192E74[i].unk_0E, 1.0f, 1.0f,
-                                                  (char *)D_ending_80192E74[i].unk_00);
 
+                        xPos = (SCREEN_WIDTH - Graphics_GetLargeTextWidth((char*) D_ending_80192E74[i].unk_00)) / 2;
+                        RCP_SetupDL(&gMasterDisp, SETUPDL_83);
+                        if (i == 1) {
+                            gDPSetPrimColor(gMasterDisp++, 0, 0, 50, 153, 00, alpha);
+                        } else {
+                            gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
+                        }
+                        Graphics_DisplayLargeText(xPos, D_ending_80192E74[i].unk_0E, 1.0f, 1.0f,
+                                                  (char*) D_ending_80192E74[i].unk_00);
                     } else if (D_ending_80192E74[i].unk_10 == 2) {
                         RCP_SetupDL(&gMasterDisp, SETUPDL_83);
-//                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
-        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
+                        gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 255, 255, alpha);
                         Lib_TextureRect_IA8(&gMasterDisp, D_ending_80192E74[i].unk_00 + 192 * 5 * 0, 192, 5, 64.0f,
                                             105.0f, 1.0f, 1.0f);
@@ -58,12 +60,12 @@ void Ending_8018CE20(u32 arg0) {
                         Lib_TextureRect_IA8(&gMasterDisp, D_ending_80192E74[i].unk_00 + 192 * 5 * 5, 192, 5, 64.0f,
                                             130.0f, 1.0f, 1.0f);
                     } else {
-                        xPos = (320 - Graphics_GetSmallTextWidth((char *)D_ending_80192E74[i].unk_00)) / 2;
+                        xPos = (320 - Graphics_GetSmallTextWidth((char*) D_ending_80192E74[i].unk_00)) / 2;
                         RCP_SetupDL(&gMasterDisp, SETUPDL_83);
                         gDPSetTextureFilter(gMasterDisp++, G_TF_POINT);
                         gDPSetPrimColor(gMasterDisp++, 0, 0, 255, 155, 155, alpha);
                         Graphics_DisplaySmallText(xPos, D_ending_80192E74[i].unk_0E, 1.0f, 1.0f,
-                                                  (char *)D_ending_80192E74[i].unk_00);
+                                                  (char*) D_ending_80192E74[i].unk_00);
                     }
                 }
             }
@@ -969,6 +971,8 @@ void Ending_80191710(u32 arg0, AssetInfo* asset) {
         //gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 140);
         gSPClearGeometryMode(gMasterDisp++, G_CULL_BACK);
     }  else if (asset->unk_00 == aEndBackdrop2DL) {
+        Matrix_Scale(gGfxMatrix, 1.05f, 1.0f, 1.0f, MTXF_APPLY);
+        Matrix_SetGfxMtx(&gMasterDisp);
         gSPFixDepthCut(gMasterDisp++);
     } 
     gSPDisplayList(gMasterDisp++, asset->unk_00);

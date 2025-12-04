@@ -82,14 +82,14 @@ s32 D_80161900[20];
 #include "assets/ast_allies.h"
 #include "assets/ast_star_wolf.h"
 
-#define gSPRadarMark(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
+#define gSPRadarMark(pkt)          \
+    {                              \
+        Gfx* _g = (Gfx*) (pkt);    \
+                                   \
         _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x12345678;               \
+        _g->words.w1 = 0x12345678; \
     }
-    
+
 void HUD_TeammateStatus_Draw(void);
 
 s16 D_hud_800D1970 = 0;

@@ -720,23 +720,23 @@ void Display_Arwing(Player* player, s32 reflectY) {
     }
 }
 
-#define gSPReticle(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
+#define gSPReticle(pkt)            \
+    {                              \
+        Gfx* _g = (Gfx*) (pkt);    \
+                                   \
         _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x46554350;                                           \
+        _g->words.w1 = 0x46554350; \
     }
 // Arwing only
 
-#define gSPRadarMark(pkt)                                       \
-    {                                                                                   \
-        Gfx* _g = (Gfx*) (pkt);                                                         \
-                                                                                        \
+#define gSPRadarMark(pkt)          \
+    {                              \
+        Gfx* _g = (Gfx*) (pkt);    \
+                                   \
         _g->words.w0 = 0x424C4E44; \
-        _g->words.w1 = 0x12345678;               \
+        _g->words.w1 = 0x12345678; \
     }
-    
+
 void Display_Reticle(Player* player) {
     Vec3f* translate;
     s32 i;
@@ -1270,9 +1270,6 @@ void Display_ArwingWingTrail_Draw(Player* player) {
         }
 
         RCP_SetupDL_64();
-//        RCP_SetupDL(&gMasterDisp, SETUPDL_67);
-//        gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 64,64,64,255);//255, 255, 255, 255);//100);
-//        gDPSetEnvColor(gMasterDisp++,0,0,0,100);
         gDPSetPrimColor(gMasterDisp++, 0x00, 0x00, 255, 255, 255, 100);
 
         if (player->arwing.leftWingState == WINGSTATE_INTACT) {
@@ -1342,9 +1339,6 @@ bool Display_CheckPlayerVisible(s32 index, s32 reflectY) {
     }
     return false;
 }
-
-// unused
-s32 D_display_800CA2E8[16] = { 60, 40, 20, 20, 20, 20, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 void Display_Player_Update(Player* player, s32 reflectY) {
     s32 i;

@@ -298,7 +298,7 @@ static void* sndwav_thread(void* param) {
 
         mutex_unlock(&stream_mutex);
 
-        thd_sleep(50);
+        thd_sleep(33);
     }
 
     return NULL;

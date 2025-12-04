@@ -3232,10 +3232,4 @@ void Cutscene_DrawGreatFox(void) {
             gSPDisplayList(gMasterDisp++, dList);
         }
     }
-
-//    if (gCurrentLevel == LEVEL_TITANIA) {
-  //gFogNear = oldfognear;
-  //gFogFar = oldfogfar;
-       // gSPRadarMark(gMasterDisp++);
-    //}
 }
