@@ -80,8 +80,11 @@ void Ending_80191294(u32 arg0, AssetInfo* asset);
 u32 D_ending_80192E70 = 0;
 
 Credit D_ending_80192E74[] = {
-    (u8*)"PRODUCER",			        100,	200,    0,  60,    0,	0, 25, 20,
-    (u8*)"SHIGERU MIYAMOTO",		    100,	200,    0,  80,    1,	0, 25, 20,
+    (u8*)"DREAMCAST PORT",			        10,	210,    0,  60,    0,	0, 25, 20,
+    (u8*)"JNMARTIN64",		    10,	210,    0,  80,    1,	0, 25, 20,
+
+    (u8*)"PRODUCER",			        230,	180,    0,  60,    0,	0, 25, 20,
+    (u8*)"SHIGERU MIYAMOTO",		    230,	180,    0,  80,    1,	0, 25, 20,
     
     (u8*)"DIRECTOR",			        430,	180,    0,  60,    0,	0, 25, 20,
     (u8*)"TAKAO SHIMIZU",		    430,	180,    0,  80,    1,	0, 25, 20,

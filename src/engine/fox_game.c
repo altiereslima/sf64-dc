@@ -229,8 +229,8 @@ void Game_InitMasterDL(Gfx** dList) {
         }
 
         gSPFixDepthCut((*dList)++);
-        gDPFillRectangle((*dList)++, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN - 1,
-                         (SCREEN_HEIGHT - SCREEN_MARGIN) - 1);
+        gDPFillRectangle((*dList)++, SCREEN_MARGIN, SCREEN_MARGIN, SCREEN_WIDTH - SCREEN_MARGIN /* - 1 */,
+                         (SCREEN_HEIGHT - SCREEN_MARGIN) /* - 1 */);
         gSPFixDepthCut((*dList)++);
     }
 
@@ -244,7 +244,7 @@ void Game_InitStandbyDL(Gfx** dList) {
     gDPSetFillColor((*dList)++, FILL_COLOR(0x0001));
     gDPSetColorImage((*dList)++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gFrameBuffers[0].data);
     gSPFixDepthCut((*dList)++);
-    gDPFillRectangle((*dList)++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    gDPFillRectangle((*dList)++, 0, 0, SCREEN_WIDTH /* - 1 */, SCREEN_HEIGHT /* - 1 */);
     gSPFixDepthCut((*dList)++);
     //gDPPipeSync((*dList)++);
     gDPSetColorDither((*dList)++, G_CD_MAGICSQ);

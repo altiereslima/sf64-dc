@@ -4185,8 +4185,7 @@ void Andross_LevelComplete(Player* player) {
                 gActors[10].orient.z = 180.0f;
                 gDrawBackdrop = 0;
                 gFogFar = 1030;
-
-                if (gFogFar <= gFogNear) gFogFar = gFogNear + 16;
+                if (gFogFar <= gFogNear) gFogNear = gFogFar - 16;
                 sAndLightR = gLight1R;
                 sAndLightG = gLight1G;
                 sAndLightB = gLight1B;

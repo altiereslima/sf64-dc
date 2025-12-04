@@ -433,18 +433,20 @@ s32 Ending_80188634(void) {
 }
 
 static inline uint16_t rgba5551_to_gray_clamped(uint16_t c) {
-    int r = (c >> 11) & 0x1F;
-    int g = (c >> 6) & 0x1F;
-    int b = (c >> 1) & 0x1F;
-    int a = c & 0x01;
+    uint32_t r = (c >> 11) & 0x1F;
+    uint32_t g = (c >> 6) & 0x1F;
+    uint32_t b = (c >> 1) & 0x1F;
+    uint32_t a = c & 0x01;
 
-    int r8 = (r * 255) / 31;
-    int g8 = (g * 255) / 31;
-    int b8 = (b * 255) / 31;
+    if (!a) return 0;
 
-    int gray = (r8 * 299 + g8 * 587 + b8 * 114) / 1000;
+    uint32_t r8 = (r << 3);
+    uint32_t g8 = (g << 3);
+    uint32_t b8 = (b << 3);
 
-    int g5 = (gray >> 2) & 0x1f;
+    uint32_t gray = (r8 * 299 + g8 * 587 + b8 * 114) / 1000;
+
+    uint8_t g5 = (gray >> 3) & 0x1f;
 
     return (uint16_t) ((g5 << 11) | (g5 << 6) | (g5 << 1) | a);
 }

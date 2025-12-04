@@ -135,7 +135,6 @@ extern void gfx_opengl_2d_projection(void);
 extern void gfx_opengl_reset_projection(void);
 int do_ending_bg = 0;
 
-static float depbump = 0.0f;
 extern int path_priority_draw;
 
 extern uint8_t add_r, add_g, add_b, add_a;
@@ -266,10 +265,7 @@ static void gfx_opengl_apply_shader(struct ShaderProgram* prg) {
 
     if (prg->shader_id & SHADER_OPT_FOG) {
         glEnable(GL_FOG);
-//        if (fog_dirty) {
-            gfx_opengl_change_fog();
-//            fog_dirty = 0;
-//        }
+        gfx_opengl_change_fog();
     } else {
         glDisable(GL_FOG);
     }
@@ -1017,7 +1013,6 @@ void nuke_everything(void) {
 
 static void gfx_opengl_start_frame(void) {
     screen_2d_z = -1.0f;
-    depbump = 0.0f;
     do_fillrect_blend = 0;
     do_starfield = 0;
     glDisable(GL_SCISSOR_TEST);
