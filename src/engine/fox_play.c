@@ -5025,8 +5025,7 @@ void Player_ArwingBoost(Player* player) {
         if (player->meteoWarpSpinSpeed > 50.0f) {
             player->meteoWarpSpinSpeed = 50.0f;
         }
-        if (((gGameFrameCount % 2) == 0) && (gBlurAlpha > 64)) {
-            //if (1) {}
+        if (((gGameFrameCount % 2) == 0) && (gBlurAlpha > 72)) {
             gBlurAlpha--;
         }
     } else {
@@ -6769,7 +6768,7 @@ void Play_UpdateLevel(void) {
 /* fallthrough */
         case LEVEL_SECTOR_X:
             if (gLevelPhase == 1) {
-                gBlurAlpha = 128;//64;//224;//128;
+                gBlurAlpha = 128;
                 if (gPlayer[0].state == PLAYERSTATE_LEVEL_COMPLETE) {
                     Math_SmoothStepToF(&gWarpZoneBgAlpha, 0.0f, 1.0f, 1.0f, 0.0f);
                 } else {

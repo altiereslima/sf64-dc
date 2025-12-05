@@ -1898,6 +1898,8 @@ void Meteo_SmallRock_Spawn(ActorEvent* this) {
     }
 }
 
+u8 blur_start_yet = 0;
+
 void Meteo_LevelStart(Player* player) {
     u8 sp8F;
     s32 i;
@@ -1912,6 +1914,8 @@ void Meteo_LevelStart(Player* player) {
     f32 sp64;
     Vec3f sp58;
     Vec3f sp4C;
+
+    blur_start_yet = 0;
 
     gFillScreenAlphaStep = 4;
 

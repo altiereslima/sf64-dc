@@ -2412,6 +2412,8 @@ void ItemWingRepair_Update(ItemWingRepair* this) {
     }
 }
 
+extern u8 blur_start_yet;
+
 void ItemMeteoWarp_Update(ItemMeteoWarp* this) {
     Item_CheckBounds(this);
 
@@ -2442,7 +2444,10 @@ void ItemMeteoWarp_Update(ItemMeteoWarp* this) {
             this->unk_44 = 255;
 
             gPlayer[this->playerNum].meteoWarpTimer = 100;
-
+            if (!blur_start_yet) {
+                gBlurAlpha = 192;
+                blur_start_yet = 1;
+            }
             AUDIO_PLAY_SFX(gWarpRingSfx[gRingPassCount], gPlayer[0].sfxSource, 0);
 
             if (gRingPassCount == 0) {

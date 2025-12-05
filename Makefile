@@ -9,7 +9,10 @@ MAKEFLAGS += --no-builtin-rules --no-print-directory
 ####################################################
 
 ### Enable MMU translation of N64 segmented addresses
-MMU_SEGMENTED ?= 0
+MMU_SEGMENTED ?= 1
+
+### Enable scaling of light intensity instead of clamping
+SCALE_LIGHTS ?= 1
 
 ### Enable 320x240 resolution
 LOWRES ?= 0
@@ -98,6 +101,10 @@ SF_MUSIC_PATH := music
 # If gcc is used, define the NON_MATCHING flag respectively so the files that
 # are safe to be used can avoid using GLOBAL_ASM which doesn't work with gcc.
 CFLAGS += -DCOMPILER_GCC -DNON_MATCHING=1 -Wno-int-conversion -falign-functions=32 -fno-data-sections -DAVOID_UB=1 -MMD -MP -Wno-incompatible-pointer-types -Wno-missing-braces -Wno-unused-variable -Wno-switch  -DGBI_FLOATS -fno-toplevel-reorder
+
+ifeq ($(SCALE_LIGHTS),1)
+  CFLAGS += -DSCALE_LIGHTS
+endif
 
 ifeq ($(MMU_SEGMENTED),1)
   CFLAGS += -DMMU_SEGMENTED
