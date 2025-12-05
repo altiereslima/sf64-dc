@@ -69,8 +69,6 @@ u8 Load_SceneFiles(NewScene* scene, int snum) {
         }
     }
 
-    dcache_purge_all();
-
     if (sFillTimer != 0) {
         sFillTimer--;
     } else if (gStartNMI == 0) {
