@@ -33,6 +33,9 @@ EXTRA_EVERYTHING ?= 0
 # Useful for debugging and speedrunning training.
 MODS_LEVEL_SELECT ?= 0
 
+### Joystick max
+JOYSTICK_MAX ?= 64
+
 ### MR logo
 # Set a custom IP.BIN boot logo when building CDI files
 MR_LOGO ?= assets/dreamcast/mrlogo.mr
@@ -126,6 +129,8 @@ endif
 ifneq (,$(filter 1,$(TESTING_MODE) $(MODS_LEVEL_SELECT)))
   CFLAGS += -DMODS_LEVEL_SELECT
 endif
+
+CFLAGS += -DJOYSTICK_MAX=$(JOYSTICK_MAX)
 
 NON_MATCHING := 1
 
