@@ -12,7 +12,7 @@ MAKEFLAGS += --no-builtin-rules --no-print-directory
 MMU_SEGMENTED ?= 1
 
 ### Enable scaling of light intensity instead of clamping
-SCALE_LIGHTS ?= 1
+SCALE_LIGHTS ?= 0
 
 ### Enable 320x240 resolution
 LOWRES ?= 0
