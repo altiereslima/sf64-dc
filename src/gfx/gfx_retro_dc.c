@@ -1029,9 +1029,9 @@ static void __attribute__((noinline)) gfx_sp_vertex_light_step3(uint8_t n_vertic
         g = (uint8_t) (outrgb.y * maxc);
         b = (uint8_t) (outrgb.z * maxc);
 #else
-        r = (uint8_t) MIN(255, outrgb.x);
-        g = (uint8_t) MIN(255, outrgb.y);
-        b = (uint8_t) MIN(255, outrgb.z);
+        r = (uint8_t) MIN(255.0f, outrgb.x);
+        g = (uint8_t) MIN(255.0f, outrgb.y);
+        b = (uint8_t) MIN(255.0f, outrgb.z);
 
 #endif
         d->color.r = table256[r];

@@ -79,6 +79,8 @@ static int handles[WAV_PLAYER_MAX] = { SND_STREAM_INVALID };
 static void* sndwav_thread(void* param);
 static void* audio_cb(snd_stream_hnd_t hnd, int req, int* done);
 
+extern mutex_t io_lock;
+
 int wav_init(void) {
     int i;
 
@@ -133,7 +135,9 @@ void wav_destroy(WavPlayerId playerId) {
     streams[playerId].callback = NULL;
 
     if (streams[playerId].wave_file != FILEHND_INVALID) {
+        mutex_lock(&io_lock);
         fs_close(streams[playerId].wave_file);
+        mutex_unlock(&io_lock);
         streams[playerId].wave_file = FILEHND_INVALID;
     }
 
@@ -156,6 +160,7 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char* filename, int loop, int 
         return SND_STREAM_INVALID;
     }
 
+    mutex_lock(&io_lock);
     file = fs_open(filename, O_RDONLY);
     if (file == FILEHND_INVALID) {
         printf("couldn't open file %s\n", filename);
@@ -200,6 +205,7 @@ wav_stream_hnd_t wav_create(WavPlayerId playerId, char* filename, int loop, int 
     fs_seek(streams[playerId].wave_file, info.data_offset, SEEK_SET);
     streams[playerId].status = SNDDEC_STATUS_READY;
     strncpy(streams[playerId].filename, filename, 63);
+    mutex_unlock(&io_lock);
 
     return index;
 }
@@ -283,7 +289,9 @@ static void* sndwav_thread(void* param) {
                 case SNDDEC_STATUS_STOPPING:
                     snd_stream_stop(streams[i].shnd);
                     if (streams[i].wave_file != FILEHND_INVALID) {
+                        mutex_lock(&io_lock);
                         fs_seek(streams[i].wave_file, streams[i].data_offset, SEEK_SET);
+                        mutex_unlock(&io_lock);
                     }
                     streams[i].status = SNDDEC_STATUS_READY;
                     break;
@@ -338,7 +346,9 @@ static void* audio_cb(snd_stream_hnd_t shnd, int req, int* done) {
         return NULL;
     }
 
+
     if (streams[playerId].loop) {
+        mutex_lock_scoped(&io_lock);
         uint32_t total_len = streams[playerId].loop_end;
         uint32_t pos = streams[playerId].stream_pos;
         if ((pos + req) >= total_len) {
@@ -439,6 +449,7 @@ static void* audio_cb(snd_stream_hnd_t shnd, int req, int* done) {
 
         return streams[playerId].drv_buf;
     } else {
+        mutex_lock_scoped(&io_lock);
         ssize_t actually_read = fs_read(streams[playerId].wave_file, streams[playerId].drv_buf, req);
         if (-1 == actually_read) {
             printf("onetime begin: fs_read failed for player id %d playing %s (%s)\n", playerId,

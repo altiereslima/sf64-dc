@@ -644,6 +644,8 @@ int played_wav = 0;
 int played_fanfare_wav = 0;
 
 int USE_MIXER_MUSIC = 0;
+#include <kos/mutex.h>
+extern mutex_t io_lock;
 
 void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
     static int checked_music = 0;
@@ -653,7 +655,9 @@ void Audio_StartSequence(u8 seqPlayId, u8 seqId, u8 seqArgs, u16 fadeInTime) {
         checked_music = 1;
         char musictestfn[256];
         sprintf(musictestfn, "%s/music/02.adp", fnpre);
+        mutex_lock(&io_lock);
         file_t musictestfile = fs_open(musictestfn, O_RDONLY);
+        mutex_unlock(&io_lock);
         if (FILEHND_INVALID == musictestfile) {
             printf("Streaming music files not present. Switching to mixer music.\n");
             USE_MIXER_MUSIC = 1;
