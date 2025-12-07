@@ -27,12 +27,15 @@ extern u8 *SEG_BUF[15];
 
 char segfiles[16][32] = {0};
 
+mutex_t io_lock;
+
 void Load_RomFile(char *fname, int snum) {
     if (strcmp("",fname)) { 
         if (strcmp(segfiles[snum], fname)) {
             strcpy(segfiles[snum],fname);
             char fullfn[256];
             sprintf(fullfn, "%s/sf_data/%s.bin", fnpre, fname);
+            mutex_lock(&io_lock);
             file_t rom_file = fs_open(fullfn, O_RDONLY);
             if ((file_t)-1 == rom_file) {
                 printf("Could not open %s for reading.\n", fullfn);
@@ -43,6 +46,7 @@ void Load_RomFile(char *fname, int snum) {
             // dest is always SEG_BUF[snum - 1]
             fs_read(rom_file, SEG_BUF[snum - 1], rom_file_size);
             fs_close(rom_file);
+            mutex_unlock(&io_lock);
         }
     } 
 }

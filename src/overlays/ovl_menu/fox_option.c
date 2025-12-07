@@ -1322,12 +1322,12 @@ void Option_Sound_Setup(void) {
     sDrawCursor = true;
     D_menu_801B91A0 = 0;
 
-    gOptionSoundMode = SOUNDMODE_STEREO;//gSaveFile.save.data.soundMode;
+    gOptionSoundMode = gSaveFile.save.data.soundMode;
     SEQCMD_SET_SOUND_MODE(sSoundMode[gOptionSoundMode]);
 
-    gVolumeSettings[AUDIO_TYPE_MUSIC] = 99;//gSaveFile.save.data.musicVolume;
-    gVolumeSettings[AUDIO_TYPE_VOICE] = 69;//gSaveFile.save.data.voiceVolume;
-    gVolumeSettings[AUDIO_TYPE_SFX] = 69;//gSaveFile.save.data.sfxVolume;
+    gVolumeSettings[AUDIO_TYPE_MUSIC] = gSaveFile.save.data.musicVolume;
+    gVolumeSettings[AUDIO_TYPE_VOICE] = gSaveFile.save.data.voiceVolume;
+    gVolumeSettings[AUDIO_TYPE_SFX] = gSaveFile.save.data.sfxVolume;
 
     if (gVolumeSettings[AUDIO_TYPE_MUSIC] > 99) {
         gVolumeSettings[AUDIO_TYPE_MUSIC] = 99;
@@ -1906,10 +1906,11 @@ In file included from include/n64sys.h:23,
 include/sf64save.h:79:13: note: object ‘gDefaultSave’ of size 256
    79 | extern Save gDefaultSave;
       |             ^~~~~~~~~~~~
-
-//                            gSaveFile = *(SaveFile*) &gDefaultSave;
 #endif
-                            memcpy(&gSaveFile, &gDefaultSave, sizeof(gDefaultSave));
+//                            gSaveFile = *(SaveFile*) &gDefaultSave;
+//                            printf("sizeof(Save) == %d, sizeof(SaveFile) == %d, sizeof(SaveData) == %d\n", sizeof(Save), sizeof(SaveFile), sizeof(SaveData));
+
+                            memcpy(&gSaveFile.save, &gDefaultSave, sizeof(Save));
 
                             Save_Write();
 
@@ -1948,7 +1949,7 @@ void Option_Data_Select(void) {
         if (Option_Input_DataSelect_X(&D_menu_801B91C0) != 0) {
             AUDIO_PLAY_SFX(NA_SE_CURSOR, gDefaultSfxSource, 4);
         }
-        if (1) {}
+
     }
 
     if (gControllerPress[gMainController].button & A_BUTTON) {

@@ -25,43 +25,52 @@ s32 Save_WriteBlock(s32 arg0, u8* arg1) {
         return 0;
     }
 }
+s32 osFullEepromWrite(OSMesgQueue* mq, unsigned char* buffer);
 
 s32 Save_WriteEeprom(SaveFile* arg0) {
-    s32 var_a2;
-    s32 i;
-    s32 j;
+//    s32 var_a2;
+//    s32 i;
+//    s32 j;
 
     if (osEepromProbe(&gSerialEventQueue) != 1) {
         PRINTF("ＥＥＰＲＯＭ が ありません\n");
         return -1;
     }
-
+#if 0
+    var_a2 = 0;
     for (i = 0; i < EEPROM_MAXBLOCKS; i++) {
-        var_a2 = 0;
         for (j = 0; j < EEPROM_BLOCK_SIZE; j++) {
             if (((char*) &sPrevSaveData)[EEPROM_BLOCK_SIZE * i + j] != ((char*) arg0)[EEPROM_BLOCK_SIZE * i + j]) {
                 ((char*) &sPrevSaveData)[EEPROM_BLOCK_SIZE * i + j] = ((char*) arg0)[EEPROM_BLOCK_SIZE * i + j];
                 var_a2 = 1;
+                goto skiptherest;
             }
         }
-        if ((var_a2 == 1) && Save_WriteBlock(i, &((u8*) arg0)[EEPROM_BLOCK_SIZE * i])) {
+    }
+skiptherest:
+    if (var_a2) {
+        if (osFullEepromWrite(&gSerialEventQueue, arg0)) {
             return -1;
         }
+    }
+#endif
+    if (osFullEepromWrite(&gSerialEventQueue, arg0)) {
+        return -1;
     }
     return 0;
 }
 
+s32 osFullEepromRead(OSMesgQueue* mq, u8* buffer);
+
 s32 Save_ReadEeprom(SaveFile* arg0) {
-    s32 i;
+//    s32 i;
 
     if (osEepromProbe(&gSerialEventQueue) != 1) {
         PRINTF("ＥＥＰＲＯＭ が ありません\n");
         return -1;
     }
-    for (i = 0; i < EEPROM_MAXBLOCKS; i++) {
-        if (Save_ReadBlock(i, &((u8*) arg0)[EEPROM_BLOCK_SIZE * i]) != 0) {
-            return -1;
-        }
+    if (osFullEepromRead(&gSerialEventQueue, arg0)) {
+        return -1;
     }
     sPrevSaveData = *arg0;
     return 0;

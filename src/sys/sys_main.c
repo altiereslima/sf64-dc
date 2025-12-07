@@ -257,6 +257,8 @@ void Main_InitMesgQueues(void) {
 
 vmufb_t vmubuf;
 
+extern mutex_t io_lock;
+
 void Main_ThreadEntry(void* arg0) {
     OSMesg osMesg;
     u8 mesg;
@@ -266,6 +268,8 @@ void Main_ThreadEntry(void* arg0) {
     u8 validVIsPerFrame;
 
     segment_init();
+
+    mutex_init(&io_lock, MUTEX_TYPE_NORMAL);
 
     maple_device_t* dev = NULL;
     if ((dev = maple_enum_type(0, MAPLE_FUNC_LCD))) {
