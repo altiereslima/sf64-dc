@@ -194,17 +194,9 @@ static uint8_t eeprom_block[512] = {0};
 #include <kos.h>
 
 static file_t eeprom_file = FILEHND_INVALID;
-static mutex_t eeprom_lock;
 static int eeprom_init = 0;
 #include "sf64save.h"
 
-
-// thanks @zcrc
-#include <kos/oneshot_timer.h>
-/* 2s timer, to delay closing the VMU file.
- * This is because the emulator might open/modify/close often, and we want the
- * VMU VFS driver to only write to the VMU once we're done modifying the file. */
-static oneshot_timer_t* timer;
 
 static char full_fn[20];
 
@@ -217,30 +209,21 @@ char *get_vmu_fn(maple_device_t *vmudev, char *fn) {
 	return full_fn;
 }
 
-void eeprom_flush(UNUSED void* arg) {
-    mutex_lock_scoped(&eeprom_lock);
-    
+UNUSED void eeprom_flush(UNUSED void* arg) {
     if (eeprom_file != FILEHND_INVALID) {
         fs_close(eeprom_file);
         eeprom_file = FILEHND_INVALID;
-    }
-    
+    }    
 }
 
 s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
     maple_device_t* vmudev = NULL;
     
-    if (!eeprom_init) {
-        mutex_init(&eeprom_lock, MUTEX_TYPE_NORMAL);
-        eeprom_init = 1;
-        timer = oneshot_timer_create(eeprom_flush, NULL, 2000);
-    }
-
     vmudev = maple_enum_type(0, MAPLE_FUNC_MEMCARD);
     if (!vmudev) {
-        
         return 0;
     }
+
     //vid_border_color(255, 0, 255);
     eeprom_file = fs_open(get_vmu_fn(vmudev, "sf64.rec"), O_RDONLY | O_META);
     if (FILEHND_INVALID == eeprom_file) {
@@ -248,7 +231,6 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 
         if (FILEHND_INVALID == eeprom_file) {
             //vid_border_color(0, 0, 0);
-            
             return 1;
         }
 
@@ -274,13 +256,11 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
             fs_close(eeprom_file);
             eeprom_file = FILEHND_INVALID;
             //vid_border_color(0, 0, 0);
-            
             return 0;
         }
 
         fs_write(eeprom_file, pkg_out, pkg_size);
         free(pkg_out);
-        oneshot_timer_reset(timer);
     } else {
         fs_close(eeprom_file);
         eeprom_file = FILEHND_INVALID;
@@ -288,17 +268,17 @@ s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
 
         if (FILEHND_INVALID == eeprom_file) {
             //vid_border_color(0, 0, 0);
-            
-            return EEPROM_TYPE_4K;
+            return 0;
         }
-
-        oneshot_timer_reset(timer);
     }
 
     //vid_border_color(0, 0, 0);
+    fs_close(eeprom_file);
+    eeprom_file = FILEHND_INVALID;
     
     return EEPROM_TYPE_4K;
 }
+
 uint8_t* vmu_load_data(int channel, const char* name, uint8_t* outbuf, uint32_t* bytes_read);
 
 static int reopen_vmu_eeprom(void) {
@@ -325,13 +305,12 @@ s32 osEepromLongRead(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
     //vid_border_color(0, 255, 0);
 
     if (FILEHND_INVALID != eeprom_file) {
-        mutex_lock_scoped(&eeprom_lock);
         ssize_t size = fs_total(eeprom_file);
 
         if (size != (512 * 3)) {
             fs_close(eeprom_file);
             eeprom_file = FILEHND_INVALID;
-            //vid_border_color(0, 0, 0);
+            vid_border_color(255, 255, 0);
             
             return 1;
         }
@@ -340,17 +319,21 @@ s32 osEepromLongRead(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
         fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
         ssize_t rv = fs_read(eeprom_file, buffer, length);
         if (rv != length) {
-            //vid_border_color(0, 0, 0);
-            
+            vid_border_color(255, 255, 0);
+                        fs_close(eeprom_file);
+            eeprom_file = FILEHND_INVALID;
+
             return 1;
         }
 
         //vid_border_color(0, 0, 0);
-        oneshot_timer_reset(timer);
-        
+//        oneshot_timer_reset(timer);
+                    fs_close(eeprom_file);
+            eeprom_file = FILEHND_INVALID;
+
         return 0;
     } else {
-        //vid_border_color(0, 0, 0);
+        vid_border_color(255, 255, 0);
         
         return 1;
     }
@@ -358,6 +341,10 @@ s32 osEepromLongRead(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
 
 s32 osEepromRead(OSMesgQueue* mq, u8 address, u8* buffer) {
     return osEepromLongRead(mq, address, buffer, 8);
+}
+
+s32 osFullEepromRead(OSMesgQueue* mq, u8* buffer) {
+    return osEepromLongRead(mq, 0, buffer, 512);
 }
 
 s32 osEepromLongWrite(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
@@ -371,10 +358,9 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
     //vid_border_color(0, 0, 255);
 
     if (FILEHND_INVALID != eeprom_file) {
-        mutex_lock_scoped(&eeprom_lock);
         ssize_t size = fs_total(eeprom_file);
         if (size != (512 * 3)) {
-            //vid_border_color(0, 0, 0);
+            vid_border_color(255, 0, 0);
             fs_close(eeprom_file);
             eeprom_file = FILEHND_INVALID;
             
@@ -384,17 +370,21 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
         fs_seek(eeprom_file, (512 * 2) + (address * 8), SEEK_SET);
         ssize_t rv = fs_write(eeprom_file, buffer, length);
         if (rv != length) {
-            //vid_border_color(0, 0, 0);
+            vid_border_color(255, 0, 0);
             
+            fs_close(eeprom_file);
+            eeprom_file = FILEHND_INVALID;
             return 1;
         }
 
         //vid_border_color(0, 0, 0);
-        oneshot_timer_reset(timer);
+//        oneshot_timer_reset(timer);
         
+            fs_close(eeprom_file);
+            eeprom_file = FILEHND_INVALID;
         return 0;
     } else {
-        //vid_border_color(0, 0, 0);
+        vid_border_color(255, 0, 0);
         
         return 1;
     }
@@ -402,4 +392,8 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue* mq, u8 address, u8* buffer,
 
 s32 osEepromWrite(OSMesgQueue* mq, unsigned char address, unsigned char* buffer) {
     return osEepromLongWrite(mq, address, buffer, 8);
+}
+
+s32 osFullEepromWrite(OSMesgQueue* mq, unsigned char* buffer) {
+    return osEepromLongWrite(mq, 0, buffer, 512);
 }

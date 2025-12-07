@@ -243,8 +243,6 @@ void Controller_UpdateInput(void) {
         if (state->ltrig && state->rtrig) {
             if (state->buttons & CONT_START) {
                 if (strcmp("/pc", fnpre) == 0) {
-                    //  give vmu a chance to write and close
-                    thd_sleep(3000);
                     exit(0);
                 }
             }
