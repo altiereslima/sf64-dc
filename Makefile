@@ -578,6 +578,8 @@ ASSET_ELFS := ast_common ast_bg_space ast_bg_planet ast_arwing ast_landmaster \
 # Generate --just-symbols flags for all asset ELFs
 ASSET_SYMBOLS := $(foreach elf,$(ASSET_ELFS),-Wl,--just-symbols=build/src/assets/$(elf)/$(elf).elf)
 
+CFLAGS += -DBUILD_USER=\"$(USER)\" -DBUILD_HOST=\"$(HOSTNAME)\" -DBUILD_DIR=\"$(PWD)\"
+
 # Libraries
 LIBS := -lc -lm -lkallisti -lGL
 

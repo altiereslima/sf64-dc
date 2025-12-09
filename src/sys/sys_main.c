@@ -22,8 +22,10 @@ static kos_blockdev_t dev;
 #define SAMPLES_HIGH 560
 #define SAMPLES_LOW 528
 #else
-#define SAMPLES_HIGH 464
-#define SAMPLES_LOW 432
+#define SAMPLES_HIGH 280
+//((464*16000)/26800)
+#define SAMPLES_LOW 264
+//((432*16000)/26800)
 #endif
 
 extern struct GfxWindowManagerAPI gfx_glx;
@@ -519,23 +521,25 @@ void* AudioThread(UNUSED void* arg) {
         while (vblticker <= last_vbltick + 1)
             genwait_wait((void*) &vblticker, NULL, 15, NULL);
 #else
-        while (vblticker <= last_vbltick)
-            genwait_wait((void*) &vblticker, NULL, 5, NULL);
+//        while (vblticker <= last_vbltick)
+//            genwait_wait((void*) &vblticker, NULL, 5, NULL);
+        while (vblticker <= last_vbltick + 1)
+            genwait_wait((void*) &vblticker, NULL, 15, NULL);
 #endif
 
         last_vbltick = vblticker;
 
-#if USE_32KHZ
+//#if USE_32KHZ
         int samplecount = gSysFrameCount & 1 ? SAMPLES_HIGH : SAMPLES_LOW;
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], samplecount);
         AudioThread_CreateNextAudioBuffer(audio_buffer[0] + (samplecount), audio_buffer[1] + (samplecount),
                                           samplecount);
 
         audio_api->play((u8*) audio_buffer[0], (u8*) audio_buffer[1], samplecount * 8);
-#else
+/*#else
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], 448);
         audio_api->play((u8*) audio_buffer[0], (u8*) audio_buffer[1], 1792);
-#endif
+#endif*/
     }
 
     return NULL;

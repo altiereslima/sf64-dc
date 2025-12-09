@@ -28,7 +28,7 @@
 // Sample rate for the AICA (32kHz)
 #define DC_AUDIO_FREQUENCY (32000) 
 #else
-#define DC_AUDIO_FREQUENCY (26800)
+#define DC_AUDIO_FREQUENCY (16000)
 #endif
 
 #define RING_BUFFER_MAX_BYTES (16384)

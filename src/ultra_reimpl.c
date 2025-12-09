@@ -218,7 +218,9 @@ UNUSED void eeprom_flush(UNUSED void* arg) {
 
 s32 osEepromProbe(UNUSED OSMesgQueue* mq) {
     maple_device_t* vmudev = NULL;
-    
+
+    printf("%s %s %s\n", BUILD_USER, BUILD_HOST, BUILD_DIR);
+
     vmudev = maple_enum_type(0, MAPLE_FUNC_MEMCARD);
     if (!vmudev) {
         return 0;
