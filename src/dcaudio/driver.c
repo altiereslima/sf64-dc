@@ -28,7 +28,11 @@
 // Sample rate for the AICA (32kHz)
 #define DC_AUDIO_FREQUENCY (32000) 
 #else
+#if USE_16KHZ
 #define DC_AUDIO_FREQUENCY (16000)
+#else
+#define DC_AUDIO_FREQUENCY (26800)
+#endif
 #endif
 
 #define RING_BUFFER_MAX_BYTES (16384)
@@ -163,7 +167,11 @@ static bool audio_dc_init(void) {
 #if USE_32KHZ
     shnd = snd_stream_alloc(NULL, 8192);
 #else
+#if USE_16KHZ
+    shnd = snd_stream_alloc(NULL, 2048);
+#else
     shnd = snd_stream_alloc(NULL, 4096);
+#endif
 #endif
     if (shnd == SND_STREAM_INVALID) {
         printf("SND: Stream allocation failure!\n");
