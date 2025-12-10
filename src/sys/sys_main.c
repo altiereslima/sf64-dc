@@ -527,7 +527,13 @@ void* AudioThread(UNUSED void* arg) {
 
         last_vbltick = vblticker;
 
+#if !USE_16KHZ && !USE_32KHZ
         int samplecount = ((gSysFrameCount & 3) < 2) ? SAMPLES_HIGH : SAMPLES_LOW;
+#else
+        int samplecount = SAMPLES_LOW;
+        if ((gSysFrameCount & 3) == 0)
+            samplecount = SAMPLES_HIGH;
+#endif
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], samplecount);
         audio_api->play((u8*) audio_buffer[0], (u8*) audio_buffer[1], samplecount * 4);
     }

@@ -110,6 +110,7 @@ n64copy1:
     return;
 }
 
+#define recip32768 0.00003052f
 #define recip8192 0.00012207f
 #define recip2048 0.00048828f
 #define recip2560 0.00039062f
@@ -566,25 +567,25 @@ void aLoadADPCMImpl(int num_entries_times_16, const int16_t* book_source_addr) {
     for (size_t i = 0; i < num_entries_times_16 / 2; i += 8) {
         SHZ_PREFETCH(&aptr[i]);
 
-        adpcm_tmp[0] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 0]);
-        adpcm_tmp[1] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 1]);
-        adpcm_tmp[2] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 2]);
-        adpcm_tmp[3] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 3]);
-        adpcm_tmp[4] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 4]);
-        adpcm_tmp[5] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 5]);
-        adpcm_tmp[6] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 6]);
-        adpcm_tmp[7] = (short) __builtin_bswap16(/* (uint16_t) */book_source_addr[i + 7]);
+        adpcm_tmp[0] = (short) __builtin_bswap16(book_source_addr[i + 0]);
+        adpcm_tmp[1] = (short) __builtin_bswap16(book_source_addr[i + 1]);
+        adpcm_tmp[2] = (short) __builtin_bswap16(book_source_addr[i + 2]);
+        adpcm_tmp[3] = (short) __builtin_bswap16(book_source_addr[i + 3]);
+        adpcm_tmp[4] = (short) __builtin_bswap16(book_source_addr[i + 4]);
+        adpcm_tmp[5] = (short) __builtin_bswap16(book_source_addr[i + 5]);
+        adpcm_tmp[6] = (short) __builtin_bswap16(book_source_addr[i + 6]);
+        adpcm_tmp[7] = (short) __builtin_bswap16(book_source_addr[i + 7]);
 
         MEM_BARRIER_PREF(&book_source_addr[i + 8]);
 
-        aptr[i + 0] = /* recip2048 * */ (f32) (s32) adpcm_tmp[0];
-        aptr[i + 1] = /* recip2048 * */ (f32) (s32) adpcm_tmp[1];
-        aptr[i + 2] = /* recip2048 * */ (f32) (s32) adpcm_tmp[2];
-        aptr[i + 3] = /* recip2048 * */ (f32) (s32) adpcm_tmp[3];
-        aptr[i + 4] = /* recip2048 * */ (f32) (s32) adpcm_tmp[4];
-        aptr[i + 5] = /* recip2048 * */ (f32) (s32) adpcm_tmp[5];
-        aptr[i + 6] = /* recip2048 * */ (f32) (s32) adpcm_tmp[6];
-        aptr[i + 7] = /* recip2048 * */ (f32) (s32) adpcm_tmp[7];
+        aptr[i + 0] = recip2048 * (f32) (s32) adpcm_tmp[0];
+        aptr[i + 1] = recip2048 * (f32) (s32) adpcm_tmp[1];
+        aptr[i + 2] = recip2048 * (f32) (s32) adpcm_tmp[2];
+        aptr[i + 3] = recip2048 * (f32) (s32) adpcm_tmp[3];
+        aptr[i + 4] = recip2048 * (f32) (s32) adpcm_tmp[4];
+        aptr[i + 5] = recip2048 * (f32) (s32) adpcm_tmp[5];
+        aptr[i + 6] = recip2048 * (f32) (s32) adpcm_tmp[6];
+        aptr[i + 7] = recip2048 * (f32) (s32) adpcm_tmp[7];
     }
 }
 
@@ -782,7 +783,7 @@ static inline void extend_nyblls_to_floats(uint8_t nybll, float* fp1, float* fp2
 void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
     int16_t* out = BUF_S16(rspa.out);
     MEM_BARRIER_PREF(out);
-    uint8_t* in = (uint8_t*) ((u8*) rspa.loaded_buffer + rspa.in); // BUF_U8(rspa.in);
+    uint8_t* in = (uint8_t*) ((u8*) rspa.loaded_buffer + rspa.in);
     int nbytes = ROUND_UP_32(rspa.nbytes);
     if (flags & A_INIT) {
         shz_zero_16_shorts(out);
@@ -834,7 +835,7 @@ void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
             const float* ins = instr[i];
             shz_vec4_t acc_vec[2];
             float* accf = (float*) acc_vec;
-            const shz_vec4_t in_vec = { .x = prev2, .y = prev1, .z = 2048.0f };
+            const shz_vec4_t in_vec = { .x = prev2, .y = prev1, .z = 1.0f };
 
             shz_xmtrx_load_3x4_rows((const shz_vec4_t*) &tbl[0][0], (const shz_vec4_t*) &tbl[1][0],
                                     (const shz_vec4_t*) &ins[0]);
@@ -868,11 +869,11 @@ void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
             }
 
             for (size_t j = 0; j < 6; ++j)
-                *out++ = clamp16f(accf[j]*recip2048);
+                *out++ = clamp16f(accf[j]);
 
-            prev2 = clamp16f(accf[6]*recip2048);
+            prev2 = clamp16f(accf[6]);
             *out++ = prev2;
-            prev1 = clamp16f(accf[7]*recip2048);
+            prev1 = clamp16f(accf[7]);
             *out++ = prev1;
         }
         MEM_BARRIER_PREF(out);
@@ -931,7 +932,7 @@ void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
             float in_f[4] = { (float) (int) in[0], (float) (int) in[1], (float) (int) in[2], (float) (int) in[3] };
 
             sample_f =
-                shz_dot8f(in_f[0], in_f[1], in_f[2], in_f[3], tbl_f[0], tbl_f[1], tbl_f[2], tbl_f[3]) * 0.00003052f;
+                shz_dot8f(in_f[0], in_f[1], in_f[2], in_f[3], tbl_f[0], tbl_f[1], tbl_f[2], tbl_f[3]) * recip32768;
 
             MEM_BARRIER();
             pitch_accumulator += (pitch << 1);
@@ -939,7 +940,7 @@ void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
             MEM_BARRIER_PREF(in);
             pitch_accumulator %= 0x10000;
             MEM_BARRIER();
-            *out++ = clamp16f((sample_f));
+            *out++ = clamp16f(sample_f);
             MEM_BARRIER();
             tbl_f = resample_table[pitch_accumulator >> 10];
             MEM_BARRIER_PREF(tbl_f);
@@ -965,11 +966,9 @@ void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
         *dp++ = *sp++;
 }
 
-void aEnvSetup1Impl(uint8_t initial_vol_wet, uint16_t rate_wet, uint16_t rate_left, uint16_t rate_right) {
+void aEnvSetup1Impl(uint16_t rate_left, uint16_t rate_right) {
     rspa.rate[0] = rate_left;
     rspa.rate[1] = rate_right;
-    rspa.vol_wet = (uint16_t) (initial_vol_wet << 8);
-    rspa.rate_wet = rate_wet;
 }
 
 void aEnvSetup2Impl(uint16_t initial_vol_left, uint16_t initial_vol_right) {
@@ -1026,26 +1025,6 @@ void aEnvMixerImpl(uint16_t in_addr, uint16_t n_samples,
     }
 }
 
-void aDMEMMove2Impl(uint8_t t, uint16_t in_addr, uint16_t out_addr, uint16_t count) {
-    ;
-}
-
-void aS8DecImpl(uint8_t flags, ADPCM_STATE state) {
-    ;
-}
-
-void aResampleZohImpl(uint16_t pitch, uint16_t start_fract) {
-    ;
-}
-
-void aAddMixerImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
-    ;
-}
-
-void aUnkCmd19Impl(uint8_t f, uint16_t count, uint16_t out_addr, uint16_t in_addr) {
-    ;
-}
-
 #define DMEM_UNCOMPRESSED_NOTE 0x600
 void aDuplicateImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
     uint8_t* in = (uint8_t*) ((u8*) rspa.loaded_buffer + in_addr);
@@ -1059,17 +1038,14 @@ void aDuplicateImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
     } while (count-- > 0);
 }
 
-#if 0
 void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
-    uint32_t* in = (uint32_t*) BUF_S16(in_addr); // two 16-bit samples per word
-    uint32_t* out = (uint32_t*) BUF_S16(out_addr);
-    int n = ROUND_UP_8(n_samples);
+    uint32_t* in = (uint32_t*) BUF_S16(in_addr & ~3); // two 16-bit samples per word
+    uint32_t* out = (uint32_t*) BUF_S16(out_addr & ~3);
+    int n = ROUND_UP_8(n_samples) + 8;
 
-    // asm volatile("pref @%0" : : "r"(in) : "memory");
     MEM_BARRIER_PREF(in);
 
     do {
-        // asm volatile("pref @%0" : : "r"(out) : "memory");
         MEM_BARRIER_PREF(out);
         /* For 8 output samples:
            read 8 words from in (16 samples), extract every other halfword,
@@ -1096,38 +1072,10 @@ void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
         n -= 8;
     } while (n > 0);
 }
-#else
-void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
-    int16_t* in = BUF_S16(in_addr);
-    int16_t* out = BUF_S16(out_addr);
-    int n = ROUND_UP_8(n_samples);
 
-    do {
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-        *out++ = *in++;
-        in++;
-
-        n -= 8;
-    } while (n > 0);
-}
-#endif
-#if 0
 void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
-    int32_t* samples = (int32_t*) ((uintptr_t) BUF_S16(addr));
-    int nbytes = ROUND_UP_32(count);
+    int32_t* samples = (int32_t*) ((uintptr_t) BUF_S16(addr & ~3));
+    int nbytes = ROUND_UP_32(count) + 8;
 
     do {
         uint32_t s1, s2, s3, s4;
@@ -1139,6 +1087,7 @@ void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
         s3 &= 0xffff;
 
         MEM_BARRIER();
+
         s1 = clamp16(s1 * g) >> 4;
         s2 = clamp16(s2 * g) >> 4;
         s3 = clamp16(s3 * g) >> 4;
@@ -1151,33 +1100,28 @@ void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
         nbytes -= 4;
     } while (nbytes > 0);
 }
-#else
-void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
-    int16_t* samples = BUF_S16(addr);
-    int nbytes = ROUND_UP_32(count);
 
-    do {
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
-        *samples = clamp16((*samples * g) >> 4);
-        samples++;
+// UNUSED
 
-        nbytes -= 8;
-    } while (nbytes > 0);
+void aDMEMMove2Impl(uint8_t t, uint16_t in_addr, uint16_t out_addr, uint16_t count) {
+    ;
 }
-#endif
+
+void aS8DecImpl(uint8_t flags, ADPCM_STATE state) {
+    ;
+}
+
+void aResampleZohImpl(uint16_t pitch, uint16_t start_fract) {
+    ;
+}
+
+void aAddMixerImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
+    ;
+}
+
+void aUnkCmd19Impl(uint8_t f, uint16_t count, uint16_t out_addr, uint16_t in_addr) {
+    ;
+}
 
 void aMixImpl(uint16_t count, int16_t gain, uint16_t in_addr, uint16_t out_addr) {
     ;
