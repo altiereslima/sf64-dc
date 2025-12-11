@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Imagem baseada em Fedora 37
     container: kazade/dreamcast-sdk:latest
     
     steps:
@@ -20,16 +21,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install System Dependencies (Alpine Linux)
+      - name: Install System Dependencies (Fedora)
         run: |
-          # A imagem kazade/dreamcast-sdk usa Alpine Linux, então usamos apk
-          apk update
-          apk add --no-cache \
-            python3 py3-pip \
-            cmake git bash \
-            build-base \
-            libpng-dev jpeg-dev \
-            cdrkit
+          # A imagem usa Fedora, então usamos 'dnf'
+          # Nomes de pacotes ajustados para o padrão Fedora/RedHat
+          dnf install -y \
+            python3 python3-pip \
+            cmake git make gcc gcc-c++ \
+            libpng-devel libjpeg-turbo-devel \
+            genisoimage
 
       - name: Install Python Dependencies
         run: |
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Compila e instala mkdcdisc
+          # Compila e instala mkdcdisc (ferramenta host)
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
@@ -61,12 +61,12 @@ jobs:
         run: |
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           
-          # Garante permissão de escrita
+          # Garante permissão de escrita no arquivo de ambiente
           chmod +w $ENV_FILE || true
           
           echo "Aplicando otimizações..."
           
-          # Altera -O2 para -O3 no Alpine (sed padrão pode ser ligeiramente diferente, mas este comando é compatível)
+          # Altera -O2 para -O3
           sed -i 's/-O2/-O3/g' $ENV_FILE
           
           # Adiciona flags de LTO
@@ -78,10 +78,9 @@ jobs:
 
       - name: Build N64 Tools
         run: |
-          # Carrega variáveis (usando sh/bash compatible source)
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Força política do CMake
+          # CMake 3.5+ policy fix
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
