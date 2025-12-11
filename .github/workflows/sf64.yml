@@ -12,8 +12,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # MUDANÇA CRÍTICA: Usando a imagem 'standard' da comunidade Dreamcast (Kazade SDK)
-    # As imagens 'kallistiose' ou 'kallistios' no GHCR não estão publicamente acessíveis.
     container: kazade/dreamcast-sdk:latest
     
     steps:
@@ -22,25 +20,25 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install System Dependencies
+      - name: Install System Dependencies (Alpine Linux)
         run: |
-          # A imagem kazade é baseada em Debian/Ubuntu, então apt-get funciona.
-          # genisoimage e build-essential já costumam vir, mas garantimos aqui.
-          apt-get update
-          apt-get install -y \
-            python3 python3-pip python3-venv \
-            cmake genisoimage \
-            libpng-dev libjpeg-dev \
-            git build-essential
+          # A imagem kazade/dreamcast-sdk usa Alpine Linux, então usamos apk
+          apk update
+          apk add --no-cache \
+            python3 py3-pip \
+            cmake git bash \
+            build-base \
+            libpng-dev jpeg-dev \
+            cdrkit
 
       - name: Install Python Dependencies
         run: |
-          # Instala dependências Python necessárias para os scripts de assets
+          # Instala dependências Python
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Compila e instala mkdcdisc (necessário para gerar o .cdi final)
+          # Compila e instala mkdcdisc
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
@@ -61,18 +59,17 @@ jobs:
 
       - name: Configure KOS Environment (Optimize)
         run: |
-          # O caminho padrão nessa imagem também é /opt/toolchains/dc/kos
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
+          
+          # Garante permissão de escrita
+          chmod +w $ENV_FILE || true
           
           echo "Aplicando otimizações..."
           
-          # Garante permissão de escrita no arquivo de ambiente (caso o container trave root)
-          chmod +w $ENV_FILE || true
-          
-          # Altera -O2 para -O3
+          # Altera -O2 para -O3 no Alpine (sed padrão pode ser ligeiramente diferente, mas este comando é compatível)
           sed -i 's/-O2/-O3/g' $ENV_FILE
           
-          # Adiciona flags de LTO se não existirem
+          # Adiciona flags de LTO
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
@@ -81,9 +78,10 @@ jobs:
 
       - name: Build N64 Tools
         run: |
+          # Carrega variáveis (usando sh/bash compatible source)
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Força compatibilidade com CMake mais novo se necessário
+          # Força política do CMake
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
