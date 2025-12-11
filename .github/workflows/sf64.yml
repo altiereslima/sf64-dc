@@ -1,4 +1,4 @@
-name: Build Star Fox 64 for Dreamcast (Corrected)
+name: Build Star Fox 64 for Dreamcast (Final)
 
 on:
   push:
@@ -12,8 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # CORREÇÃO AQUI: Trocamos para a imagem oficial do Kazade que existe publicamente
-    container: kazade/dreamcast-sdk:latest 
+    # Esta é a imagem oficial e moderna (tem GCC 14 e suporta apt-get)
+    container: ghcr.io/kallistiose/kos:latest
     
     steps:
       - name: Checkout Repository
@@ -23,9 +23,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          # Como essa imagem é baseada em Ubuntu/Debian, o apt-get VAI funcionar agora
           apt-get update
-          apt-get install -y python3 python3-pip cmake genisoimage libpng-dev libjpeg-dev
-          # O flag --break-system-packages é necessário em versões novas do Python/Debian
+          apt-get install -y python3 python3-pip python3-venv cmake genisoimage libpng-dev libjpeg-dev git
+          
+          # Instala dependências Python
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
@@ -44,38 +46,44 @@ jobs:
             echo "ROM encontrada!"
             ls -lh baserom.us.rev1.z64
           else
-            echo "ERRO: O arquivo baserom.us.rev1.z64 não está na raiz!"
+            echo "ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz!"
             exit 1
           fi
 
       - name: Configure KOS Environment
         run: |
-          # O caminho padrão no container kazade é este:
+          # Carrega as variáveis de ambiente do compilador
+          . /opt/toolchains/dc/kos/environ.sh
+          
+          # Ajusta para as flags de alta performance pedidas no README
+          # (Como estamos na imagem oficial, o caminho do arquivo pode variar, então usamos o path da variável)
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           
-          # Tenta aplicar as otimizações, mas sem falhar se o texto não for exato
-          sed -i 's/-O2/-O3/g' $ENV_FILE || true
-          
-          # Adiciona flags de LTO se possível
-          if grep -q "flto" "$ENV_FILE"; then
-             sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE
+          sed -i 's/-O2/-O3/g' $ENV_FILE
+          # Tenta adicionar LTO se não existir
+          if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
+             sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
+          
+          echo "Ambiente configurado."
 
       - name: Build N64 Tools
         run: |
-          source /opt/toolchains/dc/kos/environ.sh
+          . /opt/toolchains/dc/kos/environ.sh
           cd tools
           make
           cd ..
 
       - name: Extract Assets (Make Init)
         run: |
-          source /opt/toolchains/dc/kos/environ.sh
+          . /opt/toolchains/dc/kos/environ.sh
+          # Aumenta limite de memória do Python caso precise
+          export PYTHON_EGG_CACHE=./.python-eggs
           make init
 
       - name: Build Dreamcast CDI
         run: |
-          source /opt/toolchains/dc/kos/environ.sh
+          . /opt/toolchains/dc/kos/environ.sh
           make cdi-cdr
 
       - name: Upload CDI Artifact
