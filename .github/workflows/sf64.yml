@@ -23,7 +23,7 @@ jobs:
 
       - name: Install System Dependencies (Fedora)
         run: |
-          # Adicionado 'wget' que faltava para o build das tools
+          # Adicionado wget e dependências do mkdcdisc
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
@@ -47,8 +47,8 @@ jobs:
           meson compile -C build
           meson install -C build
           
-          # Verifica instalação (mkdcdisc não tem --version, usamos --help para testar execução)
-          mkdcdisc --help > /dev/null && echo "✅ mkdcdisc instalado com sucesso"
+          # CORREÇÃO: Usa --help para validação pois --version não existe
+          mkdcdisc --help > /dev/null && echo "✅ mkdcdisc instalado e funcional"
 
       - name: Verify ROM exists
         run: |
