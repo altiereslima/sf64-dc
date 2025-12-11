@@ -23,34 +23,32 @@ jobs:
 
       - name: Install System Dependencies (Fedora)
         run: |
-          # Adicionado meson e libisofs-devel para compilar o mkdcdisc
+          # Adicionado 'wget' que faltava para o build das tools
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
             libpng-devel libjpeg-turbo-devel \
-            meson libisofs-devel
+            meson libisofs-devel \
+            wget
 
       - name: Install Python Dependencies
         run: |
-          # Atualiza PIP para evitar erro de compatibilidade com Fedora 37
+          # Atualiza PIP e instala dependências
           python3 -m pip install --upgrade pip
-          
-          # Instala dependências do projeto
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # O mkdcdisc usa MESON agora, não CMake.
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           
-          # Configura e compila com Meson
+          # Build com Meson
           meson setup build
           meson compile -C build
           meson install -C build
           
-          # Verifica se instalou corretamente
-          mkdcdisc --version || echo "mkdcdisc installed but version check failed"
+          # Verifica instalação (mkdcdisc não tem --version, usamos --help para testar execução)
+          mkdcdisc --help > /dev/null && echo "✅ mkdcdisc instalado com sucesso"
 
       - name: Verify ROM exists
         run: |
@@ -81,7 +79,7 @@ jobs:
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # CMake fix
+          # Agora com wget instalado, o download do recompilador deve funcionar
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
