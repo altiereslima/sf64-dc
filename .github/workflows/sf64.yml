@@ -23,32 +23,34 @@ jobs:
 
       - name: Install System Dependencies (Fedora)
         run: |
-          # A imagem usa Fedora 37
-          # O genisoimage já vem instalado, mas garantimos os outros
+          # Adicionado meson e libisofs-devel para compilar o mkdcdisc
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
-            libpng-devel libjpeg-turbo-devel
+            libpng-devel libjpeg-turbo-devel \
+            meson libisofs-devel
 
       - name: Install Python Dependencies
         run: |
-          # Primeiro, atualizamos o PIP para a versão mais recente para evitar incompatibilidades
+          # Atualiza PIP para evitar erro de compatibilidade com Fedora 37
           python3 -m pip install --upgrade pip
           
-          # Tenta instalar normalmente.
-          # O "||" serve como fallback: se precisar da flag --break-system-packages (pip novo), ele usa.
-          # Se for pip velho, ele usa o comando simples.
+          # Instala dependências do projeto
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Compila e instala mkdcdisc (necessário para gerar o .cdi)
+          # O mkdcdisc usa MESON agora, não CMake.
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
-          mkdir build && cd build
-          cmake ..
-          make
-          make install
+          
+          # Configura e compila com Meson
+          meson setup build
+          meson compile -C build
+          meson install -C build
+          
+          # Verifica se instalou corretamente
+          mkdcdisc --version || echo "mkdcdisc installed but version check failed"
 
       - name: Verify ROM exists
         run: |
@@ -64,7 +66,6 @@ jobs:
       - name: Configure KOS Environment (Optimize)
         run: |
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
-          
           chmod +w $ENV_FILE || true
           
           echo "Aplicando otimizações..."
@@ -80,7 +81,7 @@ jobs:
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Força compatibilidade com CMake
+          # CMake fix
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
