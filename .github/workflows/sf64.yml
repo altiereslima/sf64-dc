@@ -1,7 +1,12 @@
 name: Build Star Fox 64 for Dreamcast
 
 on:
-  workflow_dispatch: # Permite rodar manualmente clicando num botão
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
