@@ -12,8 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # CORREÇÃO: Removido o 'e' extra no final de 'kallistios'
-    container: ghcr.io/kallistios/kos:latest
+    # MUDANÇA CRÍTICA: Usando a imagem 'standard' da comunidade Dreamcast (Kazade SDK)
+    # As imagens 'kallistiose' ou 'kallistios' no GHCR não estão publicamente acessíveis.
+    container: kazade/dreamcast-sdk:latest
     
     steps:
       - name: Checkout Repository
@@ -23,7 +24,8 @@ jobs:
 
       - name: Install System Dependencies
         run: |
-          # Atualiza repositórios e instala dependências listadas no README
+          # A imagem kazade é baseada em Debian/Ubuntu, então apt-get funciona.
+          # genisoimage e build-essential já costumam vir, mas garantimos aqui.
           apt-get update
           apt-get install -y \
             python3 python3-pip python3-venv \
@@ -33,12 +35,12 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          # Instala dependências Python ignorando erro de ambiente gerenciado (comum em containers modernos)
+          # Instala dependências Python necessárias para os scripts de assets
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Compila e instala o mkdcdisc manualmente, pois é necessário para gerar o .cdi
+          # Compila e instala mkdcdisc (necessário para gerar o .cdi final)
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
@@ -53,46 +55,45 @@ jobs:
             ls -lh baserom.us.rev1.z64
             sha1sum baserom.us.rev1.z64
           else
-            echo "❌ ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz do repositório!"
+            echo "❌ ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz!"
             exit 1
           fi
 
       - name: Configure KOS Environment (Optimize)
         run: |
-          # Localiza o arquivo de ambiente do KOS dentro do container
+          # O caminho padrão nessa imagem também é /opt/toolchains/dc/kos
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           
-          echo "Aplicando otimizações recomendadas no README..."
+          echo "Aplicando otimizações..."
           
-          # Altera -O2 para -O3 (Performance máxima)
+          # Garante permissão de escrita no arquivo de ambiente (caso o container trave root)
+          chmod +w $ENV_FILE || true
+          
+          # Altera -O2 para -O3
           sed -i 's/-O2/-O3/g' $ENV_FILE
           
-          # Adiciona -ffat-lto-objects se não existir (Link Time Optimization)
+          # Adiciona flags de LTO se não existirem
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
           
-          echo "Ambiente modificado com sucesso."
-          cat $ENV_FILE | grep KOS_CFLAGS
+          echo "Ambiente configurado."
 
       - name: Build N64 Tools
         run: |
-          # Carrega variáveis e compila as ferramentas conversoras
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Força política do CMake caso necessário, conforme README
+          # Força compatibilidade com CMake mais novo se necessário
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
         run: |
           . /opt/toolchains/dc/kos/environ.sh
-          # Prepara os assets a partir da ROM
           make init
 
       - name: Build Dreamcast CDI
         run: |
           . /opt/toolchains/dc/kos/environ.sh
-          # Compila o binário final e gera a imagem CDI
           make cdi-cdr
 
       - name: Upload CDI Artifact
