@@ -1,4 +1,4 @@
-name: Build Star Fox 64 for Dreamcast
+name: Build Star Fox 64 for Dreamcast (Direct ROM)
 
 on:
   push:
@@ -11,24 +11,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: kallistos/dreamcast-toolchain:latest # Container com o ambiente KOS pronto
+    container: kallistos/dreamcast-toolchain:latest
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive # Importante: baixa os submódulos necessários
+          submodules: recursive
 
-      - name: Install Dependencies (System & Python)
+      - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip python3-venv cmake genisoimage libpng-dev libjpeg-dev
-          # Instalar dependências Python do projeto
+          apt-get install -y python3 python3-pip cmake genisoimage libpng-dev libjpeg-dev
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # O mkdcdisc geralmente não vem no container padrão, precisamos compilar rapidinho
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
@@ -37,43 +35,31 @@ jobs:
           make install
           cd ../..
 
-      - name: Restore ROM from Secret
+      - name: Verify ROM exists
         run: |
-          # Decodifica a ROM que está salva nos segredos e coloca no lugar certo
-          echo "${{ secrets.SF64_ROM_BASE64 }}" | base64 -d > baserom.us.rev1.z64
-          
-          # Verifica se o arquivo foi criado (sha1sum opcional, mas recomendado)
-          ls -lh baserom.us.rev1.z64
+          if [ -f "baserom.us.rev1.z64" ]; then
+            echo "ROM encontrada!"
+            ls -lh baserom.us.rev1.z64
+          else
+            echo "ERRO: O arquivo baserom.us.rev1.z64 não está na raiz!"
+            exit 1
+          fi
 
-      - name: Configure KOS Environment (Flags from README)
+      - name: Configure KOS Environment (O3 + LTO)
         run: |
-          # O README pede GCC 14 e flags específicas. 
-          # Ajustamos o environ.sh do container para bater com as instruções.
-          
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
-          
-          # Troca O2 por O3
           sed -i 's/-O2/-O3/g' $ENV_FILE
-          
-          # Habilita fat LTO
           sed -i 's/#export KOS_CFLAGS="${KOS_CFLAGS} -freorder-blocks-algorithm=simple -flto=auto"/export KOS_CFLAGS="${KOS_CFLAGS} -flto=auto -ffat-lto-objects"/' $ENV_FILE
-          
-          # Remove o flag antigo se ele estiver sobrando na linha
           sed -i 's/-freorder-blocks-algorithm=simple //g' $ENV_FILE
-          
-          echo "Environment modified. Ready to source."
 
       - name: Build N64 Tools
         run: |
-          # Carrega o ambiente
           source /opt/toolchains/dc/kos/environ.sh
-          
-          # Compila as ferramentas internas
           cd tools
           make
           cd ..
 
-      - name: Process Assets (Make Init)
+      - name: Extract Assets
         run: |
           source /opt/toolchains/dc/kos/environ.sh
           make init
@@ -81,13 +67,11 @@ jobs:
       - name: Build Dreamcast CDI
         run: |
           source /opt/toolchains/dc/kos/environ.sh
-          # Compila a versão para CD-R (padrão)
           make cdi-cdr
 
-      - name: Upload Artifact
+      - name: Upload CDI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SF64-Dreamcast-CDI
           path: |
             *.cdi
-            *.iso
