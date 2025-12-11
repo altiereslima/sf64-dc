@@ -121,30 +121,465 @@ n64copy1:
 #define ROUND_UP_8(v) (((v) + 7) & ~7)
 
 #define DMEM_BUF_SIZE 4096
-#define BUF_U8(a) (rspa.buf.as_u8 + (a))
-#define BUF_S16(a) (rspa.buf.as_s16 + (a) / sizeof(int16_t))
+#define BUF_U8(a) (rspa.buf + (a))
+#define BUF_S16(a) (rspa.buf + (a))
 
-static struct __attribute__((aligned(32))) {
-    union __attribute__((aligned(32))) {
-        int16_t __attribute__((aligned(32))) as_s16[DMEM_BUF_SIZE / sizeof(int16_t)];
-        uint8_t __attribute__((aligned(32))) as_u8[DMEM_BUF_SIZE];
-    } buf;
+#define BUF_DMEM(a) ((void*)(rspa.buf + (a)))
 
+static struct __attribute__((aligned(16384))) {
+    uint8_t __attribute__((aligned(32))) buf[DMEM_BUF_SIZE];
     float __attribute__((aligned(32))) adpcm_table[8][2][8];
+    int16_t __attribute__((aligned(32))) adpcm_loop_state[16];
+
     uint16_t vol[2];
     uint16_t rate[2];
-
-    int16_t __attribute__((aligned(32))) adpcm_loop_state[16];
 
     u16* loaded_buffer;
     uint16_t in;
     uint16_t out;
     uint16_t nbytes;
 
-    uint16_t rate_wet;
-    uint16_t vol_wet;
-} rspa = { 0 };
+    const float __attribute__((aligned(32))) resample_table[64][4];
 
+    const float __attribute__((aligned(32))) nyblls_as_floats[256][2];
+} rspa = {.buf = {0}, .adpcm_table = {0}, .vol = {0}, .rate = {0},
+.adpcm_loop_state = {0}, .loaded_buffer = NULL, .in = 0, .out = 0, .nbytes = 0, 
+.nyblls_as_floats = {
+    { 0.0f, 0.0f },   { 0.0f, 1.0f },   { 0.0f, 2.0f },   { 0.0f, 3.0f },   { 0.0f, 4.0f },   { 0.0f, 5.0f },
+    { 0.0f, 6.0f },   { 0.0f, 7.0f },   { 0.0f, -8.0f },  { 0.0f, -7.0f },  { 0.0f, -6.0f },  { 0.0f, -5.0f },
+    { 0.0f, -4.0f },  { 0.0f, -3.0f },  { 0.0f, -2.0f },  { 0.0f, -1.0f },  { 1.0f, 0.0f },   { 1.0f, 1.0f },
+    { 1.0f, 2.0f },   { 1.0f, 3.0f },   { 1.0f, 4.0f },   { 1.0f, 5.0f },   { 1.0f, 6.0f },   { 1.0f, 7.0f },
+    { 1.0f, -8.0f },  { 1.0f, -7.0f },  { 1.0f, -6.0f },  { 1.0f, -5.0f },  { 1.0f, -4.0f },  { 1.0f, -3.0f },
+    { 1.0f, -2.0f },  { 1.0f, -1.0f },  { 2.0f, 0.0f },   { 2.0f, 1.0f },   { 2.0f, 2.0f },   { 2.0f, 3.0f },
+    { 2.0f, 4.0f },   { 2.0f, 5.0f },   { 2.0f, 6.0f },   { 2.0f, 7.0f },   { 2.0f, -8.0f },  { 2.0f, -7.0f },
+    { 2.0f, -6.0f },  { 2.0f, -5.0f },  { 2.0f, -4.0f },  { 2.0f, -3.0f },  { 2.0f, -2.0f },  { 2.0f, -1.0f },
+    { 3.0f, 0.0f },   { 3.0f, 1.0f },   { 3.0f, 2.0f },   { 3.0f, 3.0f },   { 3.0f, 4.0f },   { 3.0f, 5.0f },
+    { 3.0f, 6.0f },   { 3.0f, 7.0f },   { 3.0f, -8.0f },  { 3.0f, -7.0f },  { 3.0f, -6.0f },  { 3.0f, -5.0f },
+    { 3.0f, -4.0f },  { 3.0f, -3.0f },  { 3.0f, -2.0f },  { 3.0f, -1.0f },  { 4.0f, 0.0f },   { 4.0f, 1.0f },
+    { 4.0f, 2.0f },   { 4.0f, 3.0f },   { 4.0f, 4.0f },   { 4.0f, 5.0f },   { 4.0f, 6.0f },   { 4.0f, 7.0f },
+    { 4.0f, -8.0f },  { 4.0f, -7.0f },  { 4.0f, -6.0f },  { 4.0f, -5.0f },  { 4.0f, -4.0f },  { 4.0f, -3.0f },
+    { 4.0f, -2.0f },  { 4.0f, -1.0f },  { 5.0f, 0.0f },   { 5.0f, 1.0f },   { 5.0f, 2.0f },   { 5.0f, 3.0f },
+    { 5.0f, 4.0f },   { 5.0f, 5.0f },   { 5.0f, 6.0f },   { 5.0f, 7.0f },   { 5.0f, -8.0f },  { 5.0f, -7.0f },
+    { 5.0f, -6.0f },  { 5.0f, -5.0f },  { 5.0f, -4.0f },  { 5.0f, -3.0f },  { 5.0f, -2.0f },  { 5.0f, -1.0f },
+    { 6.0f, 0.0f },   { 6.0f, 1.0f },   { 6.0f, 2.0f },   { 6.0f, 3.0f },   { 6.0f, 4.0f },   { 6.0f, 5.0f },
+    { 6.0f, 6.0f },   { 6.0f, 7.0f },   { 6.0f, -8.0f },  { 6.0f, -7.0f },  { 6.0f, -6.0f },  { 6.0f, -5.0f },
+    { 6.0f, -4.0f },  { 6.0f, -3.0f },  { 6.0f, -2.0f },  { 6.0f, -1.0f },  { 7.0f, 0.0f },   { 7.0f, 1.0f },
+    { 7.0f, 2.0f },   { 7.0f, 3.0f },   { 7.0f, 4.0f },   { 7.0f, 5.0f },   { 7.0f, 6.0f },   { 7.0f, 7.0f },
+    { 7.0f, -8.0f },  { 7.0f, -7.0f },  { 7.0f, -6.0f },  { 7.0f, -5.0f },  { 7.0f, -4.0f },  { 7.0f, -3.0f },
+    { 7.0f, -2.0f },  { 7.0f, -1.0f },  { -8.0f, 0.0f },  { -8.0f, 1.0f },  { -8.0f, 2.0f },  { -8.0f, 3.0f },
+    { -8.0f, 4.0f },  { -8.0f, 5.0f },  { -8.0f, 6.0f },  { -8.0f, 7.0f },  { -8.0f, -8.0f }, { -8.0f, -7.0f },
+    { -8.0f, -6.0f }, { -8.0f, -5.0f }, { -8.0f, -4.0f }, { -8.0f, -3.0f }, { -8.0f, -2.0f }, { -8.0f, -1.0f },
+    { -7.0f, 0.0f },  { -7.0f, 1.0f },  { -7.0f, 2.0f },  { -7.0f, 3.0f },  { -7.0f, 4.0f },  { -7.0f, 5.0f },
+    { -7.0f, 6.0f },  { -7.0f, 7.0f },  { -7.0f, -8.0f }, { -7.0f, -7.0f }, { -7.0f, -6.0f }, { -7.0f, -5.0f },
+    { -7.0f, -4.0f }, { -7.0f, -3.0f }, { -7.0f, -2.0f }, { -7.0f, -1.0f }, { -6.0f, 0.0f },  { -6.0f, 1.0f },
+    { -6.0f, 2.0f },  { -6.0f, 3.0f },  { -6.0f, 4.0f },  { -6.0f, 5.0f },  { -6.0f, 6.0f },  { -6.0f, 7.0f },
+    { -6.0f, -8.0f }, { -6.0f, -7.0f }, { -6.0f, -6.0f }, { -6.0f, -5.0f }, { -6.0f, -4.0f }, { -6.0f, -3.0f },
+    { -6.0f, -2.0f }, { -6.0f, -1.0f }, { -5.0f, 0.0f },  { -5.0f, 1.0f },  { -5.0f, 2.0f },  { -5.0f, 3.0f },
+    { -5.0f, 4.0f },  { -5.0f, 5.0f },  { -5.0f, 6.0f },  { -5.0f, 7.0f },  { -5.0f, -8.0f }, { -5.0f, -7.0f },
+    { -5.0f, -6.0f }, { -5.0f, -5.0f }, { -5.0f, -4.0f }, { -5.0f, -3.0f }, { -5.0f, -2.0f }, { -5.0f, -1.0f },
+    { -4.0f, 0.0f },  { -4.0f, 1.0f },  { -4.0f, 2.0f },  { -4.0f, 3.0f },  { -4.0f, 4.0f },  { -4.0f, 5.0f },
+    { -4.0f, 6.0f },  { -4.0f, 7.0f },  { -4.0f, -8.0f }, { -4.0f, -7.0f }, { -4.0f, -6.0f }, { -4.0f, -5.0f },
+    { -4.0f, -4.0f }, { -4.0f, -3.0f }, { -4.0f, -2.0f }, { -4.0f, -1.0f }, { -3.0f, 0.0f },  { -3.0f, 1.0f },
+    { -3.0f, 2.0f },  { -3.0f, 3.0f },  { -3.0f, 4.0f },  { -3.0f, 5.0f },  { -3.0f, 6.0f },  { -3.0f, 7.0f },
+    { -3.0f, -8.0f }, { -3.0f, -7.0f }, { -3.0f, -6.0f }, { -3.0f, -5.0f }, { -3.0f, -4.0f }, { -3.0f, -3.0f },
+    { -3.0f, -2.0f }, { -3.0f, -1.0f }, { -2.0f, 0.0f },  { -2.0f, 1.0f },  { -2.0f, 2.0f },  { -2.0f, 3.0f },
+    { -2.0f, 4.0f },  { -2.0f, 5.0f },  { -2.0f, 6.0f },  { -2.0f, 7.0f },  { -2.0f, -8.0f }, { -2.0f, -7.0f },
+    { -2.0f, -6.0f }, { -2.0f, -5.0f }, { -2.0f, -4.0f }, { -2.0f, -3.0f }, { -2.0f, -2.0f }, { -2.0f, -1.0f },
+    { -1.0f, 0.0f },  { -1.0f, 1.0f },  { -1.0f, 2.0f },  { -1.0f, 3.0f },  { -1.0f, 4.0f },  { -1.0f, 5.0f },
+    { -1.0f, 6.0f },  { -1.0f, 7.0f },  { -1.0f, -8.0f }, { -1.0f, -7.0f }, { -1.0f, -6.0f }, { -1.0f, -5.0f },
+    { -1.0f, -4.0f }, { -1.0f, -3.0f }, { -1.0f, -2.0f }, { -1.0f, -1.0f }
+},
+.resample_table = {
+    {
+        (f32) 3129,
+        (f32) 26285,
+        (f32) 3398,
+        (f32) -33,
+    },
+    {
+        (f32) 2873,
+        (f32) 26262,
+        (f32) 3679,
+        (f32) -40,
+    },
+    {
+        (f32) 2628,
+        (f32) 26217,
+        (f32) 3971,
+        (f32) -48,
+    },
+    {
+        (f32) 2394,
+        (f32) 26150,
+        (f32) 4276,
+        (f32) -56,
+    },
+    {
+        (f32) 2173,
+        (f32) 26061,
+        (f32) 4592,
+        (f32) -65,
+    },
+    {
+        (f32) 1963,
+        (f32) 25950,
+        (f32) 4920,
+        (f32) -74,
+    },
+    {
+        (f32) 1764,
+        (f32) 25817,
+        (f32) 5260,
+        (f32) -84,
+    },
+    {
+        (f32) 1576,
+        (f32) 25663,
+        (f32) 5611,
+        (f32) -95,
+    },
+    {
+        (f32) 1399,
+        (f32) 25487,
+        (f32) 5974,
+        (f32) -106,
+    },
+    {
+        (f32) 1233,
+        (f32) 25291,
+        (f32) 6347,
+        (f32) -118,
+    },
+    {
+        (f32) 1077,
+        (f32) 25075,
+        (f32) 6732,
+        (f32) -130,
+    },
+    {
+        (f32) 932,
+        (f32) 24838,
+        (f32) 7127,
+        (f32) -143,
+    },
+    {
+        (f32) 796,
+        (f32) 24583,
+        (f32) 7532,
+        (f32) -156,
+    },
+    {
+        (f32) 671,
+        (f32) 24309,
+        (f32) 7947,
+        (f32) -170,
+    },
+    {
+        (f32) 554,
+        (f32) 24016,
+        (f32) 8371,
+        (f32) -184,
+    },
+    {
+        (f32) 446,
+        (f32) 23706,
+        (f32) 8804,
+        (f32) -198,
+    },
+    {
+        (f32) 347,
+        (f32) 23379,
+        (f32) 9246,
+        (f32) -212,
+    },
+    {
+        (f32) 257,
+        (f32) 23036,
+        (f32) 9696,
+        (f32) -226,
+    },
+    {
+        (f32) 174,
+        (f32) 22678,
+        (f32) 10153,
+        (f32) -240,
+    },
+    {
+        (f32) 99,
+        (f32) 22304,
+        (f32) 10618,
+        (f32) -254,
+    },
+    {
+        (f32) 31,
+        (f32) 21917,
+        (f32) 11088,
+        (f32) -268,
+    },
+    {
+        (f32) -30,
+        (f32) 21517,
+        (f32) 11564,
+        (f32) -280,
+    },
+    {
+        (f32) -84,
+        (f32) 21104,
+        (f32) 12045,
+        (f32) -293,
+    },
+    {
+        (f32) -132,
+        (f32) 20679,
+        (f32) 12531,
+        (f32) -304,
+    },
+    {
+        (f32) -173,
+        (f32) 20244,
+        (f32) 13020,
+        (f32) -314,
+    },
+    {
+        (f32) -210,
+        (f32) 19799,
+        (f32) 13512,
+        (f32) -323,
+    },
+    {
+        (f32) -241,
+        (f32) 19345,
+        (f32) 14006,
+        (f32) -330,
+    },
+    {
+        (f32) -267,
+        (f32) 18882,
+        (f32) 14501,
+        (f32) -336,
+    },
+    {
+        (f32) -289,
+        (f32) 18413,
+        (f32) 14997,
+        (f32) -340,
+    },
+    {
+        (f32) -306,
+        (f32) 17937,
+        (f32) 15493,
+        (f32) -341,
+    },
+    {
+        (f32) -320,
+        (f32) 17456,
+        (f32) 15988,
+        (f32) -340,
+    },
+    {
+        (f32) -330,
+        (f32) 16970,
+        (f32) 16480,
+        (f32) -337,
+    },
+    {
+        (f32) -337,
+        (f32) 16480,
+        (f32) 16970,
+        (f32) -330,
+    },
+    {
+        (f32) -340,
+        (f32) 15988,
+        (f32) 17456,
+        (f32) -320,
+    },
+    {
+        (f32) -341,
+        (f32) 15493,
+        (f32) 17937,
+        (f32) -306,
+    },
+    {
+        (f32) -340,
+        (f32) 14997,
+        (f32) 18413,
+        (f32) -289,
+    },
+    {
+        (f32) -336,
+        (f32) 14501,
+        (f32) 18882,
+        (f32) -267,
+    },
+    {
+        (f32) -330,
+        (f32) 14006,
+        (f32) 19345,
+        (f32) -241,
+    },
+    {
+        (f32) -323,
+        (f32) 13512,
+        (f32) 19799,
+        (f32) -210,
+    },
+    {
+        (f32) -314,
+        (f32) 13020,
+        (f32) 20244,
+        (f32) -173,
+    },
+    {
+        (f32) -304,
+        (f32) 12531,
+        (f32) 20679,
+        (f32) -132,
+    },
+    {
+        (f32) -293,
+        (f32) 12045,
+        (f32) 21104,
+        (f32) -84,
+    },
+    {
+        (f32) -280,
+        (f32) 11564,
+        (f32) 21517,
+        (f32) -30,
+    },
+    {
+        (f32) -268,
+        (f32) 11088,
+        (f32) 21917,
+        (f32) 31,
+    },
+    {
+        (f32) -254,
+        (f32) 10618,
+        (f32) 22304,
+        (f32) 99,
+    },
+    {
+        (f32) -240,
+        (f32) 10153,
+        (f32) 22678,
+        (f32) 174,
+    },
+    {
+        (f32) -226,
+        (f32) 9696,
+        (f32) 23036,
+        (f32) 257,
+    },
+    {
+        (f32) -212,
+        (f32) 9246,
+        (f32) 23379,
+        (f32) 347,
+    },
+    {
+        (f32) -198,
+        (f32) 8804,
+        (f32) 23706,
+        (f32) 446,
+    },
+    {
+        (f32) -184,
+        (f32) 8371,
+        (f32) 24016,
+        (f32) 554,
+    },
+    {
+        (f32) -170,
+        (f32) 7947,
+        (f32) 24309,
+        (f32) 671,
+    },
+    {
+        (f32) -156,
+        (f32) 7532,
+        (f32) 24583,
+        (f32) 796,
+    },
+    {
+        (f32) -143,
+        (f32) 7127,
+        (f32) 24838,
+        (f32) 932,
+    },
+    {
+        (f32) -130,
+        (f32) 6732,
+        (f32) 25075,
+        (f32) 1077,
+    },
+    {
+        (f32) -118,
+        (f32) 6347,
+        (f32) 25291,
+        (f32) 1233,
+    },
+    {
+        (f32) -106,
+        (f32) 5974,
+        (f32) 25487,
+        (f32) 1399,
+    },
+    {
+        (f32) -95,
+        (f32) 5611,
+        (f32) 25663,
+        (f32) 1576,
+    },
+    {
+        (f32) -84,
+        (f32) 5260,
+        (f32) 25817,
+        (f32) 1764,
+    },
+    {
+        (f32) -74,
+        (f32) 4920,
+        (f32) 25950,
+        (f32) 1963,
+    },
+    {
+        (f32) -65,
+        (f32) 4592,
+        (f32) 26061,
+        (f32) 2173,
+    },
+    {
+        (f32) -56,
+        (f32) 4276,
+        (f32) 26150,
+        (f32) 2394,
+    },
+    {
+        (f32) -48,
+        (f32) 3971,
+        (f32) 26217,
+        (f32) 2628,
+    },
+    {
+        (f32) -40,
+        (f32) 3679,
+        (f32) 26262,
+        (f32) 2873,
+    },
+    {
+        (f32) -33,
+        (f32) 3398,
+        (f32) 26285,
+        (f32) 3129,
+    },
+}
+
+
+};
+#if 0
+// 1024 bytes
 static float __attribute__((aligned(32))) resample_table[64][4] = {
     {
         (f32) 3129,
@@ -531,7 +966,7 @@ static float __attribute__((aligned(32))) resample_table[64][4] = {
         (f32) 3129,
     },
 };
-
+#endif
 static inline int16_t clamp16(int32_t v) {
     if (v < -0x8000) {
         return -0x8000;
@@ -542,7 +977,7 @@ static inline int16_t clamp16(int32_t v) {
 }
 
 void aClearBufferImpl(uint16_t addr, int nbytes) {
-    memset(BUF_U8(addr), 0, ROUND_UP_16(nbytes));
+    memset(BUF_DMEM(addr), 0, ROUND_UP_16(nbytes));
 }
 
 void aLoadBufferPointerImpl(const void* source_addr) {
@@ -555,7 +990,7 @@ void aLoadBufferImpl(const void* source_addr, uint16_t dest_addr, uint16_t nbyte
 
 void aSaveBufferImpl(uint16_t source_addr, int16_t* dest_addr, uint16_t nbytes) {
     size_t rnb = ROUND_UP_16(nbytes);
-    n64_memcpy((void*) ((uintptr_t) dest_addr), (const void*) BUF_S16(source_addr), rnb);
+    n64_memcpy((void*) ((uintptr_t) dest_addr), (const void*) BUF_DMEM(source_addr), rnb);
 }
 
 static short __attribute__((aligned(32))) adpcm_tmp[8];
@@ -596,11 +1031,11 @@ void aSetBufferImpl(UNUSED uint8_t flags, uint16_t in, uint16_t out, uint16_t nb
 }
 
 void aDMEMMoveImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
-    memmove(BUF_U8(out_addr), BUF_U8(in_addr), ROUND_UP_16(nbytes));
+    memmove(BUF_DMEM(out_addr), BUF_DMEM(in_addr), ROUND_UP_16(nbytes));
 }
 
 void aDMEMCopyImpl(uint16_t in_addr, uint16_t out_addr, int nbytes) {
-    n64_memcpy(BUF_U8(out_addr), BUF_U8(in_addr), ROUND_UP_16(nbytes));
+    n64_memcpy(BUF_DMEM(out_addr), BUF_DMEM(in_addr), ROUND_UP_16(nbytes));
 }
 
 void aSetLoopImpl(ADPCM_STATE* adpcm_loop_state) {
@@ -721,13 +1156,15 @@ static inline s16 clamp16f(float v) {
 }
 
 static inline float shift_to_float_multiplier(uint8_t shift) {
+// 64 bytes
     const static float
         __attribute__((aligned(32))) shift_to_float[16] = { 1.0f,    2.0f,    4.0f,     8.0f,    16.0f,   32.0f,
                                                             64.0f,   128.0f,  256.0f,   512.0f,  1024.0f, 2048.0f,
                                                             4096.0f, 8192.0f, 16364.0f, 32768.0f };
     return shift_to_float[shift];
 }
-
+#if 0
+// 2048 bytes
 static const float __attribute__((aligned(32))) nyblls_as_floats[256][2] = {
     { 0.0f, 0.0f },   { 0.0f, 1.0f },   { 0.0f, 2.0f },   { 0.0f, 3.0f },   { 0.0f, 4.0f },   { 0.0f, 5.0f },
     { 0.0f, 6.0f },   { 0.0f, 7.0f },   { 0.0f, -8.0f },  { 0.0f, -7.0f },  { 0.0f, -6.0f },  { 0.0f, -5.0f },
@@ -773,15 +1210,15 @@ static const float __attribute__((aligned(32))) nyblls_as_floats[256][2] = {
     { -1.0f, 6.0f },  { -1.0f, 7.0f },  { -1.0f, -8.0f }, { -1.0f, -7.0f }, { -1.0f, -6.0f }, { -1.0f, -5.0f },
     { -1.0f, -4.0f }, { -1.0f, -3.0f }, { -1.0f, -2.0f }, { -1.0f, -1.0f }
 };
-
+#endif
 static inline void extend_nyblls_to_floats(uint8_t nybll, float* fp1, float* fp2) {
-    const float* fpair = nyblls_as_floats[nybll];
+    const float* fpair = rspa.nyblls_as_floats[nybll];
     *fp1 = fpair[0];
     *fp2 = fpair[1];
 }
 
 void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
-    int16_t* out = BUF_S16(rspa.out);
+    int16_t* out = (int16_t*) BUF_DMEM(rspa.out);
     MEM_BARRIER_PREF(out);
     uint8_t* in = (uint8_t*) ((u8*) rspa.loaded_buffer + rspa.in);
     int nbytes = ROUND_UP_32(rspa.nbytes);
@@ -800,7 +1237,7 @@ void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
     while (nbytes > 0) {
         const uint8_t si_in = *in++;
         const uint8_t next = *in++;
-        MEM_BARRIER_PREF(nyblls_as_floats[next]);
+        MEM_BARRIER_PREF(rspa.nyblls_as_floats[next]);
         const uint8_t in_array[2][4] = { { next, *in++, *in++, *in++ }, { *in++, *in++, *in++, *in++ } };
         const unsigned table_index = si_in & 0x7; // should be in 0..7
         const float (*tbl)[8] = rspa.adpcm_table[table_index];
@@ -809,17 +1246,17 @@ void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
 
         for (int i = 0; i < 2; ++i) {
             {
-                MEM_BARRIER_PREF(nyblls_as_floats[in_array[i][1]]);
+                MEM_BARRIER_PREF(rspa.nyblls_as_floats[in_array[i][1]]);
                 extend_nyblls_to_floats(in_array[i][0], &instr[i][0], &instr[i][1]);
                 instr[i][0] *= shift;
                 instr[i][1] *= shift;
-                MEM_BARRIER_PREF(nyblls_as_floats[in_array[i][2]]);
+                MEM_BARRIER_PREF(rspa.nyblls_as_floats[in_array[i][2]]);
                 extend_nyblls_to_floats(in_array[i][1], &instr[i][2], &instr[i][3]);
                 instr[i][2] *= shift;
                 instr[i][3] *= shift;
             }
             {
-                MEM_BARRIER_PREF(nyblls_as_floats[in_array[i][3]]);
+                MEM_BARRIER_PREF(rspa.nyblls_as_floats[in_array[i][3]]);
                 extend_nyblls_to_floats(in_array[i][2], &instr[i][4], &instr[i][5]);
                 instr[i][4] *= shift;
                 instr[i][5] *= shift;
@@ -885,10 +1322,10 @@ void aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
 
 void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
     int16_t __attribute__((aligned(32))) tmp[32] = { 0 };
-    int16_t* in_initial = BUF_S16(rspa.in);
+    int16_t* in_initial = (int16_t*) BUF_DMEM(rspa.in);
     int16_t* in = in_initial;
     MEM_BARRIER_PREF(in);
-    int16_t* out = BUF_S16(rspa.out);
+    int16_t* out = (int16_t*) BUF_DMEM(rspa.out);
     int nbytes = ROUND_UP_16(rspa.nbytes);
     uint32_t pitch_accumulator = 0;
     int i = 0;
@@ -917,7 +1354,7 @@ void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
 
     in -= 4;
     pitch_accumulator = (uint16_t) tmp[4];
-    tbl_f = resample_table[pitch_accumulator >> 10];
+    tbl_f = rspa.resample_table[pitch_accumulator >> 10];
     SHZ_PREFETCH(tbl_f);
 
     dp = in;
@@ -942,7 +1379,7 @@ void aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE state) {
             MEM_BARRIER();
             *out++ = clamp16f(sample_f);
             MEM_BARRIER();
-            tbl_f = resample_table[pitch_accumulator >> 10];
+            tbl_f = rspa.resample_table[pitch_accumulator >> 10];
             MEM_BARRIER_PREF(tbl_f);
         }
         nbytes -= 8 * sizeof(int16_t);
@@ -979,12 +1416,12 @@ static int16_t __attribute__((aligned(32))) em_samples[2][2];
 
 void aEnvMixerImpl(uint16_t in_addr, uint16_t n_samples,
                    uint16_t dry_addr_start) {
-    int32_t* inwide = (int32_t *)BUF_S16(in_addr);
+    int32_t* inwide = (int32_t *) BUF_DMEM(in_addr);
     size_t n = ROUND_UP_16(n_samples);
 
     // Note: max number of samples is 192 (192 * 2 = 384 bytes = 0x180)
-    int32_t* drywide[2] = { (int32_t*) BUF_S16(dry_addr_start),
-                            (int32_t*) BUF_S16((dry_addr_start + 0x180)) };
+    int32_t* drywide[2] = { (int32_t*) BUF_DMEM(dry_addr_start),
+                            (int32_t*) BUF_DMEM((dry_addr_start + 0x180)) };
 
     uint16_t rates[2] = { rspa.rate[0], rspa.rate[1] };
     uint16_t vols[2] = { rspa.vol[0], rspa.vol[1] };
@@ -1028,8 +1465,8 @@ void aEnvMixerImpl(uint16_t in_addr, uint16_t n_samples,
 #define DMEM_UNCOMPRESSED_NOTE 0x600
 void aDuplicateImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
     uint8_t* in = (uint8_t*) ((u8*) rspa.loaded_buffer + in_addr);
-    uint8_t* real_in = BUF_U8(DMEM_UNCOMPRESSED_NOTE);
-    uint8_t* out = BUF_U8(out_addr);
+    uint8_t* real_in = (uint8_t *)BUF_DMEM(DMEM_UNCOMPRESSED_NOTE);
+    uint8_t* out = (uint8_t*)BUF_DMEM(out_addr);
     n64_memcpy(real_in, in, 128);
     // no overlap as called, dont do temp copy
     do {
@@ -1039,8 +1476,8 @@ void aDuplicateImpl(uint16_t count, uint16_t in_addr, uint16_t out_addr) {
 }
 
 void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
-    uint32_t* in = (uint32_t*) BUF_S16(in_addr & ~3); // two 16-bit samples per word
-    uint32_t* out = (uint32_t*) BUF_S16(out_addr & ~3);
+    uint32_t* in = (uint32_t*) BUF_DMEM(in_addr & ~3); // two 16-bit samples per word
+    uint32_t* out = (uint32_t*) BUF_DMEM(out_addr & ~3);
     int n = ROUND_UP_8(n_samples) + 8;
 
     MEM_BARRIER_PREF(in);
@@ -1074,7 +1511,7 @@ void aInterlImpl(uint16_t in_addr, uint16_t out_addr, uint16_t n_samples) {
 }
 
 void aHiLoGainImpl(uint8_t g, uint16_t count, uint16_t addr) {
-    int32_t* samples = (int32_t*) ((uintptr_t) BUF_S16(addr & ~3));
+    int32_t* samples = (int32_t*) BUF_DMEM(addr & ~3);
     int nbytes = ROUND_UP_32(count) + 8;
 
     do {
