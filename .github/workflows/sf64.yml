@@ -23,22 +23,26 @@ jobs:
 
       - name: Install System Dependencies (Fedora)
         run: |
-          # A imagem usa Fedora, então usamos 'dnf'
-          # Nomes de pacotes ajustados para o padrão Fedora/RedHat
+          # A imagem usa Fedora 37
+          # O genisoimage já vem instalado, mas garantimos os outros
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
-            libpng-devel libjpeg-turbo-devel \
-            genisoimage
+            libpng-devel libjpeg-turbo-devel
 
       - name: Install Python Dependencies
         run: |
-          # Instala dependências Python
-          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
+          # Primeiro, atualizamos o PIP para a versão mais recente para evitar incompatibilidades
+          python3 -m pip install --upgrade pip
+          
+          # Tenta instalar normalmente.
+          # O "||" serve como fallback: se precisar da flag --break-system-packages (pip novo), ele usa.
+          # Se for pip velho, ele usa o comando simples.
+          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Compila e instala mkdcdisc (ferramenta host)
+          # Compila e instala mkdcdisc (necessário para gerar o .cdi)
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
@@ -61,15 +65,11 @@ jobs:
         run: |
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           
-          # Garante permissão de escrita no arquivo de ambiente
           chmod +w $ENV_FILE || true
           
           echo "Aplicando otimizações..."
-          
-          # Altera -O2 para -O3
           sed -i 's/-O2/-O3/g' $ENV_FILE
           
-          # Adiciona flags de LTO
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
@@ -80,7 +80,7 @@ jobs:
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # CMake 3.5+ policy fix
+          # Força compatibilidade com CMake
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
