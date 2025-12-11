@@ -12,8 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Esta é a imagem oficial e moderna (tem GCC 14 e suporta apt-get)
-    container: ghcr.io/kallistiose/kos:latest
+    # CORREÇÃO: Removido o 'e' extra no final de 'kallistios'
+    container: ghcr.io/kallistios/kos:latest
     
     steps:
       - name: Checkout Repository
@@ -21,69 +21,78 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
-          # Como essa imagem é baseada em Ubuntu/Debian, o apt-get VAI funcionar agora
+          # Atualiza repositórios e instala dependências listadas no README
           apt-get update
-          apt-get install -y python3 python3-pip python3-venv cmake genisoimage libpng-dev libjpeg-dev git
-          
-          # Instala dependências Python
-          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
+          apt-get install -y \
+            python3 python3-pip python3-venv \
+            cmake genisoimage \
+            libpng-dev libjpeg-dev \
+            git build-essential
+
+      - name: Install Python Dependencies
+        run: |
+          # Instala dependências Python ignorando erro de ambiente gerenciado (comum em containers modernos)
+          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
+          # Compila e instala o mkdcdisc manualmente, pois é necessário para gerar o .cdi
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           mkdir build && cd build
           cmake ..
           make
           make install
-          cd ../..
 
       - name: Verify ROM exists
         run: |
           if [ -f "baserom.us.rev1.z64" ]; then
-            echo "ROM encontrada!"
+            echo "✅ ROM encontrada: baserom.us.rev1.z64"
             ls -lh baserom.us.rev1.z64
+            sha1sum baserom.us.rev1.z64
           else
-            echo "ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz!"
+            echo "❌ ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz do repositório!"
             exit 1
           fi
 
-      - name: Configure KOS Environment
+      - name: Configure KOS Environment (Optimize)
         run: |
-          # Carrega as variáveis de ambiente do compilador
-          . /opt/toolchains/dc/kos/environ.sh
-          
-          # Ajusta para as flags de alta performance pedidas no README
-          # (Como estamos na imagem oficial, o caminho do arquivo pode variar, então usamos o path da variável)
+          # Localiza o arquivo de ambiente do KOS dentro do container
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           
+          echo "Aplicando otimizações recomendadas no README..."
+          
+          # Altera -O2 para -O3 (Performance máxima)
           sed -i 's/-O2/-O3/g' $ENV_FILE
-          # Tenta adicionar LTO se não existir
+          
+          # Adiciona -ffat-lto-objects se não existir (Link Time Optimization)
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
           
-          echo "Ambiente configurado."
+          echo "Ambiente modificado com sucesso."
+          cat $ENV_FILE | grep KOS_CFLAGS
 
       - name: Build N64 Tools
         run: |
+          # Carrega variáveis e compila as ferramentas conversoras
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          make
-          cd ..
+          # Força política do CMake caso necessário, conforme README
+          CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
         run: |
           . /opt/toolchains/dc/kos/environ.sh
-          # Aumenta limite de memória do Python caso precise
-          export PYTHON_EGG_CACHE=./.python-eggs
+          # Prepara os assets a partir da ROM
           make init
 
       - name: Build Dreamcast CDI
         run: |
           . /opt/toolchains/dc/kos/environ.sh
+          # Compila o binário final e gera a imagem CDI
           make cdi-cdr
 
       - name: Upload CDI Artifact
@@ -92,3 +101,4 @@ jobs:
           name: SF64-Dreamcast-CDI
           path: |
             *.cdi
+          if-no-files-found: error
