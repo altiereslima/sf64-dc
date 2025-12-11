@@ -1,4 +1,4 @@
-name: Build Star Fox 64 for Dreamcast (Direct ROM)
+name: Build Star Fox 64 for Dreamcast (Corrected)
 
 on:
   push:
@@ -7,11 +7,13 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: kallistos/dreamcast-toolchain:latest
+    # CORREÇÃO AQUI: Trocamos para a imagem oficial do Kazade que existe publicamente
+    container: kazade/dreamcast-sdk:latest 
     
     steps:
       - name: Checkout Repository
@@ -23,7 +25,8 @@ jobs:
         run: |
           apt-get update
           apt-get install -y python3 python3-pip cmake genisoimage libpng-dev libjpeg-dev
-          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages
+          # O flag --break-system-packages é necessário em versões novas do Python/Debian
+          python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
@@ -45,12 +48,18 @@ jobs:
             exit 1
           fi
 
-      - name: Configure KOS Environment (O3 + LTO)
+      - name: Configure KOS Environment
         run: |
+          # O caminho padrão no container kazade é este:
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
-          sed -i 's/-O2/-O3/g' $ENV_FILE
-          sed -i 's/#export KOS_CFLAGS="${KOS_CFLAGS} -freorder-blocks-algorithm=simple -flto=auto"/export KOS_CFLAGS="${KOS_CFLAGS} -flto=auto -ffat-lto-objects"/' $ENV_FILE
-          sed -i 's/-freorder-blocks-algorithm=simple //g' $ENV_FILE
+          
+          # Tenta aplicar as otimizações, mas sem falhar se o texto não for exato
+          sed -i 's/-O2/-O3/g' $ENV_FILE || true
+          
+          # Adiciona flags de LTO se possível
+          if grep -q "flto" "$ENV_FILE"; then
+             sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE
+          fi
 
       - name: Build N64 Tools
         run: |
@@ -59,7 +68,7 @@ jobs:
           make
           cd ..
 
-      - name: Extract Assets
+      - name: Extract Assets (Make Init)
         run: |
           source /opt/toolchains/dc/kos/environ.sh
           make init
