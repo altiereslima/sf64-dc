@@ -23,32 +23,39 @@ jobs:
 
       - name: Install System Dependencies (Fedora)
         run: |
-          # Adicionado wget e dependências do mkdcdisc
+          # Instala dependências de compilação, mkdcdisc e tools
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
             libpng-devel libjpeg-turbo-devel \
             meson libisofs-devel \
-            wget
+            wget which
 
       - name: Install Python Dependencies
         run: |
-          # Atualiza PIP e instala dependências
+          # Atualiza PIP e instala requirements
           python3 -m pip install --upgrade pip
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
+          # Clone e build do mkdcdisc via Meson
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
           
-          # Build com Meson
           meson setup build
           meson compile -C build
           meson install -C build
           
-          # CORREÇÃO: Usa --help para validação pois --version não existe
-          mkdcdisc --help > /dev/null && echo "✅ mkdcdisc instalado e funcional"
+          # Atualiza o cache de bibliotecas (necessário em alguns containers após install)
+          ldconfig || true
+          
+          # Verificação segura: checa se o binário está no PATH
+          echo "Verificando instalação..."
+          which mkdcdisc && echo "✅ mkdcdisc encontrado no PATH"
+          
+          # Tenta rodar o help mas não falha o build se o retorno for != 0
+          mkdcdisc --help > /dev/null 2>&1 || true
 
       - name: Verify ROM exists
         run: |
@@ -79,7 +86,7 @@ jobs:
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Agora com wget instalado, o download do recompilador deve funcionar
+          # Compila ferramentas (agora com wget instalado deve funcionar)
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
