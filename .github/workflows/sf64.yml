@@ -12,7 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Imagem baseada em Fedora 37
+    # Imagem baseada em Fedora 37 com GCC 14 e KOS moderno
     container: kazade/dreamcast-sdk:latest
     
     steps:
@@ -47,8 +47,7 @@ jobs:
           meson compile -C build
           meson install -C build
           ldconfig || true
-          # Validação segura (ignora erro de exit code do help)
-          which mkdcdisc && echo "✅ mkdcdisc encontrado"
+          which mkdcdisc && echo "✅ mkdcdisc instalado"
           mkdcdisc --help > /dev/null 2>&1 || true
 
       - name: Verify ROM exists
@@ -64,66 +63,67 @@ jobs:
 
       - name: Patch Source Code (Fix Compilation Errors)
         run: |
-          echo "Aplicando patches de compatibilidade..."
+          echo "🔧 Aplicando correções no código para compatibilidade com KOS moderno..."
           
-          # 1. Corrige conflito de 'bool' no n64sys.h e ultratypes.h
-          # Substitui a definição manual por inclusão do stdbool.h padrão
-          sed -i 's/#define bool s32/#include <stdbool.h>/g' include/n64sys.h
-          sed -i 's/#define bool s32/\/\/#define bool s32/g' include/PR/ultratypes.h
+          # 1. Corrige 'vid_set_enabled' (função removida no KOS novo)
+          # Comenta a linha que chama essa função
+          sed -i 's/vid_set_enabled(0);/\/\/vid_set_enabled(0);/g' src/sys/sys_lib.c
           
-          # 2. Desabilita código de Rumble incompatível (purupuru_effect_t mudou no KOS novo)
-          # Comenta a inicialização da struct rumble e seu uso
-          sed -i 's/purupuru_effect_t rumble = {/\/\/purupuru_effect_t rumble = {/g' src/sys/sys_joybus.c
-          sed -i 's/.cont = false,/\/\/.cont = false,/g' src/sys/sys_joybus.c
-          sed -i 's/.motor = 1,/\/\/.motor = 1,/g' src/sys/sys_joybus.c
-          sed -i 's/.fpow = 6,/\/\/.fpow = 6,/g' src/sys/sys_joybus.c
-          sed -i 's/.conv = 1,/\/\/.conv = 1,/g' src/sys/sys_joybus.c
-          sed -i 's/.freq = 26,/\/\/.freq = 26,/g' src/sys/sys_joybus.c
-          sed -i 's/.inc = gControllerRumbleTimers\[i\] ?/\/\/.inc = .../g' src/sys/sys_joybus.c
-          sed -i 's/};/\/\/};/g' src/sys/sys_joybus.c
-          # Comenta o uso da variável rumble
+          # 2. Corrige 'vmu_pkg_load_icon' (função removida/alterada)
+          sed -i 's/vmu_pkg_load_icon/\/\/vmu_pkg_load_icon/g' src/ultra_reimpl.c
+          
+          # 3. Corrige Rumble (Purupuru) - A struct mudou, então desativamos a inicialização
+          sed -i 's/\.cont =/\/\/.cont =/g' src/sys/sys_joybus.c
+          sed -i 's/\.motor =/\/\/.motor =/g' src/sys/sys_joybus.c
+          sed -i 's/\.fpow =/\/\/.fpow =/g' src/sys/sys_joybus.c
+          sed -i 's/\.conv =/\/\/.conv =/g' src/sys/sys_joybus.c
+          sed -i 's/\.freq =/\/\/.freq =/g' src/sys/sys_joybus.c
+          sed -i 's/\.inc =/\/\/.inc =/g' src/sys/sys_joybus.c
           sed -i 's/datas\[i\].packet = rumble.raw;/\/\/datas[i].packet = rumble.raw;/g' src/sys/sys_joybus.c
           
-          # 3. Comenta chamada vmu_pkg_load_icon (função removida/alterada no KOS)
-          sed -i 's/vmu_pkg_load_icon(&pkg, texfn);/\/\/vmu_pkg_load_icon(&pkg, texfn);/g' src/ultra_reimpl.c
-          
-          # 4. Adiciona includes de stdbool.h nos arquivos de sistema do DC para garantir tipos corretos
-          sed -i '1i #include <stdbool.h>' src/sys/sys_lib.c
-          sed -i '1i #include <stdbool.h>' src/sys/sys_fault.c
-          sed -i '1i #include <stdbool.h>' src/sys/sys_joybus.c
+          # 4. Corrige conflito de 'bool' (remove definição manual do jogo para usar a do sistema)
+          sed -i 's/#define bool s32/\/\/#define bool s32/g' include/n64sys.h
+          sed -i 's/#define bool s32/\/\/#define bool s32/g' include/PR/ultratypes.h
 
-          echo "Patches aplicados com sucesso."
+          # 5. Adiciona includes necessários
+          sed -i '1i #include <stdbool.h>' src/sys/sys_lib.c
+          sed -i '1i #include <stdbool.h>' src/sys/sys_joybus.c
+          sed -i '1i #include <stdbool.h>' src/sys/sys_fault.c
+
+          echo "✅ Patches aplicados."
 
       - name: Configure KOS Environment
         run: |
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           chmod +w $ENV_FILE || true
           
-          # Ativa otimizações e define padrão C para GNU17 (estável)
           sed -i 's/-O2/-O3/g' $ENV_FILE
+          
+          # Força padrão GNU17 para evitar erros estritos do GCC 14
           echo 'export KOS_CFLAGS="$KOS_CFLAGS -std=gnu17"' >> $ENV_FILE
           
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
-          
-          echo "Ambiente configurado."
 
       - name: Build N64 Tools
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
+          # Compila ferramentas de conversão
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           git config --global --add safe.directory '*'
+          # Extrai texturas e modelos da ROM
           make init
 
       - name: Build Dreamcast CDI
         run: |
           . /opt/toolchains/dc/kos/environ.sh
+          # Compila o binário final e cria a imagem de disco
           make cdi-cdr
 
       - name: Upload CDI Artifact
