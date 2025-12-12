@@ -23,7 +23,7 @@ jobs:
 
       - name: Configure Git Safe Directory
         run: |
-          # CORREÇÃO CRÍTICA: Marca o diretório como seguro para evitar erro "dubious ownership" no make init
+          # Corrige erro de "dubious ownership" impedindo o make init de ler a versão do git
           git config --global --add safe.directory '*'
 
       - name: Install System Dependencies (Fedora)
@@ -50,7 +50,7 @@ jobs:
           meson install -C build
           ldconfig || true
           
-          # Validação que não quebra o build (mkdcdisc retorna erro no --help, então ignoramos o exit code)
+          # Validação segura
           which mkdcdisc && echo "✅ mkdcdisc encontrado"
           mkdcdisc --help > /dev/null 2>&1 || true
 
@@ -61,19 +61,30 @@ jobs:
             ls -lh baserom.us.rev1.z64
             sha1sum baserom.us.rev1.z64
           else
-            echo "❌ ERRO: baserom.us.rev1.z64 não encontrada!"
+            echo "❌ ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz!"
             exit 1
           fi
 
-      - name: Configure KOS Environment (Optimize)
+      - name: Configure KOS Environment (Optimize & Fix)
         run: |
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           chmod +w $ENV_FILE || true
           
+          echo "Aplicando otimizações e correções..."
+          
+          # Ativa otimizações O3
           sed -i 's/-O2/-O3/g' $ENV_FILE
+          
+          # Adiciona LTO se não existir
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
+          
+          # CORREÇÃO CRÍTICA: Força inclusão de stdbool.h para evitar conflito de tipos com headers do N64
+          # Isso resolve os erros 'unknown type name bool' nos headers do KOS
+          echo 'export KOS_CFLAGS="$KOS_CFLAGS -include stdbool.h"' >> $ENV_FILE
+          
+          echo "Ambiente configurado."
 
       - name: Build N64 Tools
         run: |
@@ -85,7 +96,7 @@ jobs:
       - name: Extract Assets (Make Init)
         run: |
           . /opt/toolchains/dc/kos/environ.sh
-          # Garante configuração do git novamente por segurança
+          # Re-aplica config do git por segurança dentro do ambiente
           git config --global --add safe.directory '*'
           make init
 
