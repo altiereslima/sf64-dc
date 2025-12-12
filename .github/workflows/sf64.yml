@@ -21,9 +21,14 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Configure Git Safe Directory
+        run: |
+          # CORREÇÃO CRÍTICA: Marca o diretório como seguro para evitar erro "dubious ownership" no make init
+          git config --global --add safe.directory '*'
+
       - name: Install System Dependencies (Fedora)
         run: |
-          # Instala dependências de compilação, mkdcdisc e tools
+          # Instala dependências (wget e which adicionados)
           dnf install -y \
             python3 python3-pip \
             cmake git make gcc gcc-c++ \
@@ -33,38 +38,30 @@ jobs:
 
       - name: Install Python Dependencies
         run: |
-          # Atualiza PIP e instala requirements
           python3 -m pip install --upgrade pip
           python3 -m pip install -r ./tools/requirements-python.txt --break-system-packages || python3 -m pip install -r ./tools/requirements-python.txt
 
       - name: Install mkdcdisc (Required for CDI)
         run: |
-          # Clone e build do mkdcdisc via Meson
           git clone https://gitlab.com/simulant/mkdcdisc.git
           cd mkdcdisc
-          
           meson setup build
           meson compile -C build
           meson install -C build
-          
-          # Atualiza o cache de bibliotecas (necessário em alguns containers após install)
           ldconfig || true
           
-          # Verificação segura: checa se o binário está no PATH
-          echo "Verificando instalação..."
-          which mkdcdisc && echo "✅ mkdcdisc encontrado no PATH"
-          
-          # Tenta rodar o help mas não falha o build se o retorno for != 0
+          # Validação que não quebra o build (mkdcdisc retorna erro no --help, então ignoramos o exit code)
+          which mkdcdisc && echo "✅ mkdcdisc encontrado"
           mkdcdisc --help > /dev/null 2>&1 || true
 
       - name: Verify ROM exists
         run: |
           if [ -f "baserom.us.rev1.z64" ]; then
-            echo "✅ ROM encontrada: baserom.us.rev1.z64"
+            echo "✅ ROM encontrada"
             ls -lh baserom.us.rev1.z64
             sha1sum baserom.us.rev1.z64
           else
-            echo "❌ ERRO CRÍTICO: O arquivo baserom.us.rev1.z64 não está na raiz!"
+            echo "❌ ERRO: baserom.us.rev1.z64 não encontrada!"
             exit 1
           fi
 
@@ -73,25 +70,23 @@ jobs:
           ENV_FILE="/opt/toolchains/dc/kos/environ.sh"
           chmod +w $ENV_FILE || true
           
-          echo "Aplicando otimizações..."
           sed -i 's/-O2/-O3/g' $ENV_FILE
-          
           if ! grep -q "ffat-lto-objects" "$ENV_FILE"; then
              sed -i 's/-flto=auto/-flto=auto -ffat-lto-objects/g' $ENV_FILE || true
           fi
-          
-          echo "Ambiente configurado."
 
       - name: Build N64 Tools
         run: |
           . /opt/toolchains/dc/kos/environ.sh
           cd tools
-          # Compila ferramentas (agora com wget instalado deve funcionar)
+          # Compila ferramentas (wget já instalado)
           CMAKE_POLICY_VERSION_MINIMUM=3.5 make
 
       - name: Extract Assets (Make Init)
         run: |
           . /opt/toolchains/dc/kos/environ.sh
+          # Garante configuração do git novamente por segurança
+          git config --global --add safe.directory '*'
           make init
 
       - name: Build Dreamcast CDI
