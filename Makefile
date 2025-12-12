@@ -8,17 +8,14 @@ MAKEFLAGS += --no-builtin-rules --no-print-directory
 #### Begin User Configurable Options and Cheats ####
 ####################################################
 
-### Enable MMU translation of N64 segmented addresses
-MMU_SEGMENTED ?= 1
-
-### Use TLB instead of pagetables for MMU translation
-USE_TLB_SEGMENTS ?= 1
-
 ### Enable scaling of light intensity instead of clamping
 SCALE_LIGHTS ?= 0
 
 ### Enable 320x240 resolution
 LOWRES ?= 0
+
+### Enable 16KHz sample rate
+USE_16KHZ ?= 0
 
 ### Enable 32KHz sample rate
 USE_32KHZ ?= 0
@@ -111,20 +108,16 @@ SF_MUSIC_PATH := music
 # are safe to be used can avoid using GLOBAL_ASM which doesn't work with gcc.
 CFLAGS += -DCOMPILER_GCC -DNON_MATCHING=1 -Wno-int-conversion -falign-functions=32 -fno-data-sections -DAVOID_UB=1 -MMD -MP -Wno-incompatible-pointer-types -Wno-missing-braces -Wno-unused-variable -Wno-switch  -DGBI_FLOATS -fno-toplevel-reorder
 
-ifeq ($(MMU_SEGMENTED),1)
-  CFLAGS += -DMMU_SEGMENTED
-endif
-
-ifeq ($(USE_TLB_SEGMENTS),1)
-  CFLAGS += -DUSE_TLB_SEGMENTS
-endif
-
 ifeq ($(SCALE_LIGHTS),1)
   CFLAGS += -DSCALE_LIGHTS
 endif
 
 ifeq ($(LOWRES),1)
   CFLAGS += -DLOWRES
+endif
+
+ifeq ($(USE_16KHZ),1)
+  CFLAGS += -DUSE_16KHZ
 endif
 
 ifeq ($(USE_32KHZ),1)
