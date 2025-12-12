@@ -42,7 +42,6 @@
 static volatile snd_stream_hnd_t shnd = SND_STREAM_INVALID; 
 // The main audio buffer
 static uint8_t __attribute__((aligned(16384))) cb_buf_internal[2][RING_BUFFER_MAX_BYTES]; 
-static void *const cb_buf[2] = {cb_buf_internal[0],cb_buf_internal[1]};
 static bool audio_started = false;
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
@@ -58,6 +57,7 @@ static ring_t cb_ring[2];
 static ring_t *r[2] = {&cb_ring[0],&cb_ring[1]};
 
 #if !USE_TLB_CB
+static void *const cb_buf[2] = {cb_buf_internal[0],cb_buf_internal[1]};
 
 static bool cb_init(int N, size_t capacity) {
     // round capacity up to power of two
@@ -104,6 +104,7 @@ static void cb_read_data(int N, void *dst, size_t n) {
 
 #define CB_LEFT_ADDR   0x10000000
 #define CB_RIGHT_ADDR  0x20000000
+static void *const cb_buf[2] = {CB_LEFT_ADDR,CB_RIGHT_ADDR};
 
 /* Macro for converting P1 address to physical memory address */
 #define P1_TO_PHYSICAL(addr) ((uintptr_t)(addr) & MEM_AREA_CACHE_MASK)
@@ -133,11 +134,8 @@ static bool cb_init(int N, size_t capacity) {
     // round capacity up to power of two
     r[N]->cap = 1u << (32 - __builtin_clz(capacity - 1));
 
-    if (N == 0) r[0]->buf = CB_LEFT_ADDR;
-    else r[1]->buf = CB_RIGHT_ADDR;
+    r[N]->buf = cb_buf[N];
 
-//    if (!r[N]->buf)
-//        return false;
     r[N]->head = 0;
     r[N]->tail = 0;
     return true;

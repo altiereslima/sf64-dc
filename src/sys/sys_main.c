@@ -518,6 +518,8 @@ assetsfound:
 #include "../mods/isviewer.c"
 #endif
 
+extern int USE_MIXER_MUSIC;
+
 void* AudioThread(UNUSED void* arg) {
     uint64_t last_vbltick = vblticker;
 
@@ -534,8 +536,12 @@ void* AudioThread(UNUSED void* arg) {
         if ((gSysFrameCount & 3) == 0)
             samplecount = SAMPLES_HIGH;
 #endif
+        if (USE_MIXER_MUSIC)
+            irq_disable();
         AudioThread_CreateNextAudioBuffer(audio_buffer[0], audio_buffer[1], samplecount);
         audio_api->play((u8*) audio_buffer[0], (u8*) audio_buffer[1], samplecount * 4);
+        if (USE_MIXER_MUSIC)
+            irq_enable();
     }
 
     return NULL;
